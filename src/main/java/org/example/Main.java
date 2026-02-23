@@ -18,10 +18,10 @@ public class Main {
 
     public static void main(String[] args) {
         // Define connection URL with Timezone configuration
-        // 定义连接地址，并配置时区
+        // 定义连接地址，并配置时区, 账户密码
         String url = "jdbc:mysql://localhost:3306/scooter_sharing?serverTimezone=UTC";
         String user = "root";
-        String password = "123123";  // 填你安装mysql的root密码
+        String password = "123123";
         logger.info("Attempting to connecting to database...");
 
         // Use try-with-resources to ensure connection is closed automatically
