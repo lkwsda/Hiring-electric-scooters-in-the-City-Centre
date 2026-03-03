@@ -21,7 +21,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void addUser(User user) {
         String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
-        // 老公你看，一行代码就搞定了，不用再写长长的 try-catch 啦！
+
         jdbcTemplate.update(sql, user.getUsername(), user.getEmail(), user.getPasswordHash());
         System.out.println("[Spring Boot] User added: " + user.getUsername());
     }
@@ -55,7 +55,15 @@ public class UserDAOImpl implements UserDAO {
         jdbcTemplate.update(sql, id);
     }
 
-    // “内部小助理”：负责把数据库里的菜装进 User 盒子
+    @Override
+    public boolean existsByUsername(String username) {
+        String sql = "SELECT count(*) FROM users WHERE username = ?";
+        // queryForObject returns a single value (返回一个计数值)
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
+        return count != null && count > 0;
+    }
+
+    // 负责把数据库里的菜装进 User 盒子
     private static class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
