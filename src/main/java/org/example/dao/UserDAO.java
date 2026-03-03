@@ -32,4 +32,6 @@ public interface UserDAO {
     // Check if username already exists
     // 检查用户名是否已存在
     boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }

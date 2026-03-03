@@ -14,14 +14,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void registerUser(User user) {
-        // 1. Proactive Validation (主动检查)
+        // --- 1. 格式校验 (Input Validation) ---
+
+        // 检查密码长度 (Password Length >= 8)
+        if (user.getPasswordHash() == null || user.getPasswordHash().length() < 8) {
+            throw new RuntimeException("Validation Failed: Password must be at least 8 characters long!");
+        }
+
+        // --- 2. 数据库唯一性校验 (Uniqueness Validation) ---
+
+        // 检查用户名重复 (Username Check)
         if (userDAO.existsByUsername(user.getUsername())) {
-            // 2. Throw an exception if duplicate
-            // 如果重复了，直接抛出异常，不再执行后面的添加动作
             throw new RuntimeException("Validation Failed: Username [" + user.getUsername() + "] is already taken!");
         }
 
-        // 3. Proceed only if valid (只有不重复才会走到这一步)
+        // 检查邮箱重复 (Email Check)
+        if (userDAO.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Validation Failed: Email [" + user.getEmail() + "] is already registered!");
+        }
+
+        // --- 3. 校验通过，放行！ ---
         userDAO.addUser(user);
     }
 

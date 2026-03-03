@@ -63,6 +63,20 @@ public class UserDAOImpl implements UserDAO {
         return count != null && count > 0;
     }
 
+    @Override
+    public boolean existsByEmail(String email) {
+        // SQL: Count how many users have this email
+        // SQL语句：数一数数据库里有几个人的邮箱是这个
+        String sql = "SELECT count(*) FROM users WHERE email = ?";
+
+        // Using jdbcTemplate to get the result
+        // 使用 jdbcTemplate 拿到那个计数值
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+
+        // Return true if count > 0 (如果数出来大于0，说明已经有人占用了)
+        return count != null && count > 0;
+    }
+
     // 负责把数据库里的菜装进 User 盒子
     private static class UserRowMapper implements RowMapper<User> {
         @Override
