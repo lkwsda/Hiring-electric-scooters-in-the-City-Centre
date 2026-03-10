@@ -2,6 +2,7 @@ package org.example.dao;
 
 import org.example.model.Scooter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -61,5 +62,12 @@ public class ScooterDAOImpl implements ScooterDAO {
         String sql = "DELETE FROM scooters WHERE id = ?";
         jdbcTemplate.update(sql, id);
         System.out.println("[DAO] Scooter deleted, ID: " + id);
+    }
+
+    @Override
+    public void updateScooterStatus(int id, String status) {
+        String sql = "UPDATE scooters SET status = ? WHERE id =?";
+        jdbcTemplate.update(sql, status, id);
+        System.out.println("[DAO] Scooter status updated, ID: " + id + ", Status: " + status);
     }
 }

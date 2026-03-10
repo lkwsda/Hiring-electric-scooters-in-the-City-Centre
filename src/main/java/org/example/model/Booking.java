@@ -10,6 +10,15 @@ public class Booking {
     private LocalDateTime endTime;
     private BigDecimal totalCost;
 
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
     public Integer getId() {
         return id;
     }

@@ -25,4 +25,11 @@ public class BookingController {
     public List<Booking> getUserBookings(@PathVariable int userId) {
         return bookingService.getUserBookings(userId);
     }
+
+    // 取消订单：POST http://localhost:8080/api/bookings/cancel/1
+    @PostMapping("/cancel/{bookingId}")
+    public String cancelBooking(@PathVariable int bookingId) {
+        bookingService.cancelBooking(bookingId);
+        return "Booking canceled successfully. The scooter is now available for others!";
+    }
 }

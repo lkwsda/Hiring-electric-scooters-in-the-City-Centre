@@ -31,7 +31,10 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public void updateBookingStatus(int bookingId, String status) {
-        // 这里做取消预订时再用
+        // Update the status column for a specific booking ID
+        String sql = "UPDATE bookings SET status = ? WHERE id = ?";
+        jdbcTemplate.update(sql, status, bookingId);
+        System.out.println("[DAO] Booking ID " + bookingId + " status updated to: " + status);
     }
 
     // 小票装载
@@ -48,6 +51,7 @@ public class BookingDAOImpl implements BookingDAO {
                 b.setEndTime(rs.getTimestamp("end_time").toLocalDateTime());
             }
             b.setTotalCost(rs.getBigDecimal("total_cost"));
+            b.setStatus(rs.getString("status"));
             return b;
         }
     }

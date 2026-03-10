@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import org.springframework.jdbc.core.JdbcTemplate;
 @Service
 public class BookingServiceImpl implements BookingService {
 
@@ -18,6 +18,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private ScooterDAO scooterDAO; // 呼叫车辆
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional // 这是“事务”标签。意思是下面的动作要么全成功，要么全失败，不能只成功一半！
@@ -46,5 +49,35 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getUserBookings(int userId) {
         return bookingDAO.getBookingsByUserId(userId);
+    }
+
+    @Override
+    @Transactional // 事务保证：改订单和放回车子必须同时成功！
+    public void cancelBooking(int bookingId) {
+        String checkStatusSql = "SELECT status, scooter_id FROM bookings WHERE id = ?";
+
+        java.util.Map<String, Object> bookingData;
+        try {
+            bookingData = jdbcTemplate.queryForMap(checkStatusSql, bookingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error: Booking ID " + bookingId + " not found!");
+        }
+
+        String currentStatus = (String) bookingData.get("status");
+        Integer scooterId = (Integer) bookingData.get("scooter_id");
+
+        // 如果订单已经是 canceled 了，就直接报错
+        // If already canceled, don't allow re-canceling to avoid releasing scooters wrongly.
+        if ("canceled".equals(currentStatus)) {
+            throw new RuntimeException("Validation Failed: This booking is already canceled!");
+        }
+
+        // 2. 只有是 'paid' 状态的订单，才执行取消动作
+        bookingDAO.updateBookingStatus(bookingId, "canceled");
+
+        // 3. 释放滑板车
+        scooterDAO.updateScooterStatus(scooterId, "available");
+
+        System.out.println("[Service] Order #" + bookingId + " canceled. Scooter #" + scooterId + " is released.");
     }
 }

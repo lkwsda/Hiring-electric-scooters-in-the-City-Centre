@@ -20,3 +20,6 @@ Content-Type: application/json
 
 ### 3. 查看 1 号用户的预订记录
 GET http://localhost:8080/api/bookings/user/1
+
+### 4. 取消 1 号订单
+POST http://localhost:8080/api/bookings/cancel/1

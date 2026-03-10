@@ -24,4 +24,7 @@ public interface ScooterDAO {
 
     // 5. Delete a scooter (车辆报废)
     void deleteScooter(int id);
+
+    // 6. Update scooter status (修改车辆状态，比如正在使用、空闲、故障)
+    void updateScooterStatus(int id,String status);
 }

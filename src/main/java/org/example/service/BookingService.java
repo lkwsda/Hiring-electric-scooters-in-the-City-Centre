@@ -9,4 +9,8 @@ public interface BookingService {
 
     // F08: Get all bookings for a specific user 查看用户的预订历史
     List<Booking> getUserBookings(int userId);
+
+    // F09: Cancel a booking 取消预订
+    void cancelBooking(int bookingId);
+
 }
