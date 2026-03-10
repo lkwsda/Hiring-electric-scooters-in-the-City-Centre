@@ -1,0 +1,22 @@
+### 1. 尝试预订 1 号滑板车 (成功路径)
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scooterId": 1,
+  "totalCost": 15.50
+}
+
+### 2. 再次预订同编号滑板车 (应该失败，因为1号车已经被占用)
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "scooterId": 1,
+  "totalCost": 10.00
+}
+
+### 3. 查看 1 号用户的预订记录
+GET http://localhost:8080/api/bookings/user/1
