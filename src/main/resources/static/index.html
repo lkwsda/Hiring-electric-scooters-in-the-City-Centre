@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>市中心电动滑板车租赁</title>
+    <title>Downtown E-Scooter Rental System</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- 字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <!-- 头部导航 -->
 <header>
     <div class="container">
-        <h1>🛴 电动滑板车租赁</h1>
+        <h1><i class="fa-solid fa-scooter"></i> E-Scooter Rental</h1>
         <nav>
-            <a href="#scooters">车辆列表</a>
-            <a href="#rent">租赁/归还</a>
+            <a href="#scooters"><i class="fa-solid fa-list"></i> Available Scooters</a>
+            <a href="#rent"><i class="fa-solid fa-handshake"></i> Rent/Return</a>
         </nav>
     </div>
 </header>
@@ -22,34 +24,34 @@
 <main class="container">
     <!-- 车辆列表区 -->
     <section id="scooters" class="scooter-section">
-        <h2>可用车辆</h2>
+        <h2><i class="fa-solid fa-motorcycle"></i> Available Scooters</h2>
         <div class="scooter-grid" id="scooterGrid">
-            <!-- 车辆卡片由JS动态生成 -->
+            <!-- 车辆卡片JS -->
         </div>
     </section>
 
     <!-- 租赁/归还区 -->
     <section id="rent" class="rent-section">
-        <h2>租赁/归还</h2>
+        <h2><i class="fa-solid fa-right-left"></i> Rent & Return</h2>
         <div class="form-container">
             <!-- 租赁表单 -->
             <div class="form-box">
-                <h3>租赁车辆</h3>
+                <h3><i class="fa-solid fa-arrow-right"></i> Rent a Scooter</h3>
                 <form id="rentForm">
-                    <label for="userName">姓名：</label>
-                    <input type="text" id="userName" required>
-                    <label for="scooterId">车辆ID：</label>
-                    <input type="number" id="scooterId" required>
-                    <button type="submit">确认租赁</button>
+                    <label for="userName">Your Name:</label>
+                    <input type="text" id="userName" placeholder="Enter your full name" required>
+                    <label for="scooterId">Scooter ID:</label>
+                    <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1)" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Rental</button>
                 </form>
             </div>
             <!-- 归还表单 -->
             <div class="form-box">
-                <h3>归还车辆</h3>
+                <h3><i class="fa-solid fa-arrow-left"></i> Return a Scooter</h3>
                 <form id="returnForm">
-                    <label for="returnScooterId">车辆ID：</label>
-                    <input type="number" id="returnScooterId" required>
-                    <button type="submit">确认归还</button>
+                    <label for="returnScooterId">Scooter ID:</label>
+                    <input type="number" id="returnScooterId" placeholder="Enter scooter ID (e.g. 1)" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Return</button>
                 </form>
             </div>
         </div>
@@ -59,7 +61,8 @@
 <!-- 底部 -->
 <footer>
     <div class="container">
-        <p>&copy; 2026 市中心电动滑板车租赁系统</p>
+        <p><i class="fa-solid fa-copyright"></i> 2026 Downtown E-Scooter Rental System. All Rights Reserved.</p>
+        <p>Contact: support@escooter-rental.com | <i class="fa-solid fa-location-dot"></i> Downtown Plaza, City Center</p>
     </div>
 </footer>
 
