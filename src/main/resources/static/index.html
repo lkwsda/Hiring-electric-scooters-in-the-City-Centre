@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>市中心电动滑板车租赁</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- 头部导航 -->
+<header>
+    <div class="container">
+        <h1>🛴 电动滑板车租赁</h1>
+        <nav>
+            <a href="#scooters">车辆列表</a>
+            <a href="#rent">租赁/归还</a>
+        </nav>
+    </div>
+</header>
+
+<!-- 主体内容 -->
+<main class="container">
+    <!-- 车辆列表区 -->
+    <section id="scooters" class="scooter-section">
+        <h2>可用车辆</h2>
+        <div class="scooter-grid" id="scooterGrid">
+            <!-- 车辆卡片由JS动态生成 -->
+        </div>
+    </section>
+
+    <!-- 租赁/归还区 -->
+    <section id="rent" class="rent-section">
+        <h2>租赁/归还</h2>
+        <div class="form-container">
+            <!-- 租赁表单 -->
+            <div class="form-box">
+                <h3>租赁车辆</h3>
+                <form id="rentForm">
+                    <label for="userName">姓名：</label>
+                    <input type="text" id="userName" required>
+                    <label for="scooterId">车辆ID：</label>
+                    <input type="number" id="scooterId" required>
+                    <button type="submit">确认租赁</button>
+                </form>
+            </div>
+            <!-- 归还表单 -->
+            <div class="form-box">
+                <h3>归还车辆</h3>
+                <form id="returnForm">
+                    <label for="returnScooterId">车辆ID：</label>
+                    <input type="number" id="returnScooterId" required>
+                    <button type="submit">确认归还</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- 底部 -->
+<footer>
+    <div class="container">
+        <p>&copy; 2026 市中心电动滑板车租赁系统</p>
+    </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>
