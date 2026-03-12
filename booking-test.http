@@ -23,3 +23,17 @@ GET http://localhost:8080/api/bookings/user/1
 
 ### 4. 取消 1 号订单
 POST http://localhost:8080/api/bookings/cancel/1
+
+### 模拟支付部分 1. 先下一单 (此时状态会是 pending)
+
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scooterId": 1,
+  "totalCost": 20.00
+}
+
+### 2. 模拟支付 (订单 ID 假设是刚才产生的那个)
+POST http://localhost:8080/api/bookings/pay/1?cardNumber=1234567890

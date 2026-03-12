@@ -13,4 +13,6 @@ public interface BookingService {
     // F09: Cancel a booking 取消预订
     void cancelBooking(int bookingId);
 
+    void processPayment(int bookingId, String cardNumber);
+
 }

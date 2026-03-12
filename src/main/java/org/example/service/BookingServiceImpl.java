@@ -46,6 +46,34 @@ public class BookingServiceImpl implements BookingService {
         System.out.println("[Service] Successfully booked scooter #" + scooter.getId() + " for User #" + booking.getUserId());
     }
 
+    /**
+     * F06: Simulated Payment Process
+     * 模拟支付流程
+     */
+    @Override
+    @Transactional
+    public void processPayment(int bookingId, String cardNumber) {
+        // 1. 基本安检：卡号不能为空
+        if (cardNumber == null || cardNumber.trim().isEmpty()) {
+            throw new RuntimeException("Validation Failed: Please enter card number!");
+        }
+
+        // 2. 核心安检：先查查订单现在的状态
+        // English: Get current status from database
+        String currentStatus = bookingDAO.getBookingStatusById(bookingId);
+
+        // 3. 逻辑判断：只有 PENDING 的订单才能付钱
+        // 如果是 canceled 或者已经是 paid 了，都得拦住！
+        if (!"pending".equals(currentStatus)) {
+            throw new RuntimeException("Error: You can only pay for PENDING orders. Current status is: " + currentStatus);
+        }
+
+        // 4. 只有状态对，才更新为已支付
+        bookingDAO.updateBookingStatus(bookingId, "paid");
+
+        System.out.println("[Service] Payment processed for order #" + bookingId);
+    }
+
     @Override
     public List<Booking> getUserBookings(int userId) {
         return bookingDAO.getBookingsByUserId(userId);

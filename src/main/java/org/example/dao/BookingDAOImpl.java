@@ -37,6 +37,12 @@ public class BookingDAOImpl implements BookingDAO {
         System.out.println("[DAO] Booking ID " + bookingId + " status updated to: " + status);
     }
 
+    @Override
+    public String getBookingStatusById(int bookingId) {
+        String sql = "SELECT status FROM bookings WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, String.class, bookingId);
+    }
+
     // 小票装载
     private static class BookingRowMapper implements RowMapper<Booking> {
         @Override
