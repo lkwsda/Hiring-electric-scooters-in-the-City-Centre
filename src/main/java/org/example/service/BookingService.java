@@ -1,6 +1,8 @@
 package org.example.service;
 
 import org.example.model.Booking;
+import org.example.model.RevenueReport;
+
 import java.util.List;
 
 public interface BookingService {
@@ -14,5 +16,8 @@ public interface BookingService {
     void cancelBooking(int bookingId);
 
     void processPayment(int bookingId, String cardNumber);
+
+    // 审核
+    List<RevenueReport> getWeeklyRevenue();
 
 }

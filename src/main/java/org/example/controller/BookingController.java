@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Booking;
+import org.example.model.RevenueReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.example.service.BookingService;
@@ -42,5 +43,12 @@ public class BookingController {
     public String cancelBooking(@PathVariable int bookingId) {
         bookingService.cancelBooking(bookingId);
         return "Booking canceled successfully. The scooter is now available for others!";
+    }
+
+    // F19: 管理员查看周收入统计
+    // GET http://localhost:8080/api/bookings/admin/revenue
+    @GetMapping("/admin/revenue")
+    public List<RevenueReport> getWeeklyRevenue() {
+        return bookingService.getWeeklyRevenue();
     }
 }

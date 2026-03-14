@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.dao.BookingDAO;
 import org.example.dao.ScooterDAO;
 import org.example.model.Booking;
+import org.example.model.RevenueReport;
 import org.example.model.Scooter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // 2. 核心安检：先查查订单现在的状态
-        // English: Get current status from database
+        // Get current status from database
         String currentStatus = bookingDAO.getBookingStatusById(bookingId);
 
         // 3. 逻辑判断：只有 PENDING 的订单才能付钱
@@ -107,5 +108,11 @@ public class BookingServiceImpl implements BookingService {
         scooterDAO.updateScooterStatus(scooterId, "available");
 
         System.out.println("[Service] Order #" + bookingId + " canceled. Scooter #" + scooterId + " is released.");
+    }
+
+    @Override
+    public List<RevenueReport> getWeeklyRevenue() {
+        System.out.println("[Service] Generating weekly revenue report for Admin...");
+        return bookingDAO.getWeeklyRevenueReport();
     }
 }

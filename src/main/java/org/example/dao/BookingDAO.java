@@ -1,6 +1,8 @@
 package org.example.dao;
 
 import org.example.model.Booking;
+import org.example.model.RevenueReport;
+
 import java.util.List;
 
 public interface BookingDAO {
@@ -15,4 +17,6 @@ public interface BookingDAO {
 
     // Update booking status 改变预订状态，比如把“已支付”改成“已取消”
     void updateBookingStatus(int bookingId, String status);
+
+    java.util.List<RevenueReport> getWeeklyRevenueReport();
 }

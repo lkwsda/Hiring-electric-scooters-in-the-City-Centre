@@ -37,3 +37,8 @@ Content-Type: application/json
 
 ### 2. 模拟支付 (订单 ID 假设是刚才产生的那个)
 POST http://localhost:8080/api/bookings/pay/1?cardNumber=1234567890
+
+
+### F19: 管理员查看周收入统计 (Admin Revenue Stats)
+### 只有在至少有一单是 'paid' 状态且在 7 天内时，这里才会有数据哦！
+GET http://localhost:8080/api/bookings/admin/revenue

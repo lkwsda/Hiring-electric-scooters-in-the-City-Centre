@@ -1,6 +1,7 @@
 package org.example.dao;
 
 import org.example.model.Booking;
+import org.example.model.RevenueReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -41,6 +42,30 @@ public class BookingDAOImpl implements BookingDAO {
     public String getBookingStatusById(int bookingId) {
         String sql = "SELECT status FROM bookings WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, String.class, bookingId);
+    }
+
+    @Override
+    public List<RevenueReport> getWeeklyRevenueReport() {
+        // SQL to sum price and count orders, grouped by package type for the last 7 days.
+        // 只统计状态为 'paid' (已支付) 的，且是最近 7 天的记录。
+        String sql = "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
+                "FROM bookings b " +
+                "JOIN scooters s ON b.scooter_id = s.id " +
+                "JOIN packages p ON s.model = p.package_type " + // 简化逻辑：这里假设按型号对应套餐
+                "WHERE b.status = 'paid' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                "GROUP BY p.package_type";
+
+        // 现在的数据库表关联比较简化，这里是一个最通用的演示 SQL：
+        String simpleSql = "SELECT '1 Hour' as package_type, COUNT(*) as order_count, SUM(total_cost) as revenue " +
+                "FROM bookings WHERE status = 'paid' AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+
+        return jdbcTemplate.query(simpleSql, (rs, rowNum) -> {
+            RevenueReport report = new RevenueReport();
+            report.setPackageType(rs.getString("package_type"));
+            report.setTotalOrders(rs.getInt("order_count"));
+            report.setTotalRevenue(rs.getBigDecimal("revenue"));
+            return report;
+        });
     }
 
     // 小票装载
