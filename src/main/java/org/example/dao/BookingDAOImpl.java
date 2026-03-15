@@ -51,11 +51,11 @@ public class BookingDAOImpl implements BookingDAO {
         String sql = "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
                 "FROM bookings b " +
                 "JOIN scooters s ON b.scooter_id = s.id " +
-                "JOIN packages p ON s.model = p.package_type " + // 简化逻辑：这里假设按型号对应套餐
+                "JOIN packages p ON s.model = p.package_type " + // 假设按型号对应套餐
                 "WHERE b.status = 'paid' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
                 "GROUP BY p.package_type";
 
-        // 现在的数据库表关联比较简化，这里是一个最通用的演示 SQL：
+        // 目前数据库表关联很简单，演示 SQL如下
         String simpleSql = "SELECT '1 Hour' as package_type, COUNT(*) as order_count, SUM(total_cost) as revenue " +
                 "FROM bookings WHERE status = 'paid' AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 
