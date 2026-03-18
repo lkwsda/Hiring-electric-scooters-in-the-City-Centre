@@ -14,46 +14,167 @@
     <div class="container">
         <h1><i class="fa-solid fa-scooter"></i> E-Scooter Rental</h1>
         <nav>
-            <a href="#scooters"><i class="fa-solid fa-list"></i> Available Scooters</a>
-            <a href="#rent"><i class="fa-solid fa-handshake"></i> Rent/Return</a>
+            <a href="#" id="homeLink"><i class="fa-solid fa-home"></i> Home</a>
+            <a href="#" id="scootersLink"><i class="fa-solid fa-list"></i> Available Scooters</a>
+            <a href="#" id="rentLink"><i class="fa-solid fa-handshake"></i> Rent</a>
+            <a href="#" id="myBookingsLink"><i class="fa-solid fa-calendar-check"></i> My Bookings</a>
+            <a href="#" id="adminLink"><i class="fa-solid fa-cog"></i> Admin</a>
+            <a href="#" id="loginLink"><i class="fa-solid fa-sign-in-alt"></i> Login</a>
+            <a href="#" id="logoutLink" style="display:none;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
         </nav>
     </div>
 </header>
 
 <!-- 主体内容 -->
 <main class="container">
-    <!-- 车辆列表区 -->
-    <section id="scooters" class="scooter-section">
+    <!-- 登录/注册 -->
+    <section id="authSection" class="auth-section">
+        <h2><i class="fa-solid fa-user"></i> Login / Register</h2>
+        <div class="form-container">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-sign-in-alt"></i> Login</h3>
+                <form id="loginForm">
+                    <label for="loginAccount">Account (Phone/Email):</label>
+                    <input type="text" id="loginAccount" placeholder="Enter phone or email" required>
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
+                </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-user-plus"></i> Register</h3>
+                <form id="registerForm">
+                    <label for="registerAccount">Account (Phone/Email):</label>
+                    <input type="text" id="registerAccount" placeholder="Enter phone or email" required>
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" placeholder="Enter password" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Register</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 首页套餐 -->
+    <section id="homeSection" class="home-section">
+        <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
+        <div class="package-grid" id="packageGrid">
+            <!-- 套餐JS -->
+        </div>
+    </section>
+
+    <!-- 车辆列表 -->
+    <section id="scootersSection" class="scooter-section">
         <h2><i class="fa-solid fa-motorcycle"></i> Available Scooters</h2>
         <div class="scooter-grid" id="scooterGrid">
             <!-- 车辆卡片JS -->
         </div>
     </section>
 
-    <!-- 租赁/归还区 -->
-    <section id="rent" class="rent-section">
-        <h2><i class="fa-solid fa-right-left"></i> Rent & Return</h2>
+    <!-- 租赁 -->
+    <section id="rentSection" class="rent-section">
+        <h2><i class="fa-solid fa-right-left"></i> Rent a Scooter</h2>
         <div class="form-container">
-            <!-- 租赁表单 -->
             <div class="form-box">
-                <h3><i class="fa-solid fa-arrow-right"></i> Rent a Scooter</h3>
-                <form id="rentForm">
-                    <label for="userName">Your Name:</label>
-                    <input type="text" id="userName" placeholder="Enter your full name" required>
+                <h3><i class="fa-solid fa-arrow-right"></i> Book a Scooter</h3>
+                <form id="bookForm">
+                    <label for="packageSelect">Select Package:</label>
+                    <select id="packageSelect" required>
+                        <!-- 套餐选项JS -->
+                    </select>
                     <label for="scooterId">Scooter ID:</label>
-                    <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1)" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Rental</button>
+                    <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1001)" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Submit Booking</button>
                 </form>
             </div>
-            <!-- 归还表单 -->
+        </div>
+    </section>
+
+    <!-- 支付 -->
+    <section id="paymentSection" class="payment-section">
+        <h2><i class="fa-solid fa-credit-card"></i> Payment</h2>
+        <div class="form-container">
             <div class="form-box">
-                <h3><i class="fa-solid fa-arrow-left"></i> Return a Scooter</h3>
-                <form id="returnForm">
-                    <label for="returnScooterId">Scooter ID:</label>
-                    <input type="number" id="returnScooterId" placeholder="Enter scooter ID (e.g. 1)" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Return</button>
+                <h3><i class="fa-solid fa-money-check"></i> Simulate Bank Card Payment</h3>
+                <p>Booking Details: <span id="bookingDetails"></span></p>
+                <form id="paymentForm">
+                    <label for="cardNumber">Bank Card Number:</label>
+                    <input type="text" id="cardNumber" placeholder="Enter card number" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Payment</button>
                 </form>
             </div>
+        </div>
+    </section>
+
+    <!-- 预订成功 -->
+    <section id="successSection" class="success-section">
+        <h2><i class="fa-solid fa-check-circle"></i> Booking Successful</h2>
+        <div id="confirmationDetails">
+            <!-- 确认信息JS -->
+        </div>
+        <button id="backToHome"><i class="fa-solid fa-home"></i> Back to Home</button>
+    </section>
+
+    <!-- 我的预订 -->
+    <section id="myBookingsSection" class="my-bookings-section">
+        <h2><i class="fa-solid fa-calendar-check"></i> My Bookings</h2>
+        <div class="booking-list" id="bookingList">
+            <!-- 预订列表JS -->
+        </div>
+    </section>
+
+    <!-- 管理员登录 -->
+    <section id="adminLoginSection" class="admin-login-section">
+        <h2><i class="fa-solid fa-cog"></i> Admin Login</h2>
+        <div class="form-container">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-sign-in-alt"></i> Admin Login</h3>
+                <form id="adminLoginForm">
+                    <label for="adminUsername">Username:</label>
+                    <input type="text" id="adminUsername" placeholder="Enter username" required>
+                    <label for="adminPassword">Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password" required>
+                    <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 管理员配置 -->
+    <section id="adminConfigSection" class="admin-config-section">
+        <h2><i class="fa-solid fa-cog"></i> Admin Configuration</h2>
+        <div class="form-container">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-motorcycle"></i> Scooter Information</h3>
+                <form id="scooterConfigForm">
+                    <label for="newScooterId">Scooter ID:</label>
+                    <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
+                    <label for="scooterStatus">Status:</label>
+                    <input type="text" id="scooterStatus" placeholder="e.g. normal/maintenance" required>
+                    <button type="submit"><i class="fa-solid fa-plus"></i> Add Scooter</button>
+                </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-tags"></i> Package Pricing</h3>
+                <form id="pricingConfigForm">
+                    <label for="price1h">1 Hour Price:</label>
+                    <input type="number" id="price1h" step="0.01" required>
+                    <label for="price4h">4 Hours Price:</label>
+                    <input type="number" id="price4h" step="0.01" required>
+                    <label for="price1d">1 Day Price:</label>
+                    <input type="number" id="price1d" step="0.01" required>
+                    <label for="price1w">1 Week Price:</label>
+                    <input type="number" id="price1w" step="0.01" required>
+                    <button type="submit"><i class="fa-solid fa-save"></i> Save and Sync</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 管理员统计 -->
+    <section id="adminStatsSection" class="admin-stats-section">
+        <h2><i class="fa-solid fa-chart-bar"></i> Weekly Revenue Stats</h2>
+        <div class="stats-table" id="statsTable">
+            <!-- 统计表格JS -->
         </div>
     </section>
 </main>

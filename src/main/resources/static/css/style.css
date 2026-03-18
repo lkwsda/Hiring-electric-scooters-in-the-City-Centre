@@ -62,7 +62,7 @@ header nav a i {
 }
 
 /* 通用区块样式 */
-.scooter-section, .rent-section {
+.scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
     background-color: white;
     padding: 30px;
     border-radius: 12px;
@@ -116,6 +116,32 @@ section h2 i {
 .status-rented {
     color: #e74c3c;
     font-weight: 600;
+}
+
+/* 套餐样式 */
+.package-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.package-card {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+.package-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.package-card h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
 }
 
 /* 表单样式 */
@@ -187,6 +213,50 @@ form button i {
     margin-right: 8px;
 }
 
+/* 预订列表样式 */
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-item {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+}
+
+.booking-item button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.booking-item button:hover {
+    background: #c0392b;
+}
+
+/* 统计表格样式 */
+.stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stats-table th, .stats-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.stats-table th {
+    background-color: #f8f9fa;
+}
+
 /* 底部样式 */
 footer {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
@@ -220,7 +290,13 @@ footer i {
     header nav a {
         margin: 0 10px;
     }
-    .scooter-section, .rent-section {
+    .scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
         padding: 20px;
+    }
+    .package-grid {
+        grid-template-columns: 1fr;
+    }
+    .booking-list {
+        gap: 10px;
     }
 }
