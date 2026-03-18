@@ -2,14 +2,14 @@
 let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
 let packages = JSON.parse(localStorage.getItem('packages')) || { '1h': 5, '4h': 15, '1d': 25, '1w': 100 };
 let scooters = JSON.parse(localStorage.getItem('scooters')) || [
-    { id: 1001, status: 'normal' },
-    { id: 1002, status: 'normal' },
-    { id: 1003, status: 'maintenance' },
-    { id: 1004, status: 'normal' },
-    { id: 1005, status: 'normal' },
-    { id: 1006, status: 'normal' },
-    { id: 1007, status: 'normal' },
-    { id: 1008, status: 'normal' }
+    { id: 1666, status: 'normal' },
+    { id: 1888, status: 'normal' },
+    { id: 1999, status: 'maintenance' },
+    { id: 1010, status: 'normal' },
+    { id: 2666, status: 'normal' },
+    { id: 2888, status: 'normal' },
+    { id: 2999, status: 'normal' },
+    { id: 3666, status: 'normal' }
 ];
 let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
 let currentUser = localStorage.getItem('currentUser') || null;
