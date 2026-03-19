@@ -21,7 +21,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void addUser(User user) {
         String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
-        // 老公你看，一行代码就搞定了，不用再写长长的 try-catch 啦！
+
         jdbcTemplate.update(sql, user.getUsername(), user.getEmail(), user.getPasswordHash());
         System.out.println("[Spring Boot] User added: " + user.getUsername());
     }
@@ -55,7 +55,29 @@ public class UserDAOImpl implements UserDAO {
         jdbcTemplate.update(sql, id);
     }
 
-    // “内部小助理”：负责把数据库里的菜装进 User 盒子
+    @Override
+    public boolean existsByUsername(String username) {
+        String sql = "SELECT count(*) FROM users WHERE username = ?";
+        // queryForObject returns a single value (返回一个计数值)
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        // SQL: Count how many users have this email
+        // SQL语句：数一数数据库里有几个人的邮箱是这个
+        String sql = "SELECT count(*) FROM users WHERE email = ?";
+
+        // Using jdbcTemplate to get the result
+        // 使用 jdbcTemplate 拿到那个计数值
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+
+        // Return true if count > 0 (如果数出来大于0，说明已经有人占用了)
+        return count != null && count > 0;
+    }
+
+    // 负责把数据库里的菜装进 User 盒子
     private static class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {

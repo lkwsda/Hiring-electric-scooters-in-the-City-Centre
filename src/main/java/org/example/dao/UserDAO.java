@@ -28,4 +28,10 @@ public interface UserDAO {
     // 5. Delete: Remove a user from the system
     // 【删】把这个用户从系统里抹掉（注销）
     void deleteUser(int id);
+
+    // Check if username already exists
+    // 检查用户名是否已存在
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }
