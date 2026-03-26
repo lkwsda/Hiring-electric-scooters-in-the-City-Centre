@@ -1,25 +1,30 @@
-# GitHub Wiki 文档编写规范 (V1.0)
+GitHub Wiki Documentation Specification (V1.0)
+1. Objective
+To standardize documentation collaboration for Sprint 1 and subsequent phases, ensuring that Wiki content is professional, consistent, and fully traceable.
 
-## 1. 目的
-规范 Sprint 1 及后续阶段的文档协作，确保 Wiki 内容专业、统一且可追溯。
+2. Directory Structure
+Home: Provides global navigation and a summary of documentation delivery status.
 
-## 2. 目录结构
-* **Home**: 全局导航与文档状态汇总。
-* **冲刺计划**: 记录需求（F01-F19）及验收标准。
-* **任务分配**: 明确各角色职责。
-* **详细跟踪**: 维护需求追踪表 (RTM)，关联代码文件。
-* **会议纪要**: 包含考勤的规划会与同步会记录。
+Sprint Plan: Records functional requirements (F01-F19) and their respective Acceptance Criteria.
 
-## 3. 编写标准
-* **Markdown**: 统一使用 Markdown 语法，标题层级分明。
-* **可追溯性**: 功能描述必须标注对应的功能 ID（如 F01）。
-* **更新频率**: 会议纪要需在 24 小时内上传。
+Task Allocation: Clarifies the specific roles and responsibilities of each team member.
 
-## 4. 角色职责
-* **文档负责人 (郑)**: 负责结构设计、成果整合及标准确立。
-* **SM (钟)**: 提供考勤数据及看板同步。
-* **开发/测试 (王/马/杨)**: 提供核心代码映射及测试脚本。
+Detailed Tracking: Maintains the Requirements Traceability Matrix (RTM) and associates functional IDs with specific code files.
 
----
-*修订日期：2026年3月1日*
-*负责人：郑（文档负责人）*
+Meeting Minutes: Includes records of Sprint Planning and Daily Stand-up meetings, including attendance logs.
+
+3. Writing Standards
+Markdown: Uniformly use Markdown syntax with clear heading hierarchies (e.g., #, ##).
+
+Traceability: All functional descriptions must be labeled with their corresponding Function ID (e.g., F01).
+
+Update Frequency: Meeting minutes must be uploaded to the Wiki within 24 hours after the meeting concludes.
+
+4. Roles and Responsibilities
+Documentation Lead (Zheng): Responsible for Wiki structure design, integration of team deliverables, and establishment of documentation standards.
+
+Scrum Master (Zhong): Responsible for providing attendance data and maintaining the GitHub Kanban board/Projects.
+
+Dev/Test (Wang, Ma, Yang): Responsible for providing core code mapping, implementation details, and automated test scripts.
+
+Revision Date: March 1, 2026 Person in Charge: Zheng Haowen (Documentation Lead)
