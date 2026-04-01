@@ -25,4 +25,9 @@ public class UserController {
         userService.registerUser(newUser);
         return "Registration Successful for user: " + newUser.getUsername();
     }
+
+    @PostMapping("/login")
+    public User login(@RequestParam String username, @RequestParam String password) {
+        return userService.login(username, password);
+    }
 }

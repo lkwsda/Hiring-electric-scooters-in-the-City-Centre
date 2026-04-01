@@ -14,14 +14,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void registerUser(User user) {
-        // --- 1. 格式校验 (Input Validation) ---
+        // 格式校验 (Input Validation)
 
         // 检查密码长度 (Password Length >= 8)
         if (user.getPasswordHash() == null || user.getPasswordHash().length() < 8) {
             throw new RuntimeException("Validation Failed: Password must be at least 8 characters long!");
         }
 
-        // --- 2. 数据库唯一性校验 (Uniqueness Validation) ---
+        // 数据库唯一性校验 (Uniqueness Validation)
 
         // 检查用户名重复 (Username Check)
         if (userDAO.existsByUsername(user.getUsername())) {
@@ -33,12 +33,27 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Validation Failed: Email [" + user.getEmail() + "] is already registered!");
         }
 
-        // --- 3. 校验通过，放行！ ---
+        // 校验通过
         userDAO.addUser(user);
     }
 
     @Override
     public List<User> getAllUsers() {
         return userDAO.getAllUsers();
+    }
+
+    @Override
+    public User login(String username, String password) {
+        // 去数据库里找这个名字的人
+        User user = userDAO.getUserByName(username);
+
+        // 验证：账号，密码
+        if (user != null && user.getPasswordHash().equals(password)) {
+            System.out.println("[Service] Login success! Role: " + user.getRole());
+            return user; // 验证成功，把整个用户信息（包含 role）发给前端
+        }
+
+        // 验证失败
+        throw new RuntimeException("Login Failed: Incorrect username or password!");
     }
 }

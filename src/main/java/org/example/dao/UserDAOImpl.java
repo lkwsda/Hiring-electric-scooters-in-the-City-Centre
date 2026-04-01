@@ -17,7 +17,7 @@ public class UserDAOImpl implements UserDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // 1. 【增】添加用户
+    //【增】添加用户
     @Override
     public void addUser(User user) {
         String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
@@ -26,7 +26,7 @@ public class UserDAOImpl implements UserDAO {
         System.out.println("[Spring Boot] User added: " + user.getUsername());
     }
 
-    // 2. 【查】通过 ID 找人
+    // 【查】通过 ID 找人
     @Override
     public User getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
@@ -34,21 +34,21 @@ public class UserDAOImpl implements UserDAO {
         return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
     }
 
-    // 3. 【查】拿所有人列表
+    // 【查】拿所有人列表
     @Override
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM users";
         return jdbcTemplate.query(sql, new UserRowMapper());
     }
 
-    // 4. 【改】
+    // 【改】
     @Override
     public void updateUser(User user) {
         String sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
         jdbcTemplate.update(sql, user.getUsername(), user.getEmail(), user.getId());
     }
 
-    // 5. 【删】
+    // 【删】
     @Override
     public void deleteUser(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
@@ -77,7 +77,18 @@ public class UserDAOImpl implements UserDAO {
         return count != null && count > 0;
     }
 
-    // 负责把数据库里的菜装进 User 盒子
+    @Override
+    public User getUserByName(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+
+        // 用 query 配合 RowMapper，如果找不到人，会返回一个空的列表，不会直接报错。
+        List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), username);
+
+        // 如果列表不为空，说明找到了，返回第一个人；否则返回 null
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    // 把数据库里的东西装进 User
     private static class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -86,7 +97,9 @@ public class UserDAOImpl implements UserDAO {
             user.setUsername(rs.getString("username"));
             user.setEmail(rs.getString("email"));
             user.setPasswordHash(rs.getString("password_hash"));
-            // 如果需要时间，也可以加：user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+            // 如果需要时间，用下面这个
+            // user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+            user.setRole(rs.getString("role"));
             return user;
         }
     }
