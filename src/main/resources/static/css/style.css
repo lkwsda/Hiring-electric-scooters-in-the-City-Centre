@@ -1,0 +1,302 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 头部样式 */
+header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+header h1 i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    transition: all 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+header nav a:hover {
+    color: #3498db;
+    background-color: rgba(255,255,255,0.1);
+}
+
+header nav a i {
+    margin-right: 5px;
+}
+
+/* 通用区块样式 */
+.scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    border-top: 4px solid #3498db;
+}
+
+section h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+section h2 i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+/* 车辆列表样式  */
+.scooter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.scooter-card {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.scooter-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.scooter-card h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.status-available {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-rented {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* 套餐样式 */
+.package-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.package-card {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+.package-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.package-card h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* 表单样式 */
+.form-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.form-box {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-top: 3px solid #2980b9;
+}
+
+.form-box h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.form-box h3 i {
+    margin-right: 8px;
+    color: #2980b9;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #444;
+}
+
+form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+form input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+form button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+}
+
+form button i {
+    margin-right: 8px;
+}
+
+/* 预订列表样式 */
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-item {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+}
+
+.booking-item button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.booking-item button:hover {
+    background: #c0392b;
+}
+
+/* 统计表格样式 */
+.stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stats-table th, .stats-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.stats-table th {
+    background-color: #f8f9fa;
+}
+
+/* 底部样式 */
+footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    text-align: center;
+    padding: 25px 0;
+    margin-top: 40px;
+    border-top: 3px solid #3498db;
+}
+
+footer p {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+footer i {
+    margin-right: 5px;
+    color: #3498db;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    header .container {
+        flex-direction: column;
+        text-align: center;
+    }
+    header nav {
+        margin-top: 15px;
+    }
+    header nav a {
+        margin: 0 10px;
+    }
+    .scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
+        padding: 20px;
+    }
+    .package-grid {
+        grid-template-columns: 1fr;
+    }
+    .booking-list {
+        gap: 10px;
+    }
+}
