@@ -1,8 +1,0 @@
-POST http://localhost:8080/api/users/register
-Content-Type: application/json
-
-{
-  "username": "Wang",
-  "email": "3213213@qq.com",
-  "passwordHash": "1238786765"
-}

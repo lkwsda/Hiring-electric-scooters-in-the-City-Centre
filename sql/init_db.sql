@@ -27,7 +27,7 @@ CREATE TABLE scooters (
     battery_level INT DEFAULT 100,             -- Battery 0-100 (电量)
     latitude DECIMAL(10, 8),                   -- GPS Latitude (纬度，用于地图显示)
     longitude DECIMAL(11, 8),                  -- GPS Longitude (经度)
-    status ENUM('available', 'in_use', 'charging', 'maintenance') DEFAULT 'available', -- Status (状态：可用、租用、充电、维修)
+    status ENUM('available', 'rented', 'maintenance') DEFAULT 'available', -- Status (状态：可用、租用、充电、维修)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

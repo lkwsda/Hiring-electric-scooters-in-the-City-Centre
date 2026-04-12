@@ -13,24 +13,27 @@ public class UserServiceImpl implements UserService {
     private UserDAO userDAO; // 经理指挥厨师
 
     @Override
-    public void registerUser(User user) {
-        // 格式校验 (Input Validation)
+    public void registerUser(User user,String confirmPassword) {
 
-        // 检查密码长度 (Password Length >= 8)
-        if (user.getPasswordHash() == null || user.getPasswordHash().length() < 8) {
-            throw new RuntimeException("Validation Failed: Password must be at least 8 characters long!");
+        // 密码长度校验 (F3 需求
+        if (user.getPasswordHash() == null || user.getPasswordHash().length() < 6) {
+            throw new RuntimeException("Validation Failed: Password must be at least 6 characters long");
         }
 
-        // 数据库唯一性校验 (Uniqueness Validation)
+        // 双重确认校验 Check if the two passwords provided match.
+        if (!user.getPasswordHash().equals(confirmPassword)) {
+            throw new RuntimeException("Validation Failed: Password and confirmation do not match");
+        }
+
 
         // 检查用户名重复 (Username Check)
         if (userDAO.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Validation Failed: Username [" + user.getUsername() + "] is already taken!");
+            throw new RuntimeException("Validation Failed: Username [" + user.getUsername() + "] is already taken");
         }
 
         // 检查邮箱重复 (Email Check)
         if (userDAO.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Validation Failed: Email [" + user.getEmail() + "] is already registered!");
+            throw new RuntimeException("Validation Failed: Email [" + user.getEmail() + "] is already registered");
         }
 
         // 校验通过

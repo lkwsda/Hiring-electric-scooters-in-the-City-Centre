@@ -21,8 +21,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody User newUser) {
-        userService.registerUser(newUser);
+    public String registerUser(@RequestBody User newUser, @RequestParam String confirmPassword) {
+        userService.registerUser(newUser, confirmPassword);
         return "Registration Successful for user: " + newUser.getUsername();
     }
 

@@ -1,0 +1,32 @@
+### 测试 A：密码太短 (应该报错)
+POST http://localhost:8080/api/users/register?confirmPassword=123
+Content-Type: application/json
+
+{
+  "username": "test_user",
+  "email": "test@test.com",
+  "passwordHash": "123"
+}
+
+### 测试 B：两次密码不一致 (应该报错)
+POST http://localhost:8080/api/users/register?confirmPassword=654321
+Content-Type: application/json
+
+{
+  "username": "test_user",
+  "email": "test@test.com",
+  "passwordHash": "123456"
+}
+
+### 测试 C：注册成功
+POST http://localhost:8080/api/users/register?confirmPassword=1238786765
+Content-Type: application/json
+
+{
+"username": "Wang",
+"email": "3213213@qq.com",
+"passwordHash": "1238786765"
+}
+
+### 测试 D：验证登录功能 (Login Verification)
+POST http://localhost:8080/api/users/login?username=Wang&password=1238786765
