@@ -23,6 +23,9 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private NotificationService notificationService; // ：呼叫邮差
+
     @Override
     @Transactional // 这是“事务”标签。意思是下面的动作要么全成功，要么全失败，不能只成功一半！
     public void placeBooking(Booking booking) {
@@ -76,23 +79,28 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void processPayment(int bookingId, String cardNumber) {
-        // 1. 基本安检：卡号不能为空
+        // 卡号不能为空
         if (cardNumber == null || cardNumber.trim().isEmpty()) {
             throw new RuntimeException("Validation Failed: Please enter card number!");
         }
 
-        // 2. 核心安检：先查查订单现在的状态
+        // 查查订单现在的状态
         // Get current status from database
         String currentStatus = bookingDAO.getBookingStatusById(bookingId);
 
-        // 3. 逻辑判断：只有 PENDING 的订单才能付钱
-        // 如果是 canceled 或者已经是 paid 了，都得拦住！
+        // 只有 PENDING 的订单才能付钱
+        // 如果是 canceled 或者已经是 paid 了的，不能继续
         if (!"pending".equals(currentStatus)) {
             throw new RuntimeException("Error: You can only pay for PENDING orders. Current status is: " + currentStatus);
         }
 
-        // 4. 只有状态对，才更新为已支付
+        // 状态对，才更新为已支付
         bookingDAO.updateBookingStatus(bookingId, "paid");
+
+        // F07 ：支付成功后，立刻发邮件
+        Booking paidBooking = bookingDAO.getBookingById(bookingId);
+        notificationService.sendBookingConfirmation(paidBooking);
+        System.out.println("[Service] Payment successful and confirmation email sent (simulated).");
 
         System.out.println("[Service] Payment processed for order #" + bookingId);
     }
@@ -163,4 +171,5 @@ public class BookingServiceImpl implements BookingService {
 
         System.out.println("[Service] F11: Booking #" + bookingId + " extended. New total: " + newTotal);
     }
+
 }

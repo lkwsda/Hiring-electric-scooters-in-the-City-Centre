@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.model.Booking;
 import org.example.model.RevenueReport;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public interface BookingService {
     // F09: Cancel a booking 取消预订
     void cancelBooking(int bookingId);
 
+    //f7
     void processPayment(int bookingId, String cardNumber);
 
     // 审核
