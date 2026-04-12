@@ -19,9 +19,26 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public void createBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (user_id, scooter_id, total_cost) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, booking.getUserId(), booking.getScooterId(), booking.getTotalCost());
-        System.out.println("[DAO] Booking record created for User ID: " + booking.getUserId());
+        String sql = "INSERT INTO bookings (user_id, scooter_id, total_cost, status) VALUES (?, ?, ?, ?)";
+
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        // 插入数据
+        jdbcTemplate.update(connection -> {
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, booking.getUserId());
+            ps.setInt(2, booking.getScooterId());
+            ps.setBigDecimal(3, booking.getTotalCost());
+            ps.setString(4, booking.getStatus());
+            return ps;
+        }, keyHolder);
+
+        // 把领回来的单号塞进 Booking 盒子里
+        if (keyHolder.getKey() != null) {
+            booking.setId(keyHolder.getKey().intValue());
+        }
+
+        System.out.println("[DAO] Generated Booking ID: " + booking.getId());
+
     }
 
     @Override

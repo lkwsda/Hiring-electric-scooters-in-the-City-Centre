@@ -16,9 +16,9 @@ public class BookingController {
 
     // 下单：POST http://localhost:8080/api/bookings/place
     @PostMapping("/place")
-    public String placeBooking(@RequestBody Booking booking) {
+    public Booking placeBooking(@RequestBody Booking booking) {
         bookingService.placeBooking(booking);
-        return "Booking placed successfully!";
+        return booking;
     }
 
     // 查看订单：GET http://localhost:8080/api/bookings/user/1

@@ -9,4 +9,4 @@ Content-Type: application/json
 }
 
 ### Step 2: 执行支付操作，触发邮件发送
-POST http://localhost:8080/api/bookings/pay/2?cardNumber=999988887777
+POST http://localhost:8080/api/bookings/pay/6?cardNumber=999988887777
