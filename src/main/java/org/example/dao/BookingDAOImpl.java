@@ -68,6 +68,13 @@ public class BookingDAOImpl implements BookingDAO {
         });
     }
 
+    @Override
+    public void updateEndTime(int bookingId, java.time.LocalDateTime endTime) {
+        // Update the end_time column in bookings table
+        String sql = "UPDATE bookings SET end_time = ? WHERE id = ?";
+        jdbcTemplate.update(sql, endTime, bookingId);
+    }
+
     // 小票装载
     private static class BookingRowMapper implements RowMapper<Booking> {
         @Override

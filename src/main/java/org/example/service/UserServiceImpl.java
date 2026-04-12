@@ -47,7 +47,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
-        // 去数据库里找这个名字的人
         User user = userDAO.getUserByName(username);
 
         // 验证：账号，密码

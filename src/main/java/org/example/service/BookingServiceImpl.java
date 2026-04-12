@@ -38,13 +38,35 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // 逻辑通过，创建订单
+        booking.setStatus("pending");
         bookingDAO.createBooking(booking);
 
-        // 关键动作：把车子锁起来，状态改成 'in_use'
-        scooter.setStatus("in_use");
-        scooterDAO.updateScooter(scooter);
+        // F10
+        scooterDAO.updateScooterStatus(scooter.getId(), "rented");
 
-        System.out.println("[Service] Successfully booked scooter #" + scooter.getId() + " for User #" + booking.getUserId());
+
+        System.out.println("[Service] F10 Sync: Scooter #" + scooter.getId() + " status is now RENTED.");
+    }
+
+    // f10结束订单
+    @Override
+    @Transactional
+    public void endTrip(int bookingId) {
+        // 找到订单关联的车 ID
+        String findScooterSql = "SELECT scooter_id FROM bookings WHERE id = ?";
+        Integer scooterId = jdbcTemplate.queryForObject(findScooterSql, Integer.class, bookingId);
+
+        if (scooterId == null) {
+            throw new RuntimeException("Error: Trip not found!");
+        }
+
+        // 结束时把车变回 'available'
+        scooterDAO.updateScooterStatus(scooterId, "available");
+
+        // 记录结束时间
+        bookingDAO.updateEndTime(bookingId, java.time.LocalDateTime.now());
+
+        System.out.println("[Service] F10 Sync: Trip #" + bookingId + " ended. Scooter #" + scooterId + " is now AVAILABLE.");
     }
 
     /**

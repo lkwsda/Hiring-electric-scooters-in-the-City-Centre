@@ -51,4 +51,11 @@ public class BookingController {
     public List<RevenueReport> getWeeklyRevenue() {
         return bookingService.getWeeklyRevenue();
     }
+
+    // F10: 结束行程 http://localhost:8080/api/bookings/end/1
+    @PostMapping("/end/{bookingId}")
+    public String endTrip(@PathVariable int bookingId) {
+        bookingService.endTrip(bookingId);
+        return "Trip ended successfully! Scooter is now back in the garage.";
+    }
 }

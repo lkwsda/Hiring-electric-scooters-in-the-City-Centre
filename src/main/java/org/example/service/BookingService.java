@@ -8,7 +8,6 @@ import java.util.List;
 public interface BookingService {
     // F05: Place a new booking 下单预订
     void placeBooking(Booking booking);
-
     // F08: Get all bookings for a specific user 查看用户的预订历史
     List<Booking> getUserBookings(int userId);
 
@@ -19,5 +18,8 @@ public interface BookingService {
 
     // 审核
     List<RevenueReport> getWeeklyRevenue();
+
+    // F10: End a trip 结束行程
+    void endTrip(int bookingId);
 
 }

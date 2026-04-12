@@ -19,4 +19,6 @@ public interface BookingDAO {
     void updateBookingStatus(int bookingId, String status);
 
     java.util.List<RevenueReport> getWeeklyRevenueReport();
+
+    void updateEndTime(int bookingId, java.time.LocalDateTime endTime);
 }
