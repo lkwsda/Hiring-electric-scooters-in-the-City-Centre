@@ -137,4 +137,30 @@ public class BookingServiceImpl implements BookingService {
         System.out.println("[Service] Generating weekly revenue report for Admin...");
         return bookingDAO.getWeeklyRevenueReport();
     }
+
+    // f11 延长订单
+    @Override
+    @Transactional
+    public void extendBooking(int bookingId, java.math.BigDecimal extraCost) {
+        // 翻出旧账单
+        Booking oldBooking = bookingDAO.getBookingById(bookingId);
+
+        if (oldBooking == null) {
+            throw new RuntimeException("Error: Booking not found!");
+        }
+
+        // 已经付过钱（paid）的订单才能延长
+        if (!"paid".equals(oldBooking.getStatus())) {
+            throw new RuntimeException("Error: Only ACTIVE (paid) bookings can be extended!");
+        }
+
+        // 计算新总价：旧价格 + 额外价格
+        // Calculate new total cost using BigDecimal.add()
+        java.math.BigDecimal newTotal = oldBooking.getTotalCost().add(extraCost);
+
+        // 更新数据库
+        bookingDAO.updateBookingCost(bookingId, newTotal);
+
+        System.out.println("[Service] F11: Booking #" + bookingId + " extended. New total: " + newTotal);
+    }
 }

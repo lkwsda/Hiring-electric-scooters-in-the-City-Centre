@@ -20,5 +20,12 @@ public interface BookingDAO {
 
     java.util.List<RevenueReport> getWeeklyRevenueReport();
 
+    // F10
     void updateEndTime(int bookingId, java.time.LocalDateTime endTime);
+
+    //f11
+    // 更新已有订单的总费用
+    void updateBookingCost(int bookingId, java.math.BigDecimal newTotal);
+    //查询单个订单
+    org.example.model.Booking getBookingById(int bookingId);
 }

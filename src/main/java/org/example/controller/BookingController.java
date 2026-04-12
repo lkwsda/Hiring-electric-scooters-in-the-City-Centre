@@ -58,4 +58,11 @@ public class BookingController {
         bookingService.endTrip(bookingId);
         return "Trip ended successfully! Scooter is now back in the garage.";
     }
+
+    //F11: Extend duration
+    @PostMapping("/extend/{bookingId}")
+    public String extendBooking(@PathVariable int bookingId, @RequestParam java.math.BigDecimal extraCost) {
+        bookingService.extendBooking(bookingId, extraCost);
+        return "Booking extended! Additional cost added: " + extraCost;
+    }
 }

@@ -22,4 +22,7 @@ public interface BookingService {
     // F10: End a trip 结束行程
     void endTrip(int bookingId);
 
+    // f11 延长订单
+    void extendBooking(int bookingId, java.math.BigDecimal extraCost);
+
 }

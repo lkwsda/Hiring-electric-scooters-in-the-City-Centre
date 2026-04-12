@@ -75,6 +75,18 @@ public class BookingDAOImpl implements BookingDAO {
         jdbcTemplate.update(sql, endTime, bookingId);
     }
 
+    @Override
+    public void updateBookingCost(int bookingId, java.math.BigDecimal newTotal) {
+        String sql = "UPDATE bookings SET total_cost = ? WHERE id = ?";
+        jdbcTemplate.update(sql, newTotal, bookingId);
+    }
+
+    @Override
+    public org.example.model.Booking getBookingById(int bookingId) {
+        String sql = "SELECT * FROM bookings WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), bookingId);
+    }
+
     // 小票装载
     private static class BookingRowMapper implements RowMapper<Booking> {
         @Override
