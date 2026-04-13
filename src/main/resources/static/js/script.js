@@ -267,6 +267,41 @@ function endRental(bookingId) {
     renderScooters();
 }
 
+// Rent scooter
+function rentScooter(scooterId) {
+    if (!currentUser) {
+        alert('Please login first!');
+        showSection('authSection');
+        return;
+    }
+    const scooter = scooters.find(s => s.id === scooterId);
+    if (!scooter || scooter.status !== 'normal') {
+        alert('Scooter not available!');
+        return;
+    }
+    // Create rental booking
+    const booking = {
+        id: Date.now(),
+        user: currentUser,
+        scooterId: scooterId,
+        package: 'hourly', // Default package, can be changed later
+        startTime: new Date().toISOString(),
+        endTime: null,
+        status: 'active',
+        cost: 0
+    };
+    bookings.push(booking);
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+    // Update scooter status
+    scooter.status = 'in_use';
+    localStorage.setItem('scooters', JSON.stringify(scooters));
+    alert('Scooter rented successfully!');
+    renderScooters();
+    updateHomeStats(); // Update stats after rental
+    // Optionally show my bookings
+    showSection('myBookingsSection');
+}
+
 // Admin login
 document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
     e.preventDefault();
