@@ -60,9 +60,81 @@
 
     <!-- 首页套餐 -->
     <section id="homeSection" class="home-section">
-        <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
-        <div class="package-grid" id="packageGrid">
-            <!-- 套餐JS -->
+        <!-- 欢迎横幅 -->
+        <div class="welcome-banner">
+            <h1><i class="fa-solid fa-bolt"></i> Welcome to E-Scooter Rental</h1>
+            <p>Experience the future of urban mobility with our electric scooters. Fast, eco-friendly, and convenient transportation at your fingertips.</p>
+            <div class="banner-stats">
+                <div class="stat-item">
+                    <i class="fa-solid fa-motorcycle"></i>
+                    <span id="availableScooters">8</span>
+                    <small>Available Scooters</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span id="activeUsers">0</span>
+                    <small>Active Users</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-route"></i>
+                    <span id="totalRides">0</span>
+                    <small>Total Rides</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="quick-actions">
+            <h2><i class="fa-solid fa-rocket"></i> Quick Actions</h2>
+            <div class="action-buttons">
+                <button onclick="showSection('scootersSection')" class="action-btn primary">
+                    <i class="fa-solid fa-motorcycle"></i>
+                    <span>Browse Scooters</span>
+                </button>
+                <button onclick="showSection('rentSection')" class="action-btn secondary">
+                    <i class="fa-solid fa-handshake"></i>
+                    <span>Rent Now</span>
+                </button>
+                <button onclick="showSection('myBookingsSection')" class="action-btn tertiary">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>My Bookings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 特色功能 -->
+        <div class="features">
+            <h2><i class="fa-solid fa-star"></i> Why Choose Us?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Electric & Eco-Friendly</h3>
+                    <p>Zero emissions, silent operation, and sustainable transportation for the city.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-clock"></i>
+                    <h3>24/7 Availability</h3>
+                    <p>Rent anytime, anywhere in the city center with our extensive network.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-shield-alt"></i>
+                    <h3>Safe & Secure</h3>
+                    <p>GPS tracking, secure payments, and verified user accounts for peace of mind.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h3>Affordable Pricing</h3>
+                    <p>Flexible packages starting from just $5 per hour. No hidden fees.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 套餐展示 -->
+        <div class="packages-section">
+            <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
+            <div class="package-grid" id="packageGrid">
+                <!-- 套餐JS -->
+            </div>
         </div>
     </section>
 

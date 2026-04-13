@@ -24,6 +24,7 @@ function showSection(sectionId) {
     });
     if (sectionId === 'homeSection') {
         renderPackages();
+        updateHomeStats();
     } else if (sectionId === 'scootersSection') {
         renderScooters();
     } else if (sectionId === 'myBookingsSection') {
@@ -59,6 +60,21 @@ function renderPackages() {
         `;
         grid.appendChild(card);
     });
+}
+
+// Update home statistics
+function updateHomeStats() {
+    // Available scooters count
+    const availableScooters = scooters.filter(s => s.status === 'normal').length;
+    document.getElementById('availableScooters').textContent = availableScooters;
+
+    // Active users count (users with active bookings)
+    const activeUsers = new Set(bookings.filter(b => b.status === 'active').map(b => b.user)).size;
+    document.getElementById('activeUsers').textContent = activeUsers;
+
+    // Total rides count (completed bookings)
+    const totalRides = bookings.filter(b => b.status === 'completed').length;
+    document.getElementById('totalRides').textContent = totalRides;
 }
 
 // Render scooters

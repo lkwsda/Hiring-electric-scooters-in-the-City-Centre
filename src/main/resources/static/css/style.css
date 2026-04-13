@@ -149,30 +149,196 @@ section h2 i {
     background: #c0392b;
 }
 
-/* 套餐样式 */
-.package-grid {
+/* 首页样式 */
+.welcome-banner {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.welcome-banner h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.welcome-banner h1 i {
+    color: #ffd700;
+    margin-right: 10px;
+}
+
+.welcome-banner p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.banner-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    min-width: 120px;
+}
+
+.stat-item i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #ffd700;
+}
+
+.stat-item span {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-item small {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 快速操作 */
+.quick-actions {
+    margin-bottom: 40px;
+}
+
+.quick-actions h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.action-btn i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+}
+
+.action-btn.secondary {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+}
+
+.action-btn.secondary:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+}
+
+.action-btn.tertiary {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: white;
+}
+
+.action-btn.tertiary:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(230, 126, 34, 0.3);
+}
+
+/* 特色功能 */
+.features {
+    margin-bottom: 40px;
+}
+
+.features h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 25px;
 }
 
-.package-card {
-    background-color: #f8f9fa;
-    padding: 25px;
-    border-radius: 10px;
-    border-left: 4px solid #3498db;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.feature-card {
+    background: white;
+    padding: 30px 25px;
+    border-radius: 12px;
     text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-top: 4px solid #3498db;
 }
 
-.package-card:hover {
+.feature-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-.package-card h3 {
+.feature-card i {
+    font-size: 3rem;
+    color: #3498db;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
     color: #2c3e50;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.feature-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* 套餐区域 */
+.packages-section {
+    margin-top: 40px;
+}
+
+.packages-section h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
 }
 
 /* 表单样式 */
@@ -321,6 +487,38 @@ footer i {
     header nav a {
         margin: 0 10px;
     }
+
+    .welcome-banner h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-banner p {
+        font-size: 1rem;
+    }
+
+    .banner-stats {
+        gap: 20px;
+    }
+
+    .stat-item {
+        padding: 15px;
+        min-width: 100px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
     .scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
         padding: 20px;
     }
