@@ -2,14 +2,14 @@
 let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
 let packages = JSON.parse(localStorage.getItem('packages')) || { '1h': 5, '4h': 15, '1d': 25, '1w': 100 };
 let scooters = JSON.parse(localStorage.getItem('scooters')) || [
-    { id: 1666, status: 'normal' },
-    { id: 1888, status: 'normal' },
-    { id: 1999, status: 'maintenance' },
-    { id: 1010, status: 'normal' },
-    { id: 2666, status: 'normal' },
-    { id: 2888, status: 'normal' },
-    { id: 2999, status: 'normal' },
-    { id: 3666, status: 'normal' }
+    { id: 1666, status: 'normal', model: 'EcoRide X1', battery: 85, location: 'Downtown Plaza' },
+    { id: 1888, status: 'normal', model: 'EcoRide X2', battery: 92, location: 'Central Park' },
+    { id: 1999, status: 'maintenance', model: 'EcoRide X1', battery: 45, location: 'Main Street' },
+    { id: 1010, status: 'normal', model: 'EcoRide X3', battery: 78, location: 'City Hall' },
+    { id: 2666, status: 'normal', model: 'EcoRide X2', battery: 88, location: 'Shopping Mall' },
+    { id: 2888, status: 'normal', model: 'EcoRide X1', battery: 95, location: 'Train Station' },
+    { id: 2999, status: 'normal', model: 'EcoRide X3', battery: 67, location: 'University' },
+    { id: 3666, status: 'normal', model: 'EcoRide X2', battery: 73, location: 'Hospital' }
 ];
 let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
 let currentUser = localStorage.getItem('currentUser') || null;
@@ -66,13 +66,19 @@ function renderScooters() {
     const grid = document.getElementById('scooterGrid');
     grid.innerHTML = '';
     scooters.forEach(scooter => {
-        const card = document.createElement('div');
-        card.className = 'scooter-card';
-        card.innerHTML = `
-            <h3>Scooter ID: ${scooter.id}</h3>
-            <p>Status: <span class="${scooter.status === 'normal' ? 'status-available' : 'status-rented'}">${scooter.status}</span></p>
-        `;
-        grid.appendChild(card);
+        if (scooter.status === 'normal') {
+            const card = document.createElement('div');
+            card.className = 'scooter-card';
+            card.innerHTML = `
+                <h3>Scooter ID: ${scooter.id}</h3>
+                <p>Model: ${scooter.model || 'Standard Model'}</p>
+                <p>Battery: ${scooter.battery || '80'}%</p>
+                <p>Location: ${scooter.location || 'Downtown Plaza'}</p>
+                <p>Status: <span class="status-available">Available</span></p>
+                <button onclick="rentScooter(${scooter.id})" class="rent-btn"><i class="fa-solid fa-handshake"></i> Rent</button>
+            `;
+            grid.appendChild(card);
+        }
     });
 }
 
@@ -80,17 +86,24 @@ function renderScooters() {
 function renderBookings() {
     const list = document.getElementById('bookingList');
     list.innerHTML = '';
-    const userBookings = bookings.filter(b => b.user === currentUser && b.status !== 'cancelled');
+    const userBookings = bookings.filter(b => b.user === currentUser).sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
     userBookings.forEach(booking => {
         const item = document.createElement('div');
         item.className = 'booking-item';
+        const startTime = new Date(booking.startTime).toLocaleString();
+        const endTime = booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing';
+        const cost = booking.cost ? `$${booking.cost.toFixed(2)}` : 'Calculating...';
+        let buttonHtml = '';
+        if (booking.status === 'active') {
+            buttonHtml = `<button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop"></i> End Rental</button>`;
+        }
         item.innerHTML = `
-            <p>User: ${booking.user}</p>
             <p>Scooter ID: ${booking.scooterId}</p>
-            <p>Package: ${booking.package}</p>
-            <p>Time: ${booking.time}</p>
+            <p>Start Time: ${startTime}</p>
+            <p>End Time: ${endTime}</p>
+            <p>Cost: ${cost}</p>
             <p>Status: ${booking.status}</p>
-            <button onclick="cancelBooking(${booking.id})">Cancel Booking</button>
+            ${buttonHtml}
         `;
         list.appendChild(item);
     });
@@ -121,17 +134,17 @@ function renderStats() {
 // Login form
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const account = document.getElementById('loginAccount').value.trim();
+    const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
-    const user = accounts.find(a => a.account === account && a.password === password);
+    const user = accounts.find(a => a.email === email && a.password === password);
     if (user) {
-        currentUser = account;
+        currentUser = email;
         localStorage.setItem('currentUser', currentUser);
         updateNav();
         showSection('homeSection');
         alert('Login successful!');
     } else {
-        alert('Invalid account or password!');
+        alert('Invalid email or password!');
     }
     this.reset();
 });
@@ -139,13 +152,20 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 // Register form
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const account = document.getElementById('registerAccount').value.trim();
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value.trim();
-    if (accounts.find(a => a.account === account)) {
-        alert('Account already exists!');
+    const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
         return;
     }
-    accounts.push({ account, password });
+    if (accounts.find(a => a.email === email)) {
+        alert('Email already exists!');
+        return;
+    }
+    accounts.push({ username, email, password });
     localStorage.setItem('accounts', JSON.stringify(accounts));
     alert('Registration successful! Please login.');
     this.reset();
@@ -205,14 +225,30 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     this.reset();
 });
 
-// Cancel booking
-function cancelBooking(id) {
-    if (confirm('Are you sure to cancel this booking?')) {
-        const booking = bookings.find(b => b.id === id);
-        booking.status = 'cancelled';
-        localStorage.setItem('bookings', JSON.stringify(bookings));
-        renderBookings();
+// End rental
+function endRental(bookingId) {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking || booking.status !== 'active') {
+        alert('Rental not found or already ended!');
+        return;
     }
+    const endTime = new Date();
+    const startTime = new Date(booking.startTime);
+    const durationHours = (endTime - startTime) / (1000 * 60 * 60);
+    const cost = Math.ceil(durationHours) * 5; // Fixed rate of $5 per hour
+    booking.endTime = endTime.toISOString();
+    booking.status = 'completed';
+    booking.cost = cost;
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+    // Update scooter status
+    const scooter = scooters.find(s => s.id === booking.scooterId);
+    if (scooter) {
+        scooter.status = 'normal';
+        localStorage.setItem('scooters', JSON.stringify(scooters));
+    }
+    alert(`Rental ended! Total cost: $${cost.toFixed(2)}`);
+    renderBookings();
+    renderScooters();
 }
 
 // Admin login
