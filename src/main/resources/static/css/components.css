@@ -1,0 +1,223 @@
+/* 通用组件样式 */
+
+/* 通用区块样式 */
+.scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section, .scooter-detail-section, .return-section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    border-top: 4px solid #3498db;
+}
+
+section h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+section h2 i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+/* 车辆列表样式 */
+.scooter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.scooter-card {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 220px;
+}
+
+.scooter-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.scooter-media {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+}
+
+.scooter-media img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    height: 180px;
+}
+
+.battery-bar {
+    width: 100%;
+    background: #e8f3ff;
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.battery-fill {
+    height: 100%;
+    border-radius: 10px;
+    min-width: 4px;
+}
+
+.battery-fill.battery-good {
+    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.battery-fill.battery-medium {
+    background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
+}
+
+.battery-fill.battery-low {
+    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.card-actions button {
+    flex: 1 1 calc(50% - 10px);
+}
+
+.view-detail-btn,
+.rent-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.view-detail-btn {
+    background: #3498db;
+    color: white;
+}
+
+.view-detail-btn:hover {
+    background: #2980b9;
+}
+
+.rent-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+}
+
+.rent-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+}
+
+.no-scooters-message {
+    grid-column: 1 / -1;
+    background: #f0f4f8;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    color: #33475b;
+    border: 1px dashed #a3bad9;
+}
+
+.status-available {
+    color: #27ae60;
+    font-weight: 700;
+}
+
+.status-rented {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+.status-maintenance {
+    color: #f39c12;
+    font-weight: 700;
+}
+
+.scooter-card-unavailable {
+    opacity: 0.92;
+    border-left-color: #e74c3c;
+    background: #fff5f5;
+}
+
+.rent-btn.disabled,
+.rent-btn[disabled] {
+    background: #bdc3c7;
+    color: #fff;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.battery-level {
+    font-weight: 600;
+    background: #f4f6f8;
+    display: inline-block;
+    padding: 0 8px;
+    border-radius: 8px;
+    color: #444;
+}
+
+.battery-label {
+    margin-top: 10px;
+}
+
+.battery-text.battery-good {
+    color: #219150;
+}
+
+.battery-text.battery-medium {
+    color: #b37a04;
+}
+
+.battery-text.battery-low {
+    color: #c0392b;
+}
+
+.end-rental-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.end-rental-btn:hover {
+    background: #c0392b;
+}
+
+.extend-rental-btn {
+    background: #f39c12;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.extend-rental-btn:hover {
+    background: #e67e22;
+}

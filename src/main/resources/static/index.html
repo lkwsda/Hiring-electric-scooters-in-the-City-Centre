@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Downtown E-Scooter Rental System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/pages.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
     <!-- 字体图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -24,7 +30,6 @@
         </nav>
     </div>
 </header>
-
 <!-- 主体内容 -->
 <main class="container">
     <!-- 登录/注册 -->
@@ -94,7 +99,7 @@
     <!-- 首页套餐 -->
     <section id="homeSection" class="home-section">
         <!-- 欢迎横幅 -->
-        <div class="welcome-banner">
+        <div class="welcome-banner animate-on-scroll">
             <h1><i class="fa-solid fa-bolt"></i> Welcome to E-Scooter Rental</h1>
             <p>Experience the future of urban mobility with our electric scooters. Fast, eco-friendly, and convenient transportation at your fingertips.</p>
             <div class="banner-stats">
@@ -113,11 +118,26 @@
                     <span id="totalRides">0</span>
                     <small>Total Rides</small>
                 </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-cogs"></i>
+                    <span id="homeTotalScooters">9</span>
+                    <small>Total Fleet</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-tools"></i>
+                    <span id="homeMaintenanceScooters">1</span>
+                    <small>In Service</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <span id="homeTotalRevenue">$0.00</span>
+                    <small>Total Revenue</small>
+                </div>
             </div>
         </div>
 
         <!-- 快速操作 -->
-        <div class="quick-actions">
+        <div class="quick-actions animate-on-scroll">
             <h2><i class="fa-solid fa-rocket"></i> Quick Actions</h2>
             <div class="action-buttons">
                 <button onclick="showSection('scootersSection')" class="action-btn primary">
@@ -136,7 +156,7 @@
         </div>
 
         <!-- 特色功能 -->
-        <div class="features">
+        <div class="features animate-on-scroll">
             <h2><i class="fa-solid fa-star"></i> Why Choose Us?</h2>
             <div class="features-grid">
                 <div class="feature-card">
@@ -173,54 +193,240 @@
 
     <!-- 车辆列表 -->
     <section id="scootersSection" class="scooter-section">
-        <h2><i class="fa-solid fa-motorcycle"></i> Available Scooters</h2>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-motorcycle"></i> Available Scooters</h2>
+            <p class="section-subtitle">Choose from our fleet of premium electric scooters</p>
+        </div>
+        <div class="section-stats">
+            <div class="stat-card">
+                <i class="fa-solid fa-bolt"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalScooters">9</span>
+                    <span class="stat-label">Total Scooters</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-check-circle"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="availableCount">8</span>
+                    <span class="stat-label">Available Now</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-tools"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="maintenanceCount">1</span>
+                    <span class="stat-label">In Maintenance</span>
+                </div>
+            </div>
+        </div>
         <div class="scooter-grid" id="scooterGrid">
             <!-- 车辆卡片JS -->
+        </div>
+        <div class="section-footer">
+            <div class="scooter-tips">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Tip: Green indicators show scooters with good battery levels. Check battery status before renting.</span>
+            </div>
         </div>
     </section>
 
     <!-- 租赁 -->
     <section id="rentSection" class="rent-section">
-        <h2><i class="fa-solid fa-right-left"></i> Rent a Scooter</h2>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-right-left"></i> Rent a Scooter</h2>
+            <p class="section-subtitle">Quick and easy scooter rental in just a few steps</p>
+        </div>
+
+        <div class="rental-process">
+            <div class="process-step active">
+                <div class="step-icon">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div class="step-content">
+                    <h4>Select Package</h4>
+                    <p>Choose your rental duration</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-icon">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+                <div class="step-content">
+                    <h4>Pick Scooter</h4>
+                    <p>Enter scooter ID or browse available ones</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-icon">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div class="step-content">
+                    <h4>Payment</h4>
+                    <p>Secure payment processing</p>
+                </div>
+            </div>
+            <div class="process-step">
+                <div class="step-icon">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div class="step-content">
+                    <h4>Unlock & Ride</h4>
+                    <p>Scan QR code and start your journey</p>
+                </div>
+            </div>
+        </div>
+
         <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-arrow-right"></i> Book a Scooter</h3>
+            <div class="form-box rental-form">
+                <div class="form-header">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <h3>Book a Scooter</h3>
+                </div>
                 <form id="bookForm">
-                    <label for="packageSelect">Select Package:</label>
-                    <select id="packageSelect" required>
-                        <!-- 套餐选项JS -->
-                    </select>
-                    <label for="scooterId">Scooter ID:</label>
-                    <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1001)" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Submit Booking</button>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packageSelect"><i class="fa-solid fa-clock"></i> Select Package:</label>
+                            <select id="packageSelect" required>
+                                <!-- 套餐选项JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scooterId"><i class="fa-solid fa-hashtag"></i> Scooter ID:</label>
+                            <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1001)" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="showSection('scootersSection')" class="btn-secondary">
+                            <i class="fa-solid fa-search"></i> Browse Scooters
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-check"></i> Submit Booking
+                        </button>
+                    </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="rental-info">
+            <div class="info-card">
+                <i class="fa-solid fa-info-circle"></i>
+                <div class="info-content">
+                    <h4>Need Help?</h4>
+                    <p>Don't know which scooter to choose? Browse our available scooters first to see locations and battery levels.</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- 我的预订 -->
     <section id="myBookingsSection" class="my-bookings-section">
-        <h2><i class="fa-solid fa-calendar-check"></i> My Rentals</h2>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-calendar-check"></i> My Rentals</h2>
+            <p class="section-subtitle">Manage your current and past scooter rentals</p>
+        </div>
+
+        <div class="booking-summary">
+            <div class="summary-card">
+                <i class="fa-solid fa-clock"></i>
+                <div class="summary-info">
+                    <span class="summary-number" id="activeBookings">0</span>
+                    <span class="summary-label">Active Rentals</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <i class="fa-solid fa-history"></i>
+                <div class="summary-info">
+                    <span class="summary-number" id="totalBookings">0</span>
+                    <span class="summary-label">Total Rentals</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <div class="summary-info">
+                    <span class="summary-number">$0</span>
+                    <span class="summary-label">Total Spent</span>
+                </div>
+            </div>
+        </div>
+
         <div class="booking-overview">
-            <p>View your current and past rentals here. You can extend or end active rentals directly from this page.</p>
+            <div class="overview-header">
+                <h3><i class="fa-solid fa-list"></i> Rental History</h3>
+                <p>View your current and past rentals here. You can extend or end active rentals directly from this page.</p>
+            </div>
             <div id="bookingList" class="booking-list">
                 <!-- 预订列表 JS -->
             </div>
-            <button onclick="showSection('homeSection')" class="btn-secondary"><i class="fa-solid fa-home"></i> Back to Home</button>
+            <div class="booking-actions">
+                <button onclick="showSection('scootersSection')" class="btn-secondary">
+                    <i class="fa-solid fa-plus"></i> Rent New Scooter
+                </button>
+                <button onclick="showSection('homeSection')" class="btn-primary">
+                    <i class="fa-solid fa-home"></i> Back to Home
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- 支付 -->
     <section id="paymentSection" class="payment-section">
-        <h2><i class="fa-solid fa-credit-card"></i> Payment</h2>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-credit-card"></i> Secure Payment</h2>
+            <p class="section-subtitle">Complete your booking with our secure payment system</p>
+        </div>
+
+        <div class="payment-summary">
+            <div class="booking-summary-card">
+                <div class="summary-header">
+                    <i class="fa-solid fa-receipt"></i>
+                    <h3>Booking Summary</h3>
+                </div>
+                <div class="summary-details">
+                    <p id="bookingDetails">Loading booking details...</p>
+                    <div class="payment-breakdown">
+                        <div class="breakdown-item">
+                            <span>Rental Cost</span>
+                            <span id="rentalCost">$0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Service Fee</span>
+                            <span>$0.50</span>
+                        </div>
+                        <div class="breakdown-item total">
+                            <span>Total Amount</span>
+                            <span id="totalAmount">$0.50</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-money-check"></i> Simulate Bank Card Payment</h3>
-                <p>Booking Details: <span id="bookingDetails"></span></p>
+            <div class="form-box payment-form">
+                <div class="form-header">
+                    <i class="fa-solid fa-shield-alt"></i>
+                    <h3>Payment Information</h3>
+                </div>
+                <div class="security-notice">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Your payment information is encrypted and secure</span>
+                </div>
                 <form id="paymentForm">
-                    <label for="paymentCardNumber">Bank Card Number:</label>
-                    <input type="text" id="paymentCardNumber" placeholder="Enter card number" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Confirm Payment</button>
+                    <div class="form-group">
+                        <label for="paymentCardNumber">
+                            <i class="fa-solid fa-credit-card"></i> Bank Card Number:
+                        </label>
+                        <input type="text" id="paymentCardNumber" placeholder="Enter card number" required>
+                    </div>
+                    <div class="payment-actions">
+                        <button type="button" onclick="showSection('rentSection')" class="btn-secondary">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-check"></i> Confirm Payment
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -228,56 +434,214 @@
 
     <!-- 预订成功 -->
     <section id="successSection" class="success-section">
-        <h2><i class="fa-solid fa-check-circle"></i> Booking Successful</h2>
-        <div id="confirmationDetails">
-            <!-- 确认信息JS -->
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fa-solid fa-check-circle"></i>
+            </div>
+            <div class="section-header">
+                <h2>Booking Successful!</h2>
+                <p class="section-subtitle">Your scooter rental has been confirmed</p>
+            </div>
+
+            <div class="success-details" id="confirmationDetails">
+                <!-- 确认信息JS -->
+            </div>
+
+            <div class="success-actions">
+                <div class="action-card">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <div class="action-info">
+                        <h4>Ready to Ride?</h4>
+                        <p>Go to your rented scooter and scan the QR code to unlock it.</p>
+                    </div>
+                </div>
+                <div class="action-card">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <div class="action-info">
+                        <h4>Find Your Scooter</h4>
+                        <p>Use the map in your app or check the location details above.</p>
+                    </div>
+                </div>
+                <div class="action-card">
+                    <i class="fa-solid fa-headset"></i>
+                    <div class="action-info">
+                        <h4>Need Help?</h4>
+                        <p>Contact our support team if you have any questions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-buttons">
+                <button onclick="showSection('myBookingsSection')" class="btn-secondary">
+                    <i class="fa-solid fa-calendar-check"></i> View My Bookings
+                </button>
+                <button id="backToHome" class="btn-primary">
+                    <i class="fa-solid fa-home"></i> Back to Home
+                </button>
+            </div>
         </div>
-        <button id="backToHome"><i class="fa-solid fa-home"></i> Back to Home</button>
     </section>
 
     <!-- 车辆详情 -->
     <section id="scooterDetailSection" class="scooter-detail-section">
-        <h2><i class="fa-solid fa-info-circle"></i> Scooter Details</h2>
-        <div class="scooter-detail-container" id="scooterDetailContainer">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-info-circle"></i> Scooter Details</h2>
+            <p class="section-subtitle">Complete information about your selected scooter</p>
+        </div>
+
+        <div class="detail-container" id="scooterDetailContainer">
             <!-- 车辆详情JS -->
         </div>
+
+        <div class="detail-features">
+            <div class="feature-highlight">
+                <i class="fa-solid fa-bolt"></i>
+                <div class="feature-info">
+                    <h4>Electric Power</h4>
+                    <p>Silent, eco-friendly electric motor</p>
+                </div>
+            </div>
+            <div class="feature-highlight">
+                <i class="fa-solid fa-route"></i>
+                <div class="feature-info">
+                    <h4>GPS Tracking</h4>
+                    <p>Real-time location monitoring</p>
+                </div>
+            </div>
+            <div class="feature-highlight">
+                <i class="fa-solid fa-shield-alt"></i>
+                <div class="feature-info">
+                    <h4>Secure Lock</h4>
+                    <p>QR code activated smart lock</p>
+                </div>
+            </div>
+        </div>
+
         <div class="detail-actions">
-            <button onclick="showSection('scootersSection')" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to List</button>
-            <button id="unlockBtn" onclick="unlockScooter()" class="btn-primary" style="display:none;"><i class="fa-solid fa-qrcode"></i> Scan QR & Unlock</button>
-            <button id="rentDetailBtn" onclick="rentFromDetail()" class="btn-primary"><i class="fa-solid fa-handshake"></i> Rent This Scooter</button>
+            <button onclick="showSection('scootersSection')" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Back to List
+            </button>
+            <button id="unlockBtn" onclick="unlockScooter()" class="btn-primary" style="display:none;">
+                <i class="fa-solid fa-qrcode"></i> Scan QR & Unlock
+            </button>
+            <button id="rentDetailBtn" onclick="rentFromDetail()" class="btn-primary">
+                <i class="fa-solid fa-handshake"></i> Rent This Scooter
+            </button>
         </div>
     </section>
 
     <!-- 还车 -->
     <section id="returnSection" class="return-section">
-        <h2><i class="fa-solid fa-undo"></i> Return Scooter</h2>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-undo"></i> Return Scooter</h2>
+            <p class="section-subtitle">Complete your rental by returning the scooter safely</p>
+        </div>
+
+        <div class="return-progress">
+            <div class="progress-step active">
+                <div class="step-number">1</div>
+                <span>Location Check</span>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">2</div>
+                <span>Battery Check</span>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">3</div>
+                <span>Damage Report</span>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">4</div>
+                <span>Complete Return</span>
+            </div>
+        </div>
+
         <div class="return-container">
-            <div class="location-check">
-                <h3><i class="fa-solid fa-map-marker-alt"></i> Location Check</h3>
+            <div class="return-card location-check">
+                <div class="card-header">
+                    <i class="fa-solid fa-map-marker-alt"></i>
+                    <h3>Location Check</h3>
+                </div>
                 <p>Current GPS Location: <span id="currentLocation">Checking...</span></p>
                 <p>Allowed Return Zones: Downtown Plaza, Central Park, City Hall</p>
                 <div id="locationStatus" class="location-status">Checking location...</div>
             </div>
-            
-            <div class="battery-check">
-                <h3><i class="fa-solid fa-battery-half"></i> Battery Check</h3>
-                <p>Starting Battery: <span id="startBattery">85%</span></p>
-                <p>Current Battery: <span id="currentBattery">78%</span></p>
-                <p>Battery Used: <span id="batteryUsed">7%</span></p>
+
+            <div class="return-card battery-check">
+                <div class="card-header">
+                    <i class="fa-solid fa-battery-half"></i>
+                    <h3>Battery Check</h3>
+                </div>
+                <div class="battery-comparison">
+                    <div class="battery-item">
+                        <span class="battery-label">Starting Battery:</span>
+                        <span class="battery-value" id="startBattery">85%</span>
+                    </div>
+                    <div class="battery-item">
+                        <span class="battery-label">Current Battery:</span>
+                        <span class="battery-value" id="currentBattery">78%</span>
+                    </div>
+                    <div class="battery-item used">
+                        <span class="battery-label">Battery Used:</span>
+                        <span class="battery-value" id="batteryUsed">7%</span>
+                    </div>
+                </div>
             </div>
-            
-            <div class="damage-report">
-                <h3><i class="fa-solid fa-exclamation-triangle"></i> Damage Report</h3>
+
+            <div class="return-card damage-report">
+                <div class="card-header">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                    <h3>Damage Report</h3>
+                </div>
+                <p>Please report any damage to ensure fair billing:</p>
                 <div class="damage-options">
-                    <label><input type="checkbox" id="noDamage"> No damage</label>
-                    <label><input type="checkbox" id="minorDamage"> Minor scratches/scuffs</label>
-                    <label><input type="checkbox" id="majorDamage"> Major damage/breakage</label>
-                    <label><input type="checkbox" id="flatTire"> Flat tire</label>
+                    <label class="damage-option">
+                        <input type="checkbox" id="noDamage">
+                        <span class="checkmark"></span>
+                        No damage
+                    </label>
+                    <label class="damage-option">
+                        <input type="checkbox" id="minorDamage">
+                        <span class="checkmark"></span>
+                        Minor scratches/scuffs
+                    </label>
+                    <label class="damage-option">
+                        <input type="checkbox" id="majorDamage">
+                        <span class="checkmark"></span>
+                        Major damage/breakage
+                    </label>
+                    <label class="damage-option">
+                        <input type="checkbox" id="flatTire">
+                        <span class="checkmark"></span>
+                        Flat tire
+                    </label>
                 </div>
                 <textarea id="damageDescription" placeholder="Describe any damage..." rows="3"></textarea>
             </div>
-            
-            <button onclick="completeReturn()" class="btn-primary" id="completeReturnBtn" disabled><i class="fa-solid fa-check"></i> Complete Return</button>
+
+            <div class="return-summary">
+                <div class="summary-box">
+                    <h4><i class="fa-solid fa-calculator"></i> Return Summary</h4>
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <span>Rental Duration:</span>
+                            <span id="rentalDuration">Calculating...</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Return Fee:</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total Charges:</span>
+                            <span id="totalCharges">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="completeReturn()" class="btn-primary complete-return-btn" id="completeReturnBtn" disabled>
+                <i class="fa-solid fa-check"></i> Complete Return
+            </button>
         </div>
     </section>
 
