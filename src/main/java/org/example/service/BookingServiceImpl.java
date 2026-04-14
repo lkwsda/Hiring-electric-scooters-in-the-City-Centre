@@ -172,4 +172,29 @@ public class BookingServiceImpl implements BookingService {
         System.out.println("[Service] F11: Booking #" + bookingId + " extended. New total: " + newTotal);
     }
 
+    // f09
+    @Override
+    @Transactional
+    public void adminProxyBooking(Booking booking) {
+        // 填写guest姓名或电话
+        if (booking.getGuestName() == null || booking.getGuestName().isEmpty()) {
+            throw new RuntimeException("Admin Error: Guest name is required for proxy booking!");
+        }
+
+        // 检查车子
+        Scooter scooter = scooterDAO.getScooterById(booking.getScooterId());
+        if (scooter == null || !"available".equals(scooter.getStatus())) {
+            throw new RuntimeException("Scooter not available!");
+        }
+
+        // 设置状态为已支付（管理员代下，已经付过钱）
+        booking.setStatus("paid");
+        bookingDAO.createBooking(booking);
+
+        // 锁车
+        scooterDAO.updateScooterStatus(scooter.getId(), "rented");
+
+        System.out.println("[Service] Admin successfully booked for: " + booking.getGuestName());
+    }
+
 }

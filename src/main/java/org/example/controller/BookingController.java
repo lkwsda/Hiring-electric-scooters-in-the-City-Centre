@@ -65,4 +65,11 @@ public class BookingController {
         bookingService.extendBooking(bookingId, extraCost);
         return "Booking extended! Additional cost added: " + extraCost;
     }
+
+    // f09接口
+    @PostMapping("/admin/place")
+    public Booking adminPlaceBooking(@RequestBody Booking booking) {
+        bookingService.adminProxyBooking(booking);
+        return booking;
+    }
 }

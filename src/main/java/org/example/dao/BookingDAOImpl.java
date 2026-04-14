@@ -19,16 +19,23 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public void createBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (user_id, scooter_id, total_cost, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (user_id, scooter_id, total_cost, status, guest_name, guest_phone) VALUES (?, ?, ?, ?, ?, ?)";
 
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
         // 插入数据
         jdbcTemplate.update(connection -> {
             java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, booking.getUserId());
+            if (booking.getUserId() != null) {
+                ps.setInt(1, booking.getUserId());
+            } else {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            }
             ps.setInt(2, booking.getScooterId());
             ps.setBigDecimal(3, booking.getTotalCost());
             ps.setString(4, booking.getStatus());
+
+            ps.setString(5, booking.getGuestName());
+            ps.setString(6, booking.getGuestPhone());
             return ps;
         }, keyHolder);
 
@@ -37,7 +44,7 @@ public class BookingDAOImpl implements BookingDAO {
             booking.setId(keyHolder.getKey().intValue());
         }
 
-        System.out.println("[DAO] Generated Booking ID: " + booking.getId());
+        System.out.println("[DAO] Booking Created! ID: " + booking.getId() + ", Guest: " + booking.getGuestName());
 
     }
 

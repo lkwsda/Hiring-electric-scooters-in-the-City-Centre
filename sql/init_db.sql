@@ -41,12 +41,14 @@ CREATE TABLE packages (
 #  Table: bookings
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,                      -- Linked to users.id (关联用户)
+    user_id INT NULL,                      -- Linked to users.id (关联用户)
     scooter_id INT NOT NULL,                   -- Linked to scooters.id (关联车辆)
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Start time (开始时间)
     end_time TIMESTAMP NULL,                   -- End time (结束时间)
     total_cost DECIMAL(10, 2) DEFAULT 0.00,    -- Cost (总费用)
     status ENUM('pending', 'paid', 'canceled') DEFAULT 'pending', -- 订单状态
+    guest_name VARCHAR(50),  -- 被代下单的用户名
+    guest_phone VARCHAR(20),   -- 被代下单的用户号码
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (scooter_id) REFERENCES scooters(id)
 );
@@ -78,3 +80,9 @@ INSERT INTO packages (package_type, price, description) VALUES
     ('4 Hours', 15.00, 'Discounted half-day rental'),
     ('1 Day', 30.00, 'Full day access for city explorers'),
     ('1 Week', 120.00, 'Premium weekly pass for commuters');
+
+-- 预置滑板车数据
+INSERT INTO scooters (model, battery_level, latitude, longitude, status) VALUES
+     ('1', 100, 53.8012, -1.5485, 'available'),
+     ('2', 95, 53.8020, -1.5490, 'available'),
+     ('3', 100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑

@@ -27,4 +27,7 @@ public interface BookingService {
     // f11 延长订单
     void extendBooking(int bookingId, java.math.BigDecimal extraCost);
 
+    // f09 管理员代理
+    void adminProxyBooking(Booking booking);
+
 }

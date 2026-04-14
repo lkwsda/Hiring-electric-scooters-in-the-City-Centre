@@ -12,6 +12,9 @@ public class Booking {
 
     private String status;
 
+    private String guestName;
+    private String guestPhone;
+
     public String getStatus() {
         return status;
     }
@@ -66,4 +69,10 @@ public class Booking {
     public void setTotalCost(BigDecimal totalCost) {
         this.totalCost = totalCost;
     }
+
+    public String getGuestName() {return guestName;}
+    public void setGuestName(String guestName) {this.guestName = guestName;}
+    public String getGuestPhone() {return guestName;}
+    public void setGuestPhone(String guestName) {this.guestName = guestName;}
+
 }
