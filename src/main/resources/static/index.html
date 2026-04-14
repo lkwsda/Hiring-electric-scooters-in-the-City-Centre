@@ -16,8 +16,8 @@
         <nav>
             <a href="#" id="homeLink"><i class="fa-solid fa-home"></i> Home</a>
             <a href="#" id="scootersLink"><i class="fa-solid fa-list"></i> Available Scooters</a>
-            <a href="#" id="rentLink"><i class="fa-solid fa-handshake"></i> Rent</a>
-            <a href="#" id="myBookingsLink"><i class="fa-solid fa-calendar-check"></i> My Bookings</a>
+            <a href="#" id="myBookingsLink"><i class="fa-solid fa-calendar-check"></i> My Rentals</a>
+            <a href="#" id="returnLink" style="display:none;"><i class="fa-solid fa-undo"></i> Return Scooter</a>
             <a href="#" id="adminLink"><i class="fa-solid fa-cog"></i> Admin</a>
             <a href="#" id="loginLink"><i class="fa-solid fa-sign-in-alt"></i> Login</a>
             <a href="#" id="logoutLink" style="display:none;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
@@ -34,21 +34,58 @@
             <div class="form-box">
                 <h3><i class="fa-solid fa-sign-in-alt"></i> Login</h3>
                 <form id="loginForm">
-                    <label for="loginAccount">Account (Phone/Email):</label>
-                    <input type="text" id="loginAccount" placeholder="Enter phone or email" required>
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" placeholder="Enter email" required>
                     <label for="loginPassword">Password:</label>
                     <input type="password" id="loginPassword" placeholder="Enter password" required>
                     <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
                 </form>
             </div>
             <div class="form-box">
-                <h3><i class="fa-solid fa-user-plus"></i> Register</h3>
+                <h3><i class="fa-solid fa-user-plus"></i> Register (UK)</h3>
                 <form id="registerForm">
-                    <label for="registerAccount">Account (Phone/Email):</label>
-                    <input type="text" id="registerAccount" placeholder="Enter phone or email" required>
-                    <label for="registerPassword">Password:</label>
-                    <input type="password" id="registerPassword" placeholder="Enter password" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Register</button>
+                    <div class="field-group">
+                        <label for="registerUsername">Full Name:</label>
+                        <input type="text" id="registerUsername" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="registerEmail">Email:</label>
+                        <input type="email" id="registerEmail" placeholder="Enter email" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="registerPhone">Phone Number:</label>
+                        <input type="tel" id="registerPhone" placeholder="Enter phone number" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="registerPassword">Password:</label>
+                        <input type="password" id="registerPassword" placeholder="Enter password (min 6 chars)" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="registerConfirmPassword">Confirm Password:</label>
+                        <input type="password" id="registerConfirmPassword" placeholder="Confirm password" required>
+                    </div>
+                    <div class="full-width">
+                        <h4><i class="fa-solid fa-credit-card"></i> Credit Card Details</h4>
+                    </div>
+                    <div class="field-group">
+                        <label for="cardNumber">Card Number:</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required maxlength="19">
+                    </div>
+                    <div class="field-group">
+                        <label for="cardExpiry">Expiry Date:</label>
+                        <input type="text" id="cardExpiry" placeholder="MM/YY" required maxlength="5">
+                    </div>
+                    <div class="field-group">
+                        <label for="cardCVV">CVV:</label>
+                        <input type="text" id="cardCVV" placeholder="123" required maxlength="3">
+                    </div>
+                    <div class="full-width terms-checkbox">
+                        <input type="checkbox" id="acceptTerms" required>
+                        <label for="acceptTerms">I accept the <a href="#" onclick="showTerms()">Terms & Conditions</a> and <a href="#" onclick="showInsurance()">Insurance Policy</a></label>
+                    </div>
+                    <div class="full-width">
+                        <button type="submit"><i class="fa-solid fa-check"></i> Register & Bind Card</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -56,9 +93,81 @@
 
     <!-- 首页套餐 -->
     <section id="homeSection" class="home-section">
-        <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
-        <div class="package-grid" id="packageGrid">
-            <!-- 套餐JS -->
+        <!-- 欢迎横幅 -->
+        <div class="welcome-banner">
+            <h1><i class="fa-solid fa-bolt"></i> Welcome to E-Scooter Rental</h1>
+            <p>Experience the future of urban mobility with our electric scooters. Fast, eco-friendly, and convenient transportation at your fingertips.</p>
+            <div class="banner-stats">
+                <div class="stat-item">
+                    <i class="fa-solid fa-motorcycle"></i>
+                    <span id="availableScooters">8</span>
+                    <small>Available Scooters</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span id="activeUsers">0</span>
+                    <small>Active Users</small>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-route"></i>
+                    <span id="totalRides">0</span>
+                    <small>Total Rides</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="quick-actions">
+            <h2><i class="fa-solid fa-rocket"></i> Quick Actions</h2>
+            <div class="action-buttons">
+                <button onclick="showSection('scootersSection')" class="action-btn primary">
+                    <i class="fa-solid fa-motorcycle"></i>
+                    <span>Browse Scooters</span>
+                </button>
+                <button onclick="showSection('rentSection')" class="action-btn secondary">
+                    <i class="fa-solid fa-handshake"></i>
+                    <span>Rent Now</span>
+                </button>
+                <button onclick="showSection('myBookingsSection')" class="action-btn tertiary">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>My Bookings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 特色功能 -->
+        <div class="features">
+            <h2><i class="fa-solid fa-star"></i> Why Choose Us?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Electric & Eco-Friendly</h3>
+                    <p>Zero emissions, silent operation, and sustainable transportation for the city.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-clock"></i>
+                    <h3>24/7 Availability</h3>
+                    <p>Rent anytime, anywhere in the city center with our extensive network.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-shield-alt"></i>
+                    <h3>Safe & Secure</h3>
+                    <p>GPS tracking, secure payments, and verified user accounts for peace of mind.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h3>Affordable Pricing</h3>
+                    <p>Flexible packages starting from just $5 per hour. No hidden fees.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 套餐展示 -->
+        <div class="packages-section">
+            <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
+            <div class="package-grid" id="packageGrid">
+                <!-- 套餐JS -->
+            </div>
         </div>
     </section>
 
@@ -89,6 +198,18 @@
         </div>
     </section>
 
+    <!-- 我的预订 -->
+    <section id="myBookingsSection" class="my-bookings-section">
+        <h2><i class="fa-solid fa-calendar-check"></i> My Rentals</h2>
+        <div class="booking-overview">
+            <p>View your current and past rentals here. You can extend or end active rentals directly from this page.</p>
+            <div id="bookingList" class="booking-list">
+                <!-- 预订列表 JS -->
+            </div>
+            <button onclick="showSection('homeSection')" class="btn-secondary"><i class="fa-solid fa-home"></i> Back to Home</button>
+        </div>
+    </section>
+
     <!-- 支付 -->
     <section id="paymentSection" class="payment-section">
         <h2><i class="fa-solid fa-credit-card"></i> Payment</h2>
@@ -97,8 +218,8 @@
                 <h3><i class="fa-solid fa-money-check"></i> Simulate Bank Card Payment</h3>
                 <p>Booking Details: <span id="bookingDetails"></span></p>
                 <form id="paymentForm">
-                    <label for="cardNumber">Bank Card Number:</label>
-                    <input type="text" id="cardNumber" placeholder="Enter card number" required>
+                    <label for="paymentCardNumber">Bank Card Number:</label>
+                    <input type="text" id="paymentCardNumber" placeholder="Enter card number" required>
                     <button type="submit"><i class="fa-solid fa-check"></i> Confirm Payment</button>
                 </form>
             </div>
@@ -114,13 +235,92 @@
         <button id="backToHome"><i class="fa-solid fa-home"></i> Back to Home</button>
     </section>
 
-    <!-- 我的预订 -->
-    <section id="myBookingsSection" class="my-bookings-section">
-        <h2><i class="fa-solid fa-calendar-check"></i> My Bookings</h2>
-        <div class="booking-list" id="bookingList">
-            <!-- 预订列表JS -->
+    <!-- 车辆详情 -->
+    <section id="scooterDetailSection" class="scooter-detail-section">
+        <h2><i class="fa-solid fa-info-circle"></i> Scooter Details</h2>
+        <div class="scooter-detail-container" id="scooterDetailContainer">
+            <!-- 车辆详情JS -->
+        </div>
+        <div class="detail-actions">
+            <button onclick="showSection('scootersSection')" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to List</button>
+            <button id="unlockBtn" onclick="unlockScooter()" class="btn-primary" style="display:none;"><i class="fa-solid fa-qrcode"></i> Scan QR & Unlock</button>
+            <button id="rentDetailBtn" onclick="rentFromDetail()" class="btn-primary"><i class="fa-solid fa-handshake"></i> Rent This Scooter</button>
         </div>
     </section>
+
+    <!-- 还车 -->
+    <section id="returnSection" class="return-section">
+        <h2><i class="fa-solid fa-undo"></i> Return Scooter</h2>
+        <div class="return-container">
+            <div class="location-check">
+                <h3><i class="fa-solid fa-map-marker-alt"></i> Location Check</h3>
+                <p>Current GPS Location: <span id="currentLocation">Checking...</span></p>
+                <p>Allowed Return Zones: Downtown Plaza, Central Park, City Hall</p>
+                <div id="locationStatus" class="location-status">Checking location...</div>
+            </div>
+            
+            <div class="battery-check">
+                <h3><i class="fa-solid fa-battery-half"></i> Battery Check</h3>
+                <p>Starting Battery: <span id="startBattery">85%</span></p>
+                <p>Current Battery: <span id="currentBattery">78%</span></p>
+                <p>Battery Used: <span id="batteryUsed">7%</span></p>
+            </div>
+            
+            <div class="damage-report">
+                <h3><i class="fa-solid fa-exclamation-triangle"></i> Damage Report</h3>
+                <div class="damage-options">
+                    <label><input type="checkbox" id="noDamage"> No damage</label>
+                    <label><input type="checkbox" id="minorDamage"> Minor scratches/scuffs</label>
+                    <label><input type="checkbox" id="majorDamage"> Major damage/breakage</label>
+                    <label><input type="checkbox" id="flatTire"> Flat tire</label>
+                </div>
+                <textarea id="damageDescription" placeholder="Describe any damage..." rows="3"></textarea>
+            </div>
+            
+            <button onclick="completeReturn()" class="btn-primary" id="completeReturnBtn" disabled><i class="fa-solid fa-check"></i> Complete Return</button>
+        </div>
+    </section>
+
+    <!-- 条款和保险模态框 -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('termsModal')">&times;</span>
+            <h2>Terms & Conditions</h2>
+            <div class="modal-body">
+                <h3>1. Rental Agreement</h3>
+                <p>By renting our e-scooters, you agree to abide by all local traffic laws and regulations...</p>
+                
+                <h3>2. User Responsibilities</h3>
+                <p>Riders must be 18+ years old, wear helmets, and operate scooters safely...</p>
+                
+                <h3>3. Payment Terms</h3>
+                <p>Payments are processed automatically via your registered credit card...</p>
+                
+                <h3>4. Late Returns</h3>
+                <p>Late returns incur additional charges. System will automatically charge your card...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="insuranceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('insuranceModal')">&times;</span>
+            <h2>Insurance & Liability</h2>
+            <div class="modal-body">
+                <h3>Insurance Coverage</h3>
+                <p>Basic third-party liability insurance is included with all rentals...</p>
+                
+                <h3>Damage Liability</h3>
+                <p>Riders are responsible for damage caused to the scooter during rental period...</p>
+                
+                <h3>Personal Accident Coverage</h3>
+                <p>Optional personal accident insurance available for additional £2/day...</p>
+                
+                <h3>Disclaimer</h3>
+                <p>The company is not liable for injuries sustained while using the scooter...</p>
+            </div>
+        </div>
+    </div>
 
     <!-- 管理员登录 -->
     <section id="adminLoginSection" class="admin-login-section">
