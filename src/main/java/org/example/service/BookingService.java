@@ -2,7 +2,7 @@ package org.example.service;
 
 import org.example.model.Booking;
 import org.example.model.RevenueReport;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.model.DailyRevenueReport;
 
 import java.util.List;
 
@@ -29,5 +29,8 @@ public interface BookingService {
 
     // f09 管理员代理
     void adminProxyBooking(Booking booking);
+
+    // f20
+    List<DailyRevenueReport> getDailyRevenue();
 
 }

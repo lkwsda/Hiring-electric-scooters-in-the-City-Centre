@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import org.example.model.DailyRevenueReport;
 
 @Repository
 public class BookingDAOImpl implements BookingDAO {
@@ -70,13 +71,13 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public List<RevenueReport> getWeeklyRevenueReport() {
-        // SQL to sum price and count orders, grouped by package type for the last 7 days.
-        // 只统计状态为 'paid' (已支付) 的，且是最近 7 天的记录。
+        // f19 把订单、车辆、套餐表三表合一，算出每种套餐这周赚了多少钱。
         String sql = "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
                 "FROM bookings b " +
                 "JOIN scooters s ON b.scooter_id = s.id " +
-                "JOIN packages p ON s.model = p.package_type " + // 假设按型号对应套餐
-                "WHERE b.status = 'paid' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                "JOIN packages p ON s.model = p.package_type " + // 这里的关联逻辑可以根据实际业务调整
+                "WHERE b.status IN ('paid', 'finished') " +
+                "AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
                 "GROUP BY p.package_type";
 
         // 目前数据库表关联很简单，演示 SQL如下
@@ -109,6 +110,26 @@ public class BookingDAOImpl implements BookingDAO {
     public org.example.model.Booking getBookingById(int bookingId) {
         String sql = "SELECT * FROM bookings WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), bookingId);
+    }
+
+    // f20
+    @Override
+    public List<DailyRevenueReport> getDailyRevenueReport() {
+        // Select date and sum cost, grouped by date, for last 7 days.
+        // 提取日期并求和，按天分组，只看最近 7 天。
+        String sql = "SELECT DATE(start_time) as sale_date, SUM(total_cost) as daily_sum " +
+                "FROM bookings " +
+                "WHERE status IN ('paid', 'finished') " + // 只有付过钱的才算收入哦！
+                "AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                "GROUP BY sale_date " +
+                "ORDER BY sale_date DESC"; // 最近的日期排在上面
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            DailyRevenueReport report = new DailyRevenueReport();
+            report.setDate(rs.getString("sale_date"));
+            report.setDailyTotal(rs.getBigDecimal("daily_sum"));
+            return report;
+        });
     }
 
     // 小票装载

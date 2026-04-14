@@ -5,6 +5,7 @@ import org.example.model.RevenueReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.example.service.BookingService;
+import org.example.model.DailyRevenueReport;
 import java.util.List;
 
 @RestController
@@ -71,5 +72,11 @@ public class BookingController {
     public Booking adminPlaceBooking(@RequestBody Booking booking) {
         bookingService.adminProxyBooking(booking);
         return booking;
+    }
+
+    // f20每日收入
+    @GetMapping("/admin/revenue/daily")
+    public List<DailyRevenueReport> getDailyRevenue() {
+        return bookingService.getDailyRevenue();
     }
 }

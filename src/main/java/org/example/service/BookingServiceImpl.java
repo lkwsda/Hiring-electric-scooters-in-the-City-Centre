@@ -8,6 +8,7 @@ import org.example.model.Scooter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.example.model.DailyRevenueReport;
 
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -195,6 +196,13 @@ public class BookingServiceImpl implements BookingService {
         scooterDAO.updateScooterStatus(scooter.getId(), "rented");
 
         System.out.println("[Service] Admin successfully booked for: " + booking.getGuestName());
+    }
+
+    // f20
+    @Override
+    public List<DailyRevenueReport> getDailyRevenue() {
+        System.out.println("[Service] Generating Daily Sales Report...");
+        return bookingDAO.getDailyRevenueReport();
     }
 
 }

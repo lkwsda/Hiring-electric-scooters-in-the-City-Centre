@@ -2,6 +2,7 @@ package org.example.dao;
 
 import org.example.model.Booking;
 import org.example.model.RevenueReport;
+import org.example.model.DailyRevenueReport;
 
 import java.util.List;
 
@@ -28,4 +29,7 @@ public interface BookingDAO {
     void updateBookingCost(int bookingId, java.math.BigDecimal newTotal);
     //查询单个订单
     org.example.model.Booking getBookingById(int bookingId);
+
+    // f20
+    List<DailyRevenueReport> getDailyRevenueReport();
 }
