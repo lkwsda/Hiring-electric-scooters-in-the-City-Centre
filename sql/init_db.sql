@@ -46,7 +46,7 @@ CREATE TABLE bookings (
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Start time (开始时间)
     end_time TIMESTAMP NULL,                   -- End time (结束时间)
     total_cost DECIMAL(10, 2) DEFAULT 0.00,    -- Cost (总费用)
-    status ENUM('pending', 'paid', 'canceled') DEFAULT 'pending', -- 订单状态
+    status ENUM('pending', 'paid', 'canceled', 'finished') DEFAULT 'pending', -- 订单状态
     guest_name VARCHAR(50),  -- 被代下单的用户名
     guest_phone VARCHAR(20),   -- 被代下单的用户号码
     FOREIGN KEY (user_id) REFERENCES users(id),
