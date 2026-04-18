@@ -1,4 +1,3 @@
-// Simulated data
 let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
 let packages = JSON.parse(localStorage.getItem('packages')) || { '1h': 5, '4h': 15, '1d': 25, '1w': 100 };
 const defaultScooters = [
