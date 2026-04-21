@@ -43,4 +43,11 @@ public class IssueDAOImpl implements IssueDAO {
             return i;
         }
     }
+
+    // f14
+    @Override
+    public void updateStatus(int issueId, String status) {
+        String sql = "UPDATE issues SET status = ? WHERE id = ?";
+        jdbcTemplate.update(sql, status, issueId);
+    }
 }

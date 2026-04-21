@@ -9,4 +9,7 @@ public interface IssueDAO {
 
     // 2. 查看所有的报修单
     List<Issue> findAllIssues();
+
+    // F14
+    void updateStatus(int issueId, String status);
 }

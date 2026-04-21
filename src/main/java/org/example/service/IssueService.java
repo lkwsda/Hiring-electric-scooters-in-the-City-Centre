@@ -7,4 +7,5 @@ public interface IssueService {
 
     void reportIssue(Issue issue);
     List<Issue> viewAllIssues();
+    void resolveIssue(int issueId);
 }

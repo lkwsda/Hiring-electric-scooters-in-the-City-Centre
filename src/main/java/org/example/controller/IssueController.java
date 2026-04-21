@@ -26,4 +26,11 @@ public class IssueController {
     public List<Issue> getAllIssues() {
         return issueService.viewAllIssues();
     }
+
+    // f14
+    @PutMapping("/resolve/{issueId}")
+    public String resolveIssue(@PathVariable int issueId) {
+        issueService.resolveIssue(issueId);
+        return "Issue #" + issueId + " has been marked as resolved.";
+    }
 }
