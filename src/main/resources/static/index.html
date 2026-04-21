@@ -34,64 +34,74 @@
 <main class="container">
     <!-- 登录/注册 -->
     <section id="authSection" class="auth-section">
-        <h2><i class="fa-solid fa-user"></i> Login / Register</h2>
+        <h2><i class="fa-solid fa-user"></i> Authentication</h2>
+        <div class="auth-tabs">
+            <button type="button" id="showLoginBtn" class="tab-btn active"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
+            <button type="button" id="showRegisterBtn" class="tab-btn"><i class="fa-solid fa-user-plus"></i> Register</button>
+        </div>
         <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-sign-in-alt"></i> Login</h3>
-                <form id="loginForm">
-                    <label for="loginEmail">Email:</label>
-                    <input type="email" id="loginEmail" placeholder="Enter email" required>
-                    <label for="loginPassword">Password:</label>
-                    <input type="password" id="loginPassword" placeholder="Enter password" required>
-                    <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
-                </form>
+            <div id="loginPanel" class="form-panel">
+                <div class="form-box">
+                    <h3><i class="fa-solid fa-sign-in-alt"></i> Login</h3>
+                    <form id="loginForm">
+                        <label for="loginEmail">Username:</label>
+                        <input type="text" id="loginEmail" placeholder="Enter username" required>
+                        <label for="loginPassword">Password:</label>
+                        <input type="password" id="loginPassword" placeholder="Enter password" required>
+                        <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
+                    </form>
+                    <p class="switch-auth">No account yet? <a href="#" id="toRegisterLink">Register here</a>.</p>
+                </div>
             </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-user-plus"></i> Register (UK)</h3>
-                <form id="registerForm">
-                    <div class="field-group">
-                        <label for="registerUsername">Full Name:</label>
-                        <input type="text" id="registerUsername" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="field-group">
-                        <label for="registerEmail">Email:</label>
-                        <input type="email" id="registerEmail" placeholder="Enter email" required>
-                    </div>
-                    <div class="field-group">
-                        <label for="registerPhone">Phone Number:</label>
-                        <input type="tel" id="registerPhone" placeholder="Enter phone number" required>
-                    </div>
-                    <div class="field-group">
-                        <label for="registerPassword">Password:</label>
-                        <input type="password" id="registerPassword" placeholder="Enter password (min 6 chars)" required>
-                    </div>
-                    <div class="field-group">
-                        <label for="registerConfirmPassword">Confirm Password:</label>
-                        <input type="password" id="registerConfirmPassword" placeholder="Confirm password" required>
-                    </div>
-                    <div class="full-width">
-                        <h4><i class="fa-solid fa-credit-card"></i> Credit Card Details</h4>
-                    </div>
-                    <div class="field-group">
-                        <label for="cardNumber">Card Number:</label>
-                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required maxlength="19">
-                    </div>
-                    <div class="field-group">
-                        <label for="cardExpiry">Expiry Date:</label>
-                        <input type="text" id="cardExpiry" placeholder="MM/YY" required maxlength="5">
-                    </div>
-                    <div class="field-group">
-                        <label for="cardCVV">CVV:</label>
-                        <input type="text" id="cardCVV" placeholder="123" required maxlength="3">
-                    </div>
-                    <div class="full-width terms-checkbox">
-                        <input type="checkbox" id="acceptTerms" required>
-                        <label for="acceptTerms">I accept the <a href="#" onclick="showTerms()">Terms & Conditions</a> and <a href="#" onclick="showInsurance()">Insurance Policy</a></label>
-                    </div>
-                    <div class="full-width">
-                        <button type="submit"><i class="fa-solid fa-check"></i> Register & Bind Card</button>
-                    </div>
-                </form>
+            <div id="registerPanel" class="form-panel" style="display:none;">
+                <div class="form-box">
+                    <h3><i class="fa-solid fa-user-plus"></i> Register (UK)</h3>
+                    <form id="registerForm">
+                        <div class="field-group">
+                            <label for="registerUsername">Full Name:</label>
+                            <input type="text" id="registerUsername" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="registerEmail">Email:</label>
+                            <input type="email" id="registerEmail" placeholder="Enter email" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="registerPhone">Phone Number:</label>
+                            <input type="tel" id="registerPhone" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="registerPassword">Password:</label>
+                            <input type="password" id="registerPassword" placeholder="Enter password (min 6 chars)" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="registerConfirmPassword">Confirm Password:</label>
+                            <input type="password" id="registerConfirmPassword" placeholder="Confirm password" required>
+                        </div>
+                        <div class="full-width">
+                            <h4><i class="fa-solid fa-credit-card"></i> Credit Card Details</h4>
+                        </div>
+                        <div class="field-group">
+                            <label for="cardNumber">Card Number:</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required maxlength="19">
+                        </div>
+                        <div class="field-group">
+                            <label for="cardExpiry">Expiry Date:</label>
+                            <input type="text" id="cardExpiry" placeholder="MM/YY" required maxlength="5">
+                        </div>
+                        <div class="field-group">
+                            <label for="cardCVV">CVV:</label>
+                            <input type="text" id="cardCVV" placeholder="123" required maxlength="3">
+                        </div>
+                        <div class="full-width terms-checkbox">
+                            <input type="checkbox" id="acceptTerms" required>
+                            <label for="acceptTerms">I accept the <a href="#" onclick="showTerms()">Terms & Conditions</a> and <a href="#" onclick="showInsurance()">Insurance Policy</a></label>
+                        </div>
+                        <div class="full-width">
+                            <button type="submit"><i class="fa-solid fa-check"></i> Register & Bind Card</button>
+                        </div>
+                    </form>
+                    <p class="switch-auth">Already have an account? <a href="#" id="toLoginLink">Login here</a>.</p>
+                </div>
             </div>
         </div>
     </section>
