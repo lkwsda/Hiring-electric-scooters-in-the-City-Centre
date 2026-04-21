@@ -106,6 +106,48 @@ form button i {
     margin-right: 8px;
 }
 
+.auth-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    border: 1px solid #2980b9;
+    background: white;
+    color: #2980b9;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+    background: #2980b9;
+    color: white;
+}
+
+.form-panel {
+    display: block;
+}
+
+.switch-auth {
+    font-size: 0.95rem;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.switch-auth a {
+    color: #2980b9;
+    text-decoration: none;
+}
+
+.switch-auth a:hover {
+    text-decoration: underline;
+}
+
 /* 预订列表样式 */
 .booking-list {
     display: flex;
