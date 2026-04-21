@@ -396,187 +396,199 @@ async function renderStats() {
 }
 
 // Login form
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const username = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    try {
-        const response = await fetch(`/api/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json' }
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(getTextError(errorText, 'Invalid username or password'));
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        try {
+            const response = await fetch(`/api/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(getTextError(errorText, 'Invalid username or password'));
+            }
+            const user = await response.json();
+            currentUser = user;
+            adminLoggedIn = (user.role || '').toLowerCase() === 'admin';
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            updateNav();
+            showSection('homeSection');
+            alert(`Login successful! Welcome ${user.username}.`);
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.message || 'Login failed!');
         }
-        const user = await response.json();
-        currentUser = user;
-        adminLoggedIn = (user.role || '').toLowerCase() === 'admin';
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        updateNav();
-        showSection('homeSection');
-        alert(`Login successful! Welcome ${user.username}.`);
-    } catch (error) {
-        console.error('Login error:', error);
-        alert(error.message || 'Login failed!');
-    }
-    this.reset();
-});
+        this.reset();
+    });
+}
 
 // Register form
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const username = document.getElementById('registerUsername').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const phone = document.getElementById('registerPhone').value.trim();
-    const password = document.getElementById('registerPassword').value.trim();
-    const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
-    const cardNumber = document.getElementById('cardNumber').value.trim();
-    const cardExpiry = document.getElementById('cardExpiry').value.trim();
-    const cardCVV = document.getElementById('cardCVV').value.trim();
-    const acceptTerms = document.getElementById('acceptTerms').checked;
-    
-    // Sprint 2: Password validation
-    if (password.length < 6) {
-        alert('Password must be at least 6 characters long!');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-    }
-    
-    // Credit card validation
-    if (!/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/.test(cardNumber)) {
-        alert('Please enter a valid card number (format: 1234 5678 9012 3456)');
-        return;
-    }
-    
-    if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
-        alert('Please enter a valid expiry date (format: MM/YY)');
-        return;
-    }
-    
-    if (!/^\d{3}$/.test(cardCVV)) {
-        alert('Please enter a valid CVV (3 digits)');
-        return;
-    }
-    
-    if (!acceptTerms) {
-        alert('Please accept the Terms & Conditions and Insurance Policy');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/users/register?confirmPassword=${encodeURIComponent(confirmPassword)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username,
-                email,
-                passwordHash: password
-                // Backend UserController has no phone/credit-card fields currently.
-            })
-        });
-        const text = await response.text();
-        if (!response.ok) {
-            throw new Error(getTextError(text, 'Registration failed!'));
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('registerUsername').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const phone = document.getElementById('registerPhone').value.trim();
+        const password = document.getElementById('registerPassword').value.trim();
+        const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+        const cardNumber = document.getElementById('cardNumber').value.trim();
+        const cardExpiry = document.getElementById('cardExpiry').value.trim();
+        const cardCVV = document.getElementById('cardCVV').value.trim();
+        const acceptTerms = document.getElementById('acceptTerms').checked;
+        
+        // Sprint 2: Password validation
+        if (password.length < 6) {
+            alert('Password must be at least 6 characters long!');
+            return;
         }
-        alert(text || 'Registration successful!');
-        // Backend has no card binding endpoint yet, so card data is only front-end validated for now.
-        showAuthMode('login');
-    } catch (error) {
-        console.error('Registration error:', error);
-        alert(error.message || 'Registration failed!');
-    }
-    this.reset();
-});
+        
+        if (password !== confirmPassword) {
+            alert('Passwords do not match!');
+            return;
+        }
+        
+        // Credit card validation
+        if (!/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/.test(cardNumber)) {
+            alert('Please enter a valid card number (format: 1234 5678 9012 3456)');
+            return;
+        }
+        
+        if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+            alert('Please enter a valid expiry date (format: MM/YY)');
+            return;
+        }
+        
+        if (!/^\d{3}$/.test(cardCVV)) {
+            alert('Please enter a valid CVV (3 digits)');
+            return;
+        }
+        
+        if (!acceptTerms) {
+            alert('Please accept the Terms & Conditions and Insurance Policy');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/users/register?confirmPassword=${encodeURIComponent(confirmPassword)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    passwordHash: password
+                    // Backend UserController has no phone/credit-card fields currently.
+                })
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Registration failed!'));
+            }
+            alert(text || 'Registration successful!');
+            // Backend has no card binding endpoint yet, so card data is only front-end validated for now.
+            showAuthMode('login');
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert(error.message || 'Registration failed!');
+        }
+        this.reset();
+    });
+}
 
 // Book form
-document.getElementById('bookForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const userId = getCurrentUserId();
-    if (!userId) {
-        alert('Please login first!');
-        showSection('authSection');
-        showAuthMode('login');
-        return;
-    }
-    const packageId = document.getElementById('packageSelect').value;
-    const selectedOption = document.getElementById('packageSelect').selectedOptions[0];
-    const packagePrice = selectedOption ? Number(selectedOption.dataset.price || 0) : 0;
-    const scooterId = parseInt(document.getElementById('scooterId').value);
-    const scooter = scooters.find(s => s.id === scooterId && s.status === 'available');
-    if (!scooter) {
-        alert('Scooter not available!');
-        return;
-    }
-    try {
-        const response = await fetch('/api/bookings/place', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId,
-                scooterId,
-                totalCost: packagePrice
-                // BookingController has no packageType field in Booking model.
-            })
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(getTextError(errorText, 'Booking failed!'));
+const bookForm = document.getElementById('bookForm');
+if (bookForm) {
+    bookForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userId = getCurrentUserId();
+        if (!userId) {
+            alert('Please login first!');
+            showSection('authSection');
+            showAuthMode('login');
+            return;
         }
-        const booking = await response.json();
-        localStorage.setItem('pendingBookingId', String(booking.id));
-        document.getElementById('bookingDetails').textContent = `Scooter ${scooterId}, Package ID ${packageId}`;
-        showSection('paymentSection');
-    } catch (error) {
-        console.error('Booking error:', error);
-        alert(error.message || 'Booking failed!');
-    }
-    this.reset();
-});
+        const packageId = document.getElementById('packageSelect').value;
+        const selectedOption = document.getElementById('packageSelect').selectedOptions[0];
+        const packagePrice = selectedOption ? Number(selectedOption.dataset.price || 0) : 0;
+        const scooterId = parseInt(document.getElementById('scooterId').value);
+        const scooter = scooters.find(s => s.id === scooterId && s.status === 'available');
+        if (!scooter) {
+            alert('Scooter not available!');
+            return;
+        }
+        try {
+            const response = await fetch('/api/bookings/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    scooterId,
+                    totalCost: packagePrice
+                    // BookingController has no packageType field in Booking model.
+                })
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(getTextError(errorText, 'Booking failed!'));
+            }
+            const booking = await response.json();
+            localStorage.setItem('pendingBookingId', String(booking.id));
+            document.getElementById('bookingDetails').textContent = `Scooter ${scooterId}, Package ID ${packageId}`;
+            showSection('paymentSection');
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert(error.message || 'Booking failed!');
+        }
+        this.reset();
+    });
+}
 
 // Payment form
-document.getElementById('paymentForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const cardNumber = document.getElementById('paymentCardNumber').value.trim();
-    if (!cardNumber) {
-        alert('Please enter bank card number!');
-        return;
-    }
-    const bookingId = localStorage.getItem('pendingBookingId');
-    if (!bookingId) {
-        alert('No pending booking!');
-        return;
-    }
-    try {
-        const response = await fetch(`/api/bookings/pay/${bookingId}?cardNumber=${encodeURIComponent(cardNumber)}`, {
-            method: 'POST',
-            headers: { 'Accept': 'text/plain' }
-        });
-        const text = await response.text();
-        if (!response.ok) {
-            throw new Error(getTextError(text, 'Payment failed!'));
+const paymentForm = document.getElementById('paymentForm');
+if (paymentForm) {
+    paymentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const cardNumber = document.getElementById('paymentCardNumber').value.trim();
+        if (!cardNumber) {
+            alert('Please enter bank card number!');
+            return;
         }
-        localStorage.removeItem('pendingBookingId');
-        await loadScooters();
-        renderScooters();
-        document.getElementById('confirmationDetails').innerHTML = `
-            <p>User: ${getCurrentUsername()}</p>
-            <p>Booking ID: ${bookingId}</p>
-            <p>Status: paid</p>
-        `;
-        alert(text || 'Payment successful!');
-        updateNav();
-        showSection('successSection');
-    } catch (error) {
-        console.error('Payment error:', error);
-        alert(error.message || 'Payment failed!');
-    }
-    this.reset();
-});
+        const bookingId = localStorage.getItem('pendingBookingId');
+        if (!bookingId) {
+            alert('No pending booking!');
+            return;
+        }
+        try {
+            const response = await fetch(`/api/bookings/pay/${bookingId}?cardNumber=${encodeURIComponent(cardNumber)}`, {
+                method: 'POST',
+                headers: { 'Accept': 'text/plain' }
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Payment failed!'));
+            }
+            localStorage.removeItem('pendingBookingId');
+            await loadScooters();
+            renderScooters();
+            document.getElementById('confirmationDetails').innerHTML = `
+                <p>User: ${getCurrentUsername()}</p>
+                <p>Booking ID: ${bookingId}</p>
+                <p>Status: paid</p>
+            `;
+            alert(text || 'Payment successful!');
+            updateNav();
+            showSection('successSection');
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert(error.message || 'Payment failed!');
+        }
+        this.reset();
+    });
+}
 
 // End rental
 async function endRental(bookingId) {

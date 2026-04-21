@@ -36,8 +36,8 @@
     <section id="authSection" class="auth-section">
         <h2><i class="fa-solid fa-user"></i> Authentication</h2>
         <div class="auth-tabs">
-            <button type="button" id="showLoginBtn" class="tab-btn active"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
-            <button type="button" id="showRegisterBtn" class="tab-btn"><i class="fa-solid fa-user-plus"></i> Register</button>
+            <button type="button" id="showLoginBtn" class="tab-btn active" onclick="showAuthMode('login')"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
+            <button type="button" id="showRegisterBtn" class="tab-btn" onclick="showAuthMode('register')"><i class="fa-solid fa-user-plus"></i> Register</button>
         </div>
         <div class="form-container">
             <div id="loginPanel" class="form-panel">
@@ -50,7 +50,7 @@
                         <input type="password" id="loginPassword" placeholder="Enter password" required>
                         <button type="submit"><i class="fa-solid fa-check"></i> Login</button>
                     </form>
-                    <p class="switch-auth">No account yet? <a href="#" id="toRegisterLink">Register here</a>.</p>
+                    <p class="switch-auth">No account yet? <a href="#" id="toRegisterLink" onclick="showAuthMode('register'); return false;">Register here</a>.</p>
                 </div>
             </div>
             <div id="registerPanel" class="form-panel" style="display:none;">
@@ -100,7 +100,7 @@
                             <button type="submit"><i class="fa-solid fa-check"></i> Register & Bind Card</button>
                         </div>
                     </form>
-                    <p class="switch-auth">Already have an account? <a href="#" id="toLoginLink">Login here</a>.</p>
+                    <p class="switch-auth">Already have an account? <a href="#" id="toLoginLink" onclick="showAuthMode('login'); return false;">Login here</a>.</p>
                 </div>
             </div>
         </div>
@@ -761,6 +761,6 @@
     </div>
 </footer>
 
-<script src="js/script.js"></script>
+<script src="js/script.js?v=20260421"></script>
 </body>
 </html>
