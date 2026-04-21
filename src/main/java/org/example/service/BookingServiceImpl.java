@@ -1,15 +1,14 @@
 package org.example.service;
 
 import org.example.dao.BookingDAO;
+import org.example.dao.PackageDAO;
 import org.example.dao.ScooterDAO;
-import org.example.model.Booking;
-import org.example.model.RevenueReport;
-import org.example.model.Scooter;
+import org.example.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.example.model.DailyRevenueReport;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 @Service
@@ -25,10 +24,13 @@ public class BookingServiceImpl implements BookingService {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
+    private PackageDAO packageDAO;
+
+    @Autowired
     private NotificationService notificationService; // ：呼叫邮差
 
     @Override
-    @Transactional // 这是“事务”标签。意思是下面的动作要么全成功，要么全失败，不能只成功一半！
+    @Transactional // 这个标签下面的动作要么全成功，要么全失败
     public void placeBooking(Booking booking) {
         // 检查车子存不存在
         Scooter scooter = scooterDAO.getScooterById(booking.getScooterId());
@@ -40,6 +42,29 @@ public class BookingServiceImpl implements BookingService {
         if (!"available".equals(scooter.getStatus())) {
             throw new RuntimeException("Validation Failed: Scooter is already in use or under maintenance!");
         }
+
+        // 根据套餐 ID 自动算钱
+        // 先去价目表里查这个套餐的详情
+        RentalPackage selectedPackage = packageDAO.findById(booking.getPackageId());
+        if (selectedPackage == null) {
+            throw new RuntimeException("Error: Package not found!");
+        }
+
+        // 算出原价和折扣
+        BigDecimal originalPrice = selectedPackage.getPrice();
+        Integer discount = selectedPackage.getDiscountPercent();
+
+        // 计算折扣后价格
+        BigDecimal finalPrice = originalPrice;
+        if (discount > 0) {
+            BigDecimal discountRate = BigDecimal.valueOf(100 - discount).divide(BigDecimal.valueOf(100));
+            finalPrice = originalPrice.multiply(discountRate);
+        }
+
+        // 4. 把算好的价格塞回 booking 对象里！
+        booking.setTotalCost(finalPrice);
+
+
 
         // 逻辑通过，创建订单
         booking.setStatus("pending");

@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
-import java.sql.SQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Repository
@@ -34,13 +33,18 @@ public class PackageDAOImpl implements PackageDAO {
     @Override
     public RentalPackage findById(int id) {
         String sql = "SELECT * FROM packages WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+
+        List<RentalPackage> result = jdbcTemplate.query(sql, (rs, rowNum) -> {
             RentalPackage p = new RentalPackage();
             p.setId(rs.getInt("id"));
             p.setPackageType(rs.getString("package_type"));
             p.setPrice(rs.getBigDecimal("price"));
             p.setDescription(rs.getString("description"));
+            // 别忘了咱们 Sprint2 新加的折扣字段哦！
+            p.setDiscountPercent(rs.getInt("discount_percent"));
             return p;
         }, id);
+
+        return result.isEmpty() ? null : result.get(0);
     }
 }
