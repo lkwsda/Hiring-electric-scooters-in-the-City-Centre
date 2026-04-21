@@ -11,6 +11,9 @@ public class RentalPackage {
     private String packageType;
     private BigDecimal price;
     private String description;
+    // 折扣
+    private Integer discountPercent;
+
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -20,4 +23,6 @@ public class RentalPackage {
     public void setPrice(BigDecimal price) { this.price = price; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public Integer getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Integer discountPercent) {this.discountPercent = discountPercent;}
 }

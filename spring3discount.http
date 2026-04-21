@@ -1,0 +1,10 @@
+### 测试“折扣计算”功能 尝试打了 8 折的“一周套餐”
+# 注意：不再传 totalCost，而是传 packageId
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scooterId": 1,
+  "packageId": 4
+}

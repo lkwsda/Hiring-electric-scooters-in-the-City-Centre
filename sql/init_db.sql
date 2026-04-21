@@ -35,7 +35,8 @@ CREATE TABLE packages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     package_type VARCHAR(50) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    description VARCHAR(255)
+    description VARCHAR(255),
+    discount_percent INT DEFAULT 0 -- 默认是 0 (不打折)
 );
 
 #  Table: bookings
@@ -75,11 +76,12 @@ INSERT INTO users (username, email, password_hash, role)
 VALUES ('admin', 'admin@scooter.com', '123456', 'admin');
 
 -- 预置默认套餐
-INSERT INTO packages (package_type, price, description) VALUES
-    ('1 Hour', 5.00, 'Basic rental for short trips'),
-    ('4 Hours', 15.00, 'Discounted half-day rental'),
-    ('1 Day', 30.00, 'Full day access for city explorers'),
-    ('1 Week', 120.00, 'Premium weekly pass for commuters');
+INSERT INTO packages (package_type, price, description,discount_percent) VALUES
+                                                            ('1 Hour', 5.00, 'Basic rental for short trips', 0),
+                                                            ('4 Hours', 15.00, 'Discounted half-day rental', 0),
+                                                            ('1 Day', 30.00, 'Full day access for city explorers', 0),
+                                                            ('1 Week', 120.00, 'Premium weekly pass for commuters', 20); -- 假设一周套餐有 8 折优惠，后续要改套餐折扣这里直接改
+
 
 -- 预置滑板车数据
 INSERT INTO scooters (model, battery_level, latitude, longitude, status) VALUES

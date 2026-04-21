@@ -14,11 +14,14 @@ public class Booking {
 
     private String guestName;
     private String guestPhone;
+    private Integer packageId;
 
-    public String getStatus() {
-        return status;
-    }
 
+    // get set
+    public Integer getPackageId() {return packageId;}
+    public void setPackageId(Integer packageId) {this.packageId = packageId;}
+
+    public String getStatus() {return status;}
     public void setStatus(String status) {
         this.status = status;
     }
@@ -72,7 +75,8 @@ public class Booking {
 
     public String getGuestName() {return guestName;}
     public void setGuestName(String guestName) {this.guestName = guestName;}
-    public String getGuestPhone() {return guestName;}
-    public void setGuestPhone(String guestName) {this.guestName = guestName;}
+
+    public String getGuestPhone() { return guestPhone; }
+    public void setGuestPhone(String guestPhone) { this.guestPhone = guestPhone; }
 
 }
