@@ -1,8 +1,6 @@
 """
-单接口自动化测试（新手版）：用户登录接口
-
+用户登录接口
 主要测试接口:POST /api/users/login
-前置步骤：自动调用注册接口创建一个测试用户（避免你手工准备账号）
 """
 
 from __future__ import annotations

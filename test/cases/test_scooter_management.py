@@ -1,11 +1,9 @@
 """
-单接口自动化测试（新手版）：车辆管理接口
-
+车辆管理接口
 测试接口：
 1) POST /api/scooters/add
 2) GET /api/scooters/{id}
 3) DELETE /api/scooters/{id}
-运行前提：后端服务已启动，默认地址 http://localhost:8080
 """
 
 from __future__ import annotations

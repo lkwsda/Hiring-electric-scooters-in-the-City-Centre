@@ -1,8 +1,6 @@
 """
-单接口自动化测试（新手版）：用户注册接口
-
+用户注册接口
 测试接口:POST /api/users/register
-运行前提：后端服务已启动，默认地址 http://localhost:8080
 """
 
 from __future__ import annotations

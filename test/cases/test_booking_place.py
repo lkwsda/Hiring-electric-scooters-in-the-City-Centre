@@ -1,8 +1,6 @@
 """
-单接口自动化测试（新手版）：下单接口
-
+下单接口
 测试接口:POST /api/bookings/place
-运行前提：后端服务已启动，默认地址 http://localhost:8080
 """
 
 from __future__ import annotations
