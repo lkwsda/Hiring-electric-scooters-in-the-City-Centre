@@ -15,6 +15,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+<a href="#mainContent" class="skip-link">Skip to main content</a>
+
+<div class="accessibility-toolbar" aria-label="Accessibility tools">
+    <button id="fontDecreaseBtn" type="button" aria-label="Decrease font size">A-</button>
+    <button id="fontIncreaseBtn" type="button" aria-label="Increase font size">A+</button>
+    <button id="highContrastBtn" type="button" aria-pressed="false">High Contrast</button>
+</div>
+
+<div id="liveStatus" class="sr-only" aria-live="polite"></div>
+
 <!-- 头部导航 -->
 <header>
     <div class="container">
@@ -23,6 +33,8 @@
             <a href="#" id="homeLink"><i class="fa-solid fa-home"></i> Home</a>
             <a href="#" id="scootersLink"><i class="fa-solid fa-list"></i> Available Scooters</a>
             <a href="#" id="myBookingsLink"><i class="fa-solid fa-calendar-check"></i> My Rentals</a>
+            <a href="#" id="feedbackLink"><i class="fa-solid fa-triangle-exclamation"></i> Feedback</a>
+            <a href="#" id="analyticsLink"><i class="fa-solid fa-chart-line"></i> Analytics</a>
             <a href="#" id="returnLink" style="display:none;"><i class="fa-solid fa-undo"></i> Return Scooter</a>
             <a href="#" id="adminLink"><i class="fa-solid fa-cog"></i> Admin</a>
             <a href="#" id="loginLink"><i class="fa-solid fa-sign-in-alt"></i> Login</a>
@@ -31,7 +43,7 @@
     </div>
 </header>
 <!-- 主体内容 -->
-<main class="container">
+<main class="container" id="mainContent">
     <!-- 登录/注册 -->
     <section id="authSection" class="auth-section">
         <h2><i class="fa-solid fa-user"></i> Authentication</h2>
@@ -102,6 +114,94 @@
                     </form>
                     <p class="switch-auth">Already have an account? <a href="#" id="toLoginLink" onclick="showAuthMode('login'); return false;">Login here</a>.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 故障反馈 F13/F14/F15 -->
+    <section id="feedbackSection" class="feedback-section">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Issue Feedback</h2>
+            <p class="section-subtitle">Report scooter issues and help us keep the fleet safe.</p>
+        </div>
+        <div class="form-container">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Submit an Issue (F13)</h3>
+                <form id="issueForm">
+                    <label for="issueScooterId">Scooter ID</label>
+                    <input type="number" id="issueScooterId" placeholder="Enter scooter ID" required>
+
+                    <label for="issueSeverity">Issue Severity</label>
+                    <select id="issueSeverity" required>
+                        <option value="normal">Normal</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+
+                    <label for="issueDescription">Description</label>
+                    <textarea id="issueDescription" rows="4" placeholder="Describe the issue in detail" required></textarea>
+
+                    <p class="hint-text">Priority rule (F14): urgent => high, normal => low.</p>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
+                </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-bell"></i> High Priority Queue (F15)</h3>
+                <p class="hint-text">Admin view is filtered to high priority issues only.</p>
+                <div id="highPriorityIssueList" class="issue-list">
+                    <p>No high priority issues yet.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 收入与折扣分析 F21/F22/F23 -->
+    <section id="analyticsSection" class="analytics-section">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-chart-line"></i> Analytics & Discounts</h2>
+            <p class="section-subtitle">Revenue insights and discount simulation tools.</p>
+        </div>
+
+        <div class="sync-status" id="syncStatusBanner">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span id="syncStatusText">Multi-client sync active. Last sync: not yet.</span>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-chart-column"></i> Weekly Revenue (F21)</h3>
+                <canvas id="weeklyRevenueChart" width="640" height="280" aria-label="Weekly revenue bar chart"></canvas>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend (F21)</h3>
+                <canvas id="dailyRevenueChart" width="640" height="280" aria-label="Daily revenue line chart"></canvas>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-box">
+                <h3><i class="fa-solid fa-tags"></i> Discount Calculator (F22)</h3>
+                <form id="discountForm">
+                    <label for="discountBasePrice">Base Price</label>
+                    <input type="number" id="discountBasePrice" min="0" step="0.01" value="15" required>
+
+                    <label for="discountUserType">User Type</label>
+                    <select id="discountUserType" required>
+                        <option value="regular">Regular</option>
+                        <option value="student">Student</option>
+                        <option value="senior">Senior</option>
+                        <option value="high-frequency">High Frequency User</option>
+                    </select>
+
+                    <label for="discountRideCount">Rides in Last 30 Days</label>
+                    <input type="number" id="discountRideCount" min="0" value="0" required>
+
+                    <button type="submit"><i class="fa-solid fa-calculator"></i> Calculate</button>
+                </form>
+
+                <div id="discountResult" class="discount-result" aria-live="polite">
+                    Enter values to preview discount.
+                </div>
+                <p class="hint-text">Note: final billing discount application requires dedicated backend pricing rules API.</p>
             </div>
         </div>
     </section>
@@ -749,6 +849,12 @@
         <h2><i class="fa-solid fa-chart-bar"></i> Weekly Revenue Stats</h2>
         <div class="stats-table" id="statsTable">
             <!-- 统计表格JS -->
+        </div>
+        <div class="form-box" style="margin-top: 20px;">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues (F15)</h3>
+            <div id="adminHighPriorityIssues" class="issue-list">
+                <p>No data loaded.</p>
+            </div>
         </div>
     </section>
 </main>

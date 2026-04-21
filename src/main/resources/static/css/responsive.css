@@ -45,6 +45,23 @@
     .scooter-section, .rent-section, .auth-section, .admin-login-section, .home-section, .payment-section, .success-section, .my-bookings-section, .admin-config-section, .admin-stats-section {
         padding: 20px;
     }
+
+    .accessibility-toolbar {
+        top: auto;
+        bottom: 12px;
+        right: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sync-status {
+        font-size: 0.92rem;
+    }
+
     .package-grid {
         grid-template-columns: 1fr;
     }

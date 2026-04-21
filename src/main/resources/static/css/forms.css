@@ -5,9 +5,26 @@
     gap: 30px;
 }
 
+.auth-section .form-container {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.auth-section .form-panel {
+    width: 100%;
+}
+
+.auth-section .form-box {
+    width: min(100%, 980px);
+    margin: 0 auto;
+}
+
+#loginForm {
+    max-width: 620px;
+}
+
 #registerForm {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
 }
 
@@ -39,6 +56,10 @@
 }
 
 @media (max-width: 780px) {
+    .auth-section .form-box {
+        width: 100%;
+    }
+
     #registerForm {
         grid-template-columns: 1fr;
     }
