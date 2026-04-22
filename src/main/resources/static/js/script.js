@@ -836,8 +836,9 @@ if (bookForm) {
                 body: JSON.stringify({
                     userId,
                     scooterId,
+                    packageId: Number(packageId),
+                    // Keep totalCost for backward compatibility; backend recalculates from packageId.
                     totalCost: packagePrice
-                    // BookingController has no packageType field in Booking model.
                 })
             });
             if (!response.ok) {

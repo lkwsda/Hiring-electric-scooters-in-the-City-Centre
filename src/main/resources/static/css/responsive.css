@@ -276,17 +276,22 @@
 .terms-checkbox {
     margin: 15px 0;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
 }
 
 .terms-checkbox input[type="checkbox"] {
-    margin-top: 3px;
+    width: auto;
+    margin: 0;
+    flex: 0 0 auto;
 }
 
 .terms-checkbox label {
     font-size: 0.9rem;
     line-height: 1.4;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .terms-checkbox a {
