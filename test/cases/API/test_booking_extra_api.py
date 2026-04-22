@@ -16,7 +16,7 @@ from __future__ import annotations
 from decimal import Decimal
 import os
 import time
-from typing import Callable, List, Tuple
+from typing import Callable, List, Set, Tuple
 
 import requests
 
@@ -37,6 +37,9 @@ BOOKING_EXTEND_URL = f"{BASE_URL}/api/bookings/extend"
 BOOKING_ADMIN_PLACE_URL = f"{BASE_URL}/api/bookings/admin/place"
 BOOKING_REVENUE_URL = f"{BASE_URL}/api/bookings/admin/revenue"
 BOOKING_DAILY_REVENUE_URL = f"{BASE_URL}/api/bookings/admin/revenue/daily"
+
+
+CREATED_SCOOTER_IDS: Set[int] = set()
 
 
 def create_test_user_and_get_id(prefix: str = "booking_extra") -> int:
@@ -90,8 +93,9 @@ def ensure_available_scooter_id() -> int:
                 return scooter["id"]
 
     suffix = str(int(time.time() * 1000))
+    model_name = f"booking_extra_model_{suffix}"
     add_payload = {
-        "model": f"booking_extra_model_{suffix}",
+        "model": model_name,
         "batteryLevel": 100,
         "latitude": 53.8012,
         "longitude": -1.5485,
@@ -108,6 +112,12 @@ def ensure_available_scooter_id() -> int:
     )
 
     refreshed = refresh_response.json()
+    for scooter in refreshed:
+        if scooter.get("model") == model_name and isinstance(scooter.get("id"), int):
+            new_id = scooter["id"]
+            CREATED_SCOOTER_IDS.add(new_id)
+            return new_id
+
     for scooter in refreshed:
         if scooter.get("status") == "available" and isinstance(scooter.get("id"), int):
             return scooter["id"]
@@ -159,18 +169,47 @@ def get_user_bookings(user_id: int) -> list:
     return data
 
 
+def cleanup_booking_if_possible(booking_id: int | None) -> None:
+    """收尾：尽量取消订单，释放车辆。"""
+    if not isinstance(booking_id, int):
+        return
+    try:
+        requests.post(f"{BOOKING_CANCEL_URL}/{booking_id}", timeout=10)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def cleanup_created_scooters() -> None:
+    """收尾：尽力删除本轮自动新增车辆。"""
+    for scooter_id in list(CREATED_SCOOTER_IDS):
+        try:
+            response = requests.delete(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+            if response.status_code in (200, 404):
+                CREATED_SCOOTER_IDS.discard(scooter_id)
+            else:
+                print(
+                    f"WARN - 删除新增车辆失败，scooterId={scooter_id}，状态码 {response.status_code}，响应：{response.text}"
+                )
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARN - 删除新增车辆异常，scooterId={scooter_id}，异常：{exc}")
+
+
 def test_get_user_bookings_contains_new_booking() -> None:
     """用例1：创建订单后，用户订单列表应包含该记录。"""
     user_id = create_test_user_and_get_id("bookings_user")
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
-    created = place_booking(user_id, scooter_id, package_id)
-    booking_id = created["id"]
+    booking_id: int | None = None
+    try:
+        created = place_booking(user_id, scooter_id, package_id)
+        booking_id = created["id"]
 
-    bookings = get_user_bookings(user_id)
-    target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
-    assert target is not None, f"用户订单中未找到刚创建记录，bookingId={booking_id}"
+        bookings = get_user_bookings(user_id)
+        target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
+        assert target is not None, f"用户订单中未找到刚创建记录，bookingId={booking_id}"
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_pay_booking_success() -> None:
@@ -179,18 +218,22 @@ def test_pay_booking_success() -> None:
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
-    created = place_booking(user_id, scooter_id, package_id)
-    booking_id = created["id"]
+    booking_id: int | None = None
+    try:
+        created = place_booking(user_id, scooter_id, package_id)
+        booking_id = created["id"]
 
-    pay_response = requests.post(f"{BOOKING_PAY_URL}/{booking_id}", params={"cardNumber": "123456789012"}, timeout=10)
-    assert pay_response.status_code == 200, (
-        f"支付应成功，实际状态码 {pay_response.status_code}，响应：{pay_response.text}"
-    )
+        pay_response = requests.post(f"{BOOKING_PAY_URL}/{booking_id}", params={"cardNumber": "123456789012"}, timeout=10)
+        assert pay_response.status_code == 200, (
+            f"支付应成功，实际状态码 {pay_response.status_code}，响应：{pay_response.text}"
+        )
 
-    bookings = get_user_bookings(user_id)
-    target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
-    assert target is not None, f"支付后未找到目标订单，bookingId={booking_id}"
-    assert target.get("status") == "paid", f"支付后状态应为 paid，响应元素：{target}"
+        bookings = get_user_bookings(user_id)
+        target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
+        assert target is not None, f"支付后未找到目标订单，bookingId={booking_id}"
+        assert target.get("status") == "paid", f"支付后状态应为 paid，响应元素：{target}"
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_cancel_booking_success() -> None:
@@ -199,18 +242,22 @@ def test_cancel_booking_success() -> None:
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
-    created = place_booking(user_id, scooter_id, package_id)
-    booking_id = created["id"]
+    booking_id: int | None = None
+    try:
+        created = place_booking(user_id, scooter_id, package_id)
+        booking_id = created["id"]
 
-    cancel_response = requests.post(f"{BOOKING_CANCEL_URL}/{booking_id}", timeout=10)
-    assert cancel_response.status_code == 200, (
-        f"取消订单应成功，实际状态码 {cancel_response.status_code}，响应：{cancel_response.text}"
-    )
+        cancel_response = requests.post(f"{BOOKING_CANCEL_URL}/{booking_id}", timeout=10)
+        assert cancel_response.status_code == 200, (
+            f"取消订单应成功，实际状态码 {cancel_response.status_code}，响应：{cancel_response.text}"
+        )
 
-    bookings = get_user_bookings(user_id)
-    target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
-    assert target is not None, f"取消后未找到目标订单，bookingId={booking_id}"
-    assert target.get("status") == "canceled", f"取消后状态应为 canceled，响应元素：{target}"
+        bookings = get_user_bookings(user_id)
+        target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
+        assert target is not None, f"取消后未找到目标订单，bookingId={booking_id}"
+        assert target.get("status") == "canceled", f"取消后状态应为 canceled，响应元素：{target}"
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_end_trip_releases_scooter() -> None:
@@ -219,20 +266,24 @@ def test_end_trip_releases_scooter() -> None:
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
-    created = place_booking(user_id, scooter_id, package_id)
-    booking_id = created["id"]
+    booking_id: int | None = None
+    try:
+        created = place_booking(user_id, scooter_id, package_id)
+        booking_id = created["id"]
 
-    end_response = requests.post(f"{BOOKING_END_URL}/{booking_id}", timeout=10)
-    assert end_response.status_code == 200, (
-        f"结束行程应成功，实际状态码 {end_response.status_code}，响应：{end_response.text}"
-    )
+        end_response = requests.post(f"{BOOKING_END_URL}/{booking_id}", timeout=10)
+        assert end_response.status_code == 200, (
+            f"结束行程应成功，实际状态码 {end_response.status_code}，响应：{end_response.text}"
+        )
 
-    scooter_response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
-    assert scooter_response.status_code == 200, (
-        f"结束后查询车辆失败，状态码 {scooter_response.status_code}，响应：{scooter_response.text}"
-    )
-    scooter = scooter_response.json()
-    assert scooter.get("status") == "available", f"结束后车辆应为 available，响应元素：{scooter}"
+        scooter_response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+        assert scooter_response.status_code == 200, (
+            f"结束后查询车辆失败，状态码 {scooter_response.status_code}，响应：{scooter_response.text}"
+        )
+        scooter = scooter_response.json()
+        assert scooter.get("status") == "available", f"结束后车辆应为 available，响应元素：{scooter}"
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_extend_paid_booking_increases_total_cost() -> None:
@@ -241,33 +292,37 @@ def test_extend_paid_booking_increases_total_cost() -> None:
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
-    created = place_booking(user_id, scooter_id, package_id)
-    booking_id = created["id"]
-    before_cost = Decimal(str(created.get("totalCost")))
+    booking_id: int | None = None
+    try:
+        created = place_booking(user_id, scooter_id, package_id)
+        booking_id = created["id"]
+        before_cost = Decimal(str(created.get("totalCost")))
 
-    pay_response = requests.post(f"{BOOKING_PAY_URL}/{booking_id}", params={"cardNumber": "888877776666"}, timeout=10)
-    assert pay_response.status_code == 200, (
-        f"前置失败：支付订单失败，状态码 {pay_response.status_code}，响应：{pay_response.text}"
-    )
+        pay_response = requests.post(f"{BOOKING_PAY_URL}/{booking_id}", params={"cardNumber": "888877776666"}, timeout=10)
+        assert pay_response.status_code == 200, (
+            f"前置失败：支付订单失败，状态码 {pay_response.status_code}，响应：{pay_response.text}"
+        )
 
-    extra_cost = Decimal("5.50")
-    extend_response = requests.post(
-        f"{BOOKING_EXTEND_URL}/{booking_id}",
-        params={"extraCost": str(extra_cost)},
-        timeout=10,
-    )
-    assert extend_response.status_code == 200, (
-        f"延长订单应成功，实际状态码 {extend_response.status_code}，响应：{extend_response.text}"
-    )
+        extra_cost = Decimal("5.50")
+        extend_response = requests.post(
+            f"{BOOKING_EXTEND_URL}/{booking_id}",
+            params={"extraCost": str(extra_cost)},
+            timeout=10,
+        )
+        assert extend_response.status_code == 200, (
+            f"延长订单应成功，实际状态码 {extend_response.status_code}，响应：{extend_response.text}"
+        )
 
-    bookings = get_user_bookings(user_id)
-    target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
-    assert target is not None, f"延长后未找到目标订单，bookingId={booking_id}"
+        bookings = get_user_bookings(user_id)
+        target = next((b for b in bookings if isinstance(b, dict) and b.get("id") == booking_id), None)
+        assert target is not None, f"延长后未找到目标订单，bookingId={booking_id}"
 
-    after_cost = Decimal(str(target.get("totalCost")))
-    assert after_cost == before_cost + extra_cost, (
-        f"延长后总金额不正确，期望 {before_cost + extra_cost}，实际 {after_cost}"
-    )
+        after_cost = Decimal(str(target.get("totalCost")))
+        assert after_cost == before_cost + extra_cost, (
+            f"延长后总金额不正确，期望 {before_cost + extra_cost}，实际 {after_cost}"
+        )
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_admin_place_booking_success() -> None:
@@ -280,14 +335,19 @@ def test_admin_place_booking_success() -> None:
         "guestPhone": "13900000000",
         "totalCost": "18.80",
     }
-    response = requests.post(BOOKING_ADMIN_PLACE_URL, json=payload, timeout=10)
-    assert response.status_code == 200, (
-        f"管理员代下单应成功，实际状态码 {response.status_code}，响应：{response.text}"
-    )
+    booking_id: int | None = None
+    try:
+        response = requests.post(BOOKING_ADMIN_PLACE_URL, json=payload, timeout=10)
+        assert response.status_code == 200, (
+            f"管理员代下单应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        )
 
-    data = response.json()
-    assert isinstance(data.get("id"), int), f"代下单返回 booking id 非法，响应：{data}"
-    assert data.get("status") == "paid", f"代下单状态应为 paid，响应：{data}"
+        data = response.json()
+        booking_id = data.get("id")
+        assert isinstance(booking_id, int), f"代下单返回 booking id 非法，响应：{data}"
+        assert data.get("status") == "paid", f"代下单状态应为 paid，响应：{data}"
+    finally:
+        cleanup_booking_if_possible(booking_id)
 
 
 def test_revenue_endpoints_success() -> None:
@@ -341,6 +401,8 @@ def run_all_tests() -> None:
         except Exception as exc:  # noqa: BLE001
             failed += 1
             print(f"FAIL - {name} -> {exc}")
+
+    cleanup_created_scooters()
 
     print("\n测试结束")
     print(f"通过: {passed}")

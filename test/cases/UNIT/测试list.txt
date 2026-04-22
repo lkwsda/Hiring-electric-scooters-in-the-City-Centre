@@ -1,0 +1,50 @@
+P0 业务规则单测（必须先做）
+
+UserServiceImpl.registerUser，参考 src/main/java/org/example/service/UserServiceImpl.java#L16
+要测：密码为空或长度<6 抛异常；确认密码不一致抛异常；用户名已存在抛异常；邮箱已存在抛异常；全部合法时调用 DAO 新增用户一次。
+UserServiceImpl.login，参考 src/main/java/org/example/service/UserServiceImpl.java#L49
+要测：用户存在且密码正确返回 User；用户不存在抛异常；密码错误抛异常。
+ScooterServiceImpl.addScooter，参考 src/main/java/org/example/service/ScooterServiceImpl.java#L16
+要测：电量<100 抛异常；电量=100 时调用 DAO 新增。
+PackageServiceImpl.updatePackagePrice，参考 src/main/java/org/example/service/PackageServiceImpl.java#L20
+要测：价格<0 抛异常；价格=0 或正数时调用 DAO 更新。
+BookingServiceImpl.placeBooking，参考 src/main/java/org/example/service/BookingServiceImpl.java#L38
+要测：车辆不存在抛异常；车辆非 available 抛异常；普通用户无折扣下单后状态为 pending 且车辆改 rented；周骑行>480分钟应用 8 折；年龄<22 或 >60 应用 9 折；当两种条件都满足时折扣取更低价格（当前逻辑是 8 折优先）。
+BookingServiceImpl.processPayment，参考 src/main/java/org/example/service/BookingServiceImpl.java#L118
+要测：卡号空抛异常；订单状态非 pending 抛异常；pending 支付成功后状态更新为 paid，并调用通知服务发送确认。
+BookingServiceImpl.cancelBooking，参考 src/main/java/org/example/service/BookingServiceImpl.java#L152
+要测：订单不存在抛异常；已 canceled 再取消抛异常；正常取消时订单改 canceled 且车辆改 available。
+BookingServiceImpl.endTrip，参考 src/main/java/org/example/service/BookingServiceImpl.java#L94
+要测：查不到 scooterId 抛异常；正常结束时车辆改 available 且订单写入结束时间。
+BookingServiceImpl.extendBooking，参考 src/main/java/org/example/service/BookingServiceImpl.java#L189
+要测：订单不存在抛异常；状态非 paid 抛异常；paid 时总价=旧总价+extraCost 并更新。
+BookingServiceImpl.adminProxyBooking，参考 src/main/java/org/example/service/BookingServiceImpl.java#L215
+要测：guestName 为空抛异常；车辆不可用抛异常；成功时订单状态设为 paid 且车辆改 rented。
+IssueServiceImpl.resolveIssue，参考 src/main/java/org/example/service/IssueServiceImpl.java#L35
+要测：调用 issueDAO.updateStatus(issueId, resolved)；目前还未实现车辆改 maintenance，建议先加“当前行为”测试，后续功能补上再改测试。
+BookingServiceImpl 报表查询，参考 src/main/java/org/example/service/BookingServiceImpl.java#L181 和 src/main/java/org/example/service/BookingServiceImpl.java#L239
+要测：周报/日报调用对应 DAO 并原样返回结果。
+P1 Controller 单测（建议做）
+
+UserController，参考 src/main/java/org/example/controller/UserController.java
+要测：注册成功返回文案；登录成功返回 User JSON；Service 抛 RuntimeException 时返回 400。
+ScooterController，参考 src/main/java/org/example/controller/ScooterController.java
+要测：列表查询、按 id 查询、新增、删除路径均能正确调用 Service 并返回预期响应。
+PackageController，参考 src/main/java/org/example/controller/PackageController.java
+要测：查询返回列表；更新价格成功返回文案；非法价格路径下返回 400。
+BookingController，参考 src/main/java/org/example/controller/BookingController.java
+要测：place/pay/cancel/end/extend/admin place/revenue/revenue daily 各端点的成功与错误映射。
+IssueController，参考 src/main/java/org/example/controller/IssueController.java
+要测：report/getAll/resolve 的正常路径；Service 异常时 400。
+P1 全局异常处理单测（建议做）
+
+GlobalExceptionHandler，参考 src/main/java/org/example/exception/GlobalExceptionHandler.java#L11
+要测：RuntimeException 被统一转换为 400，响应体为异常 message。
+P2 辅助类单测（可选）
+
+NotificationServiceImpl.sendBookingConfirmation，参考 src/main/java/org/example/service/NotificationServiceImpl.java#L12
+要测：传入合法 Booking 不抛异常；可选校验日志内容包含 userId/scooterId/totalCost。
+不建议作为“纯单元测试”的部分
+
+DAO 实现层（JDBC SQL），更适合做集成测试而不是 Mock 单测。
+参考目录：src/main/java/org/example/dao

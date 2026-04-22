@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Callable, List, Tuple
+from typing import Callable, List, Set, Tuple
 
 import requests
 
@@ -20,6 +20,9 @@ ADD_SCOOTER_URL = f"{BASE_URL}/api/scooters/add"
 PACKAGES_URL = f"{BASE_URL}/api/packages"
 PLACE_BOOKING_URL = f"{BASE_URL}/api/bookings/place"
 CANCEL_BOOKING_URL = f"{BASE_URL}/api/bookings/cancel"
+
+
+CREATED_SCOOTER_IDS: Set[int] = set()
 
 
 def create_test_user_and_get_id() -> int:
@@ -71,8 +74,9 @@ def ensure_available_scooter_id() -> int:
 
     # 如果当前没有可用车，则自动新增一辆
     suffix = str(int(time.time() * 1000))
+    model_name = f"autotest_model_{suffix}"
     add_payload = {
-        "model": f"autotest_model_{suffix}",
+        "model": model_name,
         "batteryLevel": 100,
         "latitude": 53.8012,
         "longitude": -1.5485,
@@ -90,6 +94,12 @@ def ensure_available_scooter_id() -> int:
     )
 
     refreshed_scooters = refresh_response.json()
+    for scooter in refreshed_scooters:
+        if scooter.get("model") == model_name and isinstance(scooter.get("id"), int):
+            new_id = scooter["id"]
+            CREATED_SCOOTER_IDS.add(new_id)
+            return new_id
+
     for scooter in refreshed_scooters:
         if scooter.get("status") == "available" and isinstance(scooter.get("id"), int):
             return scooter["id"]
@@ -130,6 +140,21 @@ def cleanup_booking_if_possible(booking_id: int | None) -> None:
     if not isinstance(booking_id, int):
         return
     requests.post(f"{CANCEL_BOOKING_URL}/{booking_id}", timeout=10)
+
+
+def cleanup_created_scooters() -> None:
+    """收尾：尽力删除本轮自动新增且未被业务长期引用的车辆。"""
+    for scooter_id in list(CREATED_SCOOTER_IDS):
+        try:
+            response = requests.delete(f"{SCOOTERS_URL}/{scooter_id}", timeout=10)
+            if response.status_code in (200, 404):
+                CREATED_SCOOTER_IDS.discard(scooter_id)
+            else:
+                print(
+                    f"WARN - 删除新增车辆失败，scooterId={scooter_id}，状态码 {response.status_code}，响应：{response.text}"
+                )
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARN - 删除新增车辆异常，scooterId={scooter_id}，异常：{exc}")
 
 
 def test_place_booking_success() -> None:
@@ -233,6 +258,8 @@ def run_all_tests() -> None:
         except Exception as exc:  # noqa: BLE001
             failed += 1
             print(f"FAIL - {name} -> {exc}")
+
+    cleanup_created_scooters()
 
     print("\n测试结束")
     print(f"通过: {passed}")
