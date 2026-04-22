@@ -10,6 +10,21 @@ public class Booking {
     private LocalDateTime endTime;
     private BigDecimal totalCost;
 
+    private String status;
+
+    private String guestName;
+    private String guestPhone;
+    private Integer packageId;
+
+
+    // get set
+    public Integer getPackageId() {return packageId;}
+    public void setPackageId(Integer packageId) {this.packageId = packageId;}
+
+    public String getStatus() {return status;}
+    public void setStatus(String status) {
+        this.status = status;
+    }
     public Integer getId() {
         return id;
     }
@@ -57,4 +72,11 @@ public class Booking {
     public void setTotalCost(BigDecimal totalCost) {
         this.totalCost = totalCost;
     }
+
+    public String getGuestName() {return guestName;}
+    public void setGuestName(String guestName) {this.guestName = guestName;}
+
+    public String getGuestPhone() { return guestPhone; }
+    public void setGuestPhone(String guestPhone) { this.guestPhone = guestPhone; }
+
 }

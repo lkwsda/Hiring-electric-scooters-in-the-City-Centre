@@ -1,0 +1,148 @@
+/* 动画效果 */
+
+/* 页面切换动画增强 */
+main.container section {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 网格卡片交错动画 */
+.grid > * {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.grid > *:nth-child(1) { animation-delay: 0.1s; }
+.grid > *:nth-child(2) { animation-delay: 0.2s; }
+.grid > *:nth-child(3) { animation-delay: 0.3s; }
+.grid > *:nth-child(4) { animation-delay: 0.4s; }
+.grid > *:nth-child(5) { animation-delay: 0.5s; }
+.grid > *:nth-child(6) { animation-delay: 0.6s; }
+.grid > *:nth-child(7) { animation-delay: 0.7s; }
+.grid > *:nth-child(8) { animation-delay: 0.8s; }
+.grid > *:nth-child(9) { animation-delay: 0.9s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 按钮涟漪效果 */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -100%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.8s, height 0.8s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* 卡片悬停效果 */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.05), transparent);
+    transition: left 0.5s;
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+/* 状态指示器脉冲动画 */
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.status {
+    animation: statusPulse 2s infinite;
+}
+
+/* 电池指示器发光效果 */
+@keyframes batteryGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(39, 174, 96, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(39, 174, 96, 0.6); }
+}
+
+.battery.high {
+    animation: batteryGlow 3s infinite;
+}
+
+@keyframes batteryGlowOrange {
+    0%, 100% { box-shadow: 0 0 5px rgba(243, 156, 18, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(243, 156, 18, 0.6); }
+}
+
+.battery.medium {
+    animation: batteryGlowOrange 3s infinite;
+}
+
+@keyframes batteryGlowRed {
+    0%, 100% { box-shadow: 0 0 5px rgba(231, 76, 60, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); }
+}
+
+.battery.low {
+    animation: batteryGlowRed 3s infinite;
+}
+
+/* 消息提示滑入动画 */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: slideInDown 0.5s ease-out;
+}
+
+/* 模态框弹入动画 */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}

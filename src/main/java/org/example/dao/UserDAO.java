@@ -9,23 +9,33 @@ import java.util.List;
  */
 public interface UserDAO {
 
-    // 1. Create: Add a new user to the database
+    // Create: Add a new user to the database
     // 【增】把一个新用户存进数据库
     void addUser(User user);
 
-    // 2. Read: Find a user by their unique ID
+    // Read: Find a user by their unique ID
     // 【查】根据身份证号（ID）找到那个用户
     User getUserById(int id);
 
-    // 3. Read: Fetch all users from the database
+    // Read: Fetch all users from the database
     // 【查】把所有注册过的用户都列出来
     List<User> getAllUsers();
 
-    // 4. Update: Modify an existing user's information
+    // Update: Modify an existing user's information
     // 【改】修改某个用户的资料（比如改个邮箱什么的）
     void updateUser(User user);
 
-    // 5. Delete: Remove a user from the system
+    // Delete: Remove a user from the system
     // 【删】把这个用户从系统里抹掉（注销）
     void deleteUser(int id);
+
+    // Check if username already exists
+    // 检查用户名是否已存在
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    // Find a user by their unique username (for Login)
+    // 根据用户名查找用户（用于登录）
+    User getUserByName(String username);
 }

@@ -1,0 +1,223 @@
+/* 表单样式 */
+.form-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.auth-section .form-container {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.auth-section .form-panel {
+    width: 100%;
+}
+
+.auth-section .form-box {
+    width: min(100%, 980px);
+    margin: 0 auto;
+}
+
+#loginForm {
+    max-width: 620px;
+}
+
+#registerForm {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+#registerForm .field-group {
+    display: grid;
+    gap: 10px;
+}
+
+#registerForm .full-width {
+    grid-column: 1 / -1;
+}
+
+#registerForm .full-width h4,
+#registerForm .full-width button {
+    width: 100%;
+}
+
+#registerForm .terms-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 5px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+#registerForm .terms-checkbox input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+#registerForm .terms-checkbox label {
+    margin-bottom: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+@media (max-width: 780px) {
+    .auth-section .form-box {
+        width: 100%;
+    }
+
+    #registerForm {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-box {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    border-top: 3px solid #2980b9;
+}
+
+.form-box h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.form-box h3 i {
+    margin-right: 8px;
+    color: #2980b9;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #444;
+}
+
+form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+form input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+form button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+}
+
+form button i {
+    margin-right: 8px;
+}
+
+.auth-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    border: 1px solid #2980b9;
+    background: white;
+    color: #2980b9;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+    background: #2980b9;
+    color: white;
+}
+
+.form-panel {
+    display: block;
+}
+
+.switch-auth {
+    font-size: 0.95rem;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.switch-auth a {
+    color: #2980b9;
+    text-decoration: none;
+}
+
+.switch-auth a:hover {
+    text-decoration: underline;
+}
+
+/* 预订列表样式 */
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-item {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+}
+
+.booking-item button {
+    background: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.booking-item button:hover {
+    background: #c0392b;
+}
+
+/* 统计表格样式 */
+.stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stats-table th, .stats-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.stats-table th {
+    background-color: #f8f9fa;
+}
