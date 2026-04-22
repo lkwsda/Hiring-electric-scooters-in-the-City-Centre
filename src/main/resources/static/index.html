@@ -131,16 +131,10 @@
                     <label for="issueScooterId">Scooter ID</label>
                     <input type="number" id="issueScooterId" placeholder="Enter scooter ID" required>
 
-                    <label for="issueSeverity">Issue Severity</label>
-                    <select id="issueSeverity" required>
-                        <option value="normal">Normal</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-
                     <label for="issueDescription">Description</label>
                     <textarea id="issueDescription" rows="4" placeholder="Describe the issue in detail" required></textarea>
 
-                    <p class="hint-text">Priority rule (F14): urgent => high, normal => low.</p>
+                    <p class="hint-text">Priority is reviewed and assigned by admin (F14).</p>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
                 </form>
             </div>
@@ -849,6 +843,13 @@
         <h2><i class="fa-solid fa-chart-bar"></i> Weekly Revenue Stats</h2>
         <div class="stats-table" id="statsTable">
             <!-- 统计表格JS -->
+        </div>
+        <div class="form-box" style="margin-top: 20px;">
+            <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review (F14)</h3>
+            <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
+            <div id="adminIssueReviewList" class="issue-list">
+                <p>No issues loaded.</p>
+            </div>
         </div>
         <div class="form-box" style="margin-top: 20px;">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues (F15)</h3>
