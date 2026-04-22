@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.dao.ScooterDAO;
 import org.example.model.Scooter;
+import org.example.model.ScooterLocationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -39,5 +40,11 @@ public class ScooterServiceImpl implements ScooterService {
     @Override
     public void deleteScooter(int id) {
         scooterDAO.deleteScooter(id);
+    }
+
+    @Override
+    public List<ScooterLocationDTO> getAvailableScooterLocations() {
+        System.out.println("[Service] Providing locations for all available scooters...");
+        return scooterDAO.findAvailableScootersForMap();
     }
 }

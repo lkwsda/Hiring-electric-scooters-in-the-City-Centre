@@ -1,6 +1,7 @@
 package org.example.dao;
 
 import org.example.model.Scooter;
+import org.example.model.ScooterLocationDTO;
 import org.example.model.User;
 
 import java.util.List;
@@ -27,4 +28,7 @@ public interface ScooterDAO {
 
     // 6. Update scooter status (修改车辆状态，比如正在使用、空闲、故障)
     void updateScooterStatus(int id,String status);
+
+    // 在地图上显示所有可用车
+    List<ScooterLocationDTO> findAvailableScootersForMap();
 }

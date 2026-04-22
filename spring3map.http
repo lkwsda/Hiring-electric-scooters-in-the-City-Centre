@@ -1,0 +1,4 @@
+### 地图数据接口测试
+GET http://localhost:8080/api/scooters/locations
+
+### 返回一个列表 JSON，每个元素有 id, latitude, longitude

@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Scooter;
+import org.example.model.ScooterLocationDTO;
 import org.example.service.ScooterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +39,11 @@ public class ScooterController {
     public String deleteScooter(@PathVariable int id) {
         scooterService.deleteScooter(id);
         return "Scooter ID " + id + " has been removed.";
+    }
+
+    // 地图使用：获取所有可用滑板车的坐标
+    @GetMapping("/locations")
+    public List<ScooterLocationDTO> getAvailableScooterLocations() {
+        return scooterService.getAvailableScooterLocations();
     }
 }
