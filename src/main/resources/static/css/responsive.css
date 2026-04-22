@@ -47,11 +47,10 @@
     }
 
     .accessibility-toolbar {
-        top: auto;
-        bottom: 12px;
-        right: 12px;
+        position: static;
+        margin: 8px auto 0;
         flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: center;
     }
 
     .analytics-grid {
