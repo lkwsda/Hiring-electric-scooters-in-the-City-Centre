@@ -221,3 +221,68 @@ section h2 i {
 .extend-rental-btn:hover {
     background: #e67e22;
 }
+
+.feedback-section,
+.analytics-section {
+    border-top-color: #4f46e5;
+}
+
+.issue-list {
+    display: grid;
+    gap: 12px;
+}
+
+.issue-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    background: #f9fbff;
+}
+
+.issue-item.issue-high {
+    border-left: 4px solid #dc2626;
+    background: #fff5f5;
+}
+
+.hint-text {
+    color: #54606e;
+    font-size: 0.9rem;
+    margin: 8px 0 12px;
+}
+
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #e8f5ff;
+    color: #1e3a5f;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.analytics-grid canvas {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.discount-result {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f4f9ff;
+    border: 1px solid #d4e6ff;
+    font-weight: 600;
+}
