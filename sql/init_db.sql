@@ -17,7 +17,9 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,            -- Email
     password_hash VARCHAR(255) NOT NULL,           -- Password
     role ENUM('user', 'admin') DEFAULT 'user',     -- 区分普通用户和管理员
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Join time
+    date_of_birth DATE NULL,  -- 出生日期
+    credit_card_number VARCHAR(255) NULL, -- 信用卡号
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP-- Join time
 );
 
 # Table: scooters
@@ -80,7 +82,7 @@ INSERT INTO packages (package_type, price, description,discount_percent) VALUES
                                                             ('1 Hour', 5.00, 'Basic rental for short trips', 0),
                                                             ('4 Hours', 15.00, 'Discounted half-day rental', 0),
                                                             ('1 Day', 30.00, 'Full day access for city explorers', 0),
-                                                            ('1 Week', 120.00, 'Premium weekly pass for commuters', 20); -- 假设一周套餐有 8 折优惠，后续要改套餐折扣这里直接改
+                                                            ('1 Week', 120.00, 'Premium weekly pass for commuters', 0);
 
 
 -- 预置滑板车数据
@@ -88,3 +90,10 @@ INSERT INTO scooters (model, battery_level, latitude, longitude, status) VALUES
      ('1', 100, 53.8012, -1.5485, 'available'),
      ('2', 95, 53.8020, -1.5490, 'available'),
      ('3', 100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
+
+-- 预置测试用户数据
+INSERT INTO users (username, email, password_hash, role, date_of_birth)VALUES
+                                                                           ('student', 'student@test.com', '12345678', 'user', '2005-01-01'),
+                                                                           ('grandpa', 'grandpa@test.com', '87654321', 'user', '1960-01-01');
+
+

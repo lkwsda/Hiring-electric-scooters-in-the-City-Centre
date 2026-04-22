@@ -32,4 +32,7 @@ public interface BookingDAO {
 
     // f20
     List<DailyRevenueReport> getDailyRevenueReport();
+
+    // 计算某用户过去7天租车总时长（分钟）
+    Integer getTotalRentalMinutesForUserLastWeek(int userId);
 }

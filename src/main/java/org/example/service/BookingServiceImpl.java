@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.dao.BookingDAO;
 import org.example.dao.PackageDAO;
 import org.example.dao.ScooterDAO;
+import org.example.dao.UserDAO;
 import org.example.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private NotificationService notificationService; // ：呼叫邮差
 
+    @Autowired
+    private UserDAO userDAO;
+
     @Override
     @Transactional // 这个标签下面的动作要么全成功，要么全失败
     public void placeBooking(Booking booking) {
@@ -43,29 +47,36 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Validation Failed: Scooter is already in use or under maintenance!");
         }
 
-        // 根据套餐 ID 自动算钱
-        // 先去价目表里查这个套餐的详情
+        // f22
         RentalPackage selectedPackage = packageDAO.findById(booking.getPackageId());
-        if (selectedPackage == null) {
-            throw new RuntimeException("Error: Package not found!");
+        BigDecimal originalPrice = selectedPackage.getPrice();
+
+        User user = userDAO.getUserById(booking.getUserId());
+
+        BigDecimal discountRate = BigDecimal.ONE;
+
+        // 时长折扣检查：每周超过 8 小时（480分钟）
+        int weeklyMinutes = bookingDAO.getTotalRentalMinutesForUserLastWeek(user.getId());
+        if (weeklyMinutes > 480) {
+            discountRate = new BigDecimal("0.8"); // 8折
+            System.out.println("[Service] Frequent User Discount (20%) applied!");
         }
 
-        // 算出原价和折扣
-        BigDecimal originalPrice = selectedPackage.getPrice();
-        Integer discount = selectedPackage.getDiscountPercent();
+        // 身份折扣检查：学生（<22岁）或老人（>60岁）
+        if (user.getDateOfBirth() != null) {
+            int age = java.time.Period.between(user.getDateOfBirth(), java.time.LocalDate.now()).getYears();
+            if ((age < 22 || age > 60) && discountRate.compareTo(new BigDecimal("0.9")) > 0) {
+                // 如果折扣更低，就不覆盖了
+                discountRate = new BigDecimal("0.9"); // 9折
+                System.out.println("[Service] Student/Senior Discount (10%) applied!");
+            }
+        }
 
         // 计算折扣后价格
-        BigDecimal finalPrice = originalPrice;
-        if (discount > 0) {
-            BigDecimal discountRate = BigDecimal.valueOf(100 - discount).divide(BigDecimal.valueOf(100));
-            finalPrice = originalPrice.multiply(discountRate);
-        }
+        BigDecimal finalPrice = originalPrice.multiply(discountRate);
 
-        // 4. 把算好的价格塞回 booking 对象里！
+        // 把算好的价格塞回 booking 里
         booking.setTotalCost(finalPrice);
-
-
-
         // 逻辑通过，创建订单
         booking.setStatus("pending");
         bookingDAO.createBooking(booking);

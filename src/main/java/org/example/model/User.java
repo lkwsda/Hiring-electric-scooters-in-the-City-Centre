@@ -1,5 +1,6 @@
 package org.example.model;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 // Table: users
 public class User {
@@ -10,7 +11,25 @@ public class User {
     private LocalDateTime createdAt;
     private String role;
 
+    private LocalDate dateOfBirth;
+    private String creditCardNumber;
+
     //Getter and Setter
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getCreditCardNumber() {
+        return creditCardNumber;
+    }
+
+    public void setCreditCardNumber(String creditCardNumber) {
+        this.creditCardNumber = creditCardNumber;
+    }
     public Integer getId() {
         return id;
     }

@@ -97,9 +97,16 @@ public class UserDAOImpl implements UserDAO {
             user.setUsername(rs.getString("username"));
             user.setEmail(rs.getString("email"));
             user.setPasswordHash(rs.getString("password_hash"));
-            // 如果需要时间，用下面这个
-            // user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
             user.setRole(rs.getString("role"));
+
+            if (rs.getDate("date_of_birth") != null) {
+                // 将数据库的 Date 转换成 Java 的 LocalDate
+                user.setDateOfBirth(rs.getDate("date_of_birth").toLocalDate());
+            }
+            if (rs.getString("credit_card_number") != null) {
+                user.setCreditCardNumber(rs.getString("credit_card_number"));
+            }
+
             return user;
         }
     }

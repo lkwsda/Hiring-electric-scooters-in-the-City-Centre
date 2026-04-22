@@ -132,6 +132,21 @@ public class BookingDAOImpl implements BookingDAO {
         });
     }
 
+    // 计算某用户过去7天租车总时长（分钟）
+    @Override
+    public Integer getTotalRentalMinutesForUserLastWeek(int userId) {
+        // TIMESTAMPDIFF(MINUTE, start_time, end_time) 算出两个时间差了多少分钟
+        String sql = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes " +
+                "FROM bookings " +
+                "WHERE user_id = ? AND status = 'finished' " + // 只算完成了的订单
+                "AND end_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+
+        // 处理queryForObject 可能返回的 null
+        Integer totalMinutes = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return totalMinutes == null ? 0 : totalMinutes;
+
+    }
+
     // 小票装载
     private static class BookingRowMapper implements RowMapper<Booking> {
         @Override
