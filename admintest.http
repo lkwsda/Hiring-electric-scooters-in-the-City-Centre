@@ -1,6 +1,0 @@
-### F01: 管理员登录测试 (Admin Login Test)
-# 直接把账号密码作为参数传过去
-POST http://localhost:8080/api/users/login?username=admin&password=123456
-
-### F01: 普通用户登录测试
-POST http://localhost:8080/api/users/login?username=Wang&password=1238786765
