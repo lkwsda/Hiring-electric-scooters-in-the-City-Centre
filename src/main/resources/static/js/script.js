@@ -1,8 +1,10 @@
 let packages = [];
 let scooters = [];
 let bookings = [];
+let issues = [];
 let currentUser = null;
 let adminLoggedIn = false; // Remove hardcoded admin
+let syncTimer = null;
 
 const storedCurrentUser = localStorage.getItem('currentUser');
 if (storedCurrentUser) {
@@ -128,6 +130,13 @@ function getTextError(responseText, fallback) {
     return responseText && responseText.trim() ? responseText : fallback;
 }
 
+function announce(message) {
+    const live = document.getElementById('liveStatus');
+    if (live) {
+        live.textContent = message;
+    }
+}
+
 function normalizePackageTypeText(type) {
     return String(type || '').trim().toLowerCase().replace(/\s+/g, '');
 }
@@ -194,7 +203,7 @@ async function loadScooters() {
 }
 
 // Sections
-const sections = ['authSection', 'homeSection', 'scootersSection', 'rentSection', 'paymentSection', 'successSection', 'myBookingsSection', 'scooterDetailSection', 'returnSection', 'adminLoginSection', 'adminConfigSection', 'adminStatsSection'];
+const sections = ['authSection', 'homeSection', 'scootersSection', 'rentSection', 'paymentSection', 'successSection', 'myBookingsSection', 'feedbackSection', 'analyticsSection', 'scooterDetailSection', 'returnSection', 'adminLoginSection', 'adminConfigSection', 'adminStatsSection'];
 
 function showSection(sectionId) {
     sections.forEach(id => {
@@ -210,8 +219,13 @@ function showSection(sectionId) {
         renderScooters();
     } else if (sectionId === 'myBookingsSection') {
         renderBookings();
+    } else if (sectionId === 'feedbackSection') {
+        renderHighPriorityIssues();
+    } else if (sectionId === 'analyticsSection') {
+        renderRevenueCharts();
     } else if (sectionId === 'adminStatsSection') {
         renderStats();
+        renderAdminHighPriorityIssues();
     }
 }
 
@@ -395,6 +409,256 @@ async function renderStats() {
     }
 }
 
+function calcPriorityBySeverity(severity, description) {
+    const isUrgentText = /(urgent|fire|brake fail|crash|battery smoke|accident)/i.test(description || '');
+    // F14: urgent issue => high priority; normal issue => low priority.
+    return severity === 'urgent' || isUrgentText ? 'high' : 'low';
+}
+
+function renderHighPriorityIssues() {
+    const container = document.getElementById('highPriorityIssueList');
+    if (!container) return;
+
+    const high = issues.filter(issue => (issue.priority || '').toLowerCase() === 'high');
+    if (!high.length) {
+        container.innerHTML = '<p>No high priority issues yet.</p>';
+        return;
+    }
+
+    container.innerHTML = high.slice(0, 8).map(issue => {
+        return `<div class="issue-item issue-high">
+            <p><strong>ID:</strong> #${issue.id || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
+            <p><strong>Priority:</strong> ${issue.priority}</p>
+            <p>${issue.description}</p>
+        </div>`;
+    }).join('');
+}
+
+function renderAdminHighPriorityIssues() {
+    const container = document.getElementById('adminHighPriorityIssues');
+    if (!container) return;
+
+    const high = issues.filter(issue => (issue.priority || '').toLowerCase() === 'high');
+    if (!high.length) {
+        container.innerHTML = '<p>No high priority issues found.</p>';
+        return;
+    }
+    container.innerHTML = high.map(issue => `
+        <div class="issue-item issue-high">
+            <p><strong>User:</strong> ${issue.userId || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
+            <p><strong>Status:</strong> ${issue.status || 'pending'} | <strong>Priority:</strong> ${issue.priority}</p>
+            <p>${issue.description}</p>
+        </div>
+    `).join('');
+}
+
+async function loadIssues() {
+    try {
+        const response = await fetch('/api/issues');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(getTextError(errorText, 'Failed to load issues'));
+        }
+        const data = await response.json();
+        issues = Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Failed to load issues:', error);
+        // Backend required for persistent issue list.
+        issues = [];
+    }
+}
+
+function drawBarChart(canvasId, labels, values) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!labels.length) {
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Segoe UI';
+        ctx.fillText('No data available.', 16, 30);
+        return;
+    }
+
+    const max = Math.max(...values, 1);
+    const chartTop = 20;
+    const chartBottom = h - 40;
+    const chartHeight = chartBottom - chartTop;
+    const barWidth = Math.max(24, Math.floor((w - 40) / labels.length) - 16);
+
+    labels.forEach((label, i) => {
+        const x = 20 + i * (barWidth + 16);
+        const barH = (values[i] / max) * chartHeight;
+        const y = chartBottom - barH;
+        ctx.fillStyle = '#2f80ed';
+        ctx.fillRect(x, y, barWidth, barH);
+
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '12px Segoe UI';
+        ctx.fillText(String(values[i]), x, y - 6);
+        ctx.fillText(label, x, chartBottom + 16);
+    });
+}
+
+function drawLineChart(canvasId, labels, values) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!labels.length) {
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Segoe UI';
+        ctx.fillText('No data available.', 16, 30);
+        return;
+    }
+
+    const max = Math.max(...values, 1);
+    const left = 30;
+    const right = w - 20;
+    const top = 20;
+    const bottom = h - 40;
+    const stepX = labels.length > 1 ? (right - left) / (labels.length - 1) : 0;
+
+    ctx.strokeStyle = '#2f80ed';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    values.forEach((value, i) => {
+        const x = left + i * stepX;
+        const y = bottom - ((value / max) * (bottom - top));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    values.forEach((value, i) => {
+        const x = left + i * stepX;
+        const y = bottom - ((value / max) * (bottom - top));
+        ctx.fillStyle = '#2f80ed';
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '12px Segoe UI';
+        ctx.fillText(String(value), x - 8, y - 8);
+        ctx.fillText(labels[i], x - 16, bottom + 16);
+    });
+}
+
+async function renderRevenueCharts() {
+    try {
+        const [weeklyRes, dailyRes] = await Promise.all([
+            fetch('/api/bookings/admin/revenue'),
+            fetch('/api/bookings/admin/revenue/daily')
+        ]);
+
+        const weekly = weeklyRes.ok ? await weeklyRes.json() : [];
+        const daily = dailyRes.ok ? await dailyRes.json() : [];
+
+        const weeklyLabels = (Array.isArray(weekly) ? weekly : []).map(item => item.packageType || 'N/A');
+        const weeklyValues = (Array.isArray(weekly) ? weekly : []).map(item => Number(item.totalRevenue || 0));
+
+        const dailyLabels = (Array.isArray(daily) ? daily : []).map(item => item.date || 'N/A');
+        const dailyValues = (Array.isArray(daily) ? daily : []).map(item => Number(item.dailyTotal || 0));
+
+        drawBarChart('weeklyRevenueChart', weeklyLabels, weeklyValues);
+        drawLineChart('dailyRevenueChart', dailyLabels.reverse(), dailyValues.reverse());
+    } catch (error) {
+        console.error('Chart render error:', error);
+        drawBarChart('weeklyRevenueChart', [], []);
+        drawLineChart('dailyRevenueChart', [], []);
+    }
+}
+
+function setupDiscountCalculator() {
+    const form = document.getElementById('discountForm');
+    if (!form) return;
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const basePrice = Number(document.getElementById('discountBasePrice').value || 0);
+        const userType = document.getElementById('discountUserType').value;
+        const rideCount = Number(document.getElementById('discountRideCount').value || 0);
+        const output = document.getElementById('discountResult');
+
+        let rate = 0;
+        if (userType === 'student') rate = 0.1;
+        if (userType === 'senior') rate = 0.15;
+        if (userType === 'high-frequency') rate = rideCount >= 20 ? 0.2 : 0.1;
+
+        const discountAmount = basePrice * rate;
+        const finalPrice = Math.max(0, basePrice - discountAmount);
+        output.innerHTML = `Base: $${basePrice.toFixed(2)} | Discount: ${(rate * 100).toFixed(0)}% ($${discountAmount.toFixed(2)}) | Final: $${finalPrice.toFixed(2)}`;
+        announce('Discount calculated successfully.');
+    });
+}
+
+function setupAccessibilityTools() {
+    const root = document.documentElement;
+    const increaseBtn = document.getElementById('fontIncreaseBtn');
+    const decreaseBtn = document.getElementById('fontDecreaseBtn');
+    const contrastBtn = document.getElementById('highContrastBtn');
+
+    let fontScale = Number(localStorage.getItem('fontScale') || 1);
+    const applyScale = () => {
+        root.style.fontSize = `${Math.max(0.9, Math.min(1.25, fontScale)) * 100}%`;
+        localStorage.setItem('fontScale', String(fontScale));
+    };
+    applyScale();
+
+    if (increaseBtn) {
+        increaseBtn.addEventListener('click', () => {
+            fontScale += 0.05;
+            applyScale();
+        });
+    }
+    if (decreaseBtn) {
+        decreaseBtn.addEventListener('click', () => {
+            fontScale -= 0.05;
+            applyScale();
+        });
+    }
+    if (contrastBtn) {
+        const saved = localStorage.getItem('highContrast') === 'true';
+        document.body.classList.toggle('high-contrast', saved);
+        contrastBtn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+        contrastBtn.addEventListener('click', () => {
+            const next = !document.body.classList.contains('high-contrast');
+            document.body.classList.toggle('high-contrast', next);
+            contrastBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+            localStorage.setItem('highContrast', String(next));
+        });
+    }
+}
+
+function updateSyncStatus() {
+    const text = document.getElementById('syncStatusText');
+    if (text) {
+        text.textContent = `Multi-client sync active. Last sync: ${new Date().toLocaleTimeString()}`;
+    }
+}
+
+async function startMultiClientSync() {
+    if (syncTimer) return;
+    // F23: frontend periodic sync; full real-time collaboration would need backend websocket support.
+    syncTimer = setInterval(async () => {
+        await loadScooters();
+        await loadPackages();
+        await loadIssues();
+        if (getCurrentUserId()) {
+            await renderBookings();
+        }
+        updateSyncStatus();
+    }, 10000);
+}
+
 // Login form
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -499,6 +763,51 @@ if (registerForm) {
     });
 }
 
+const issueForm = document.getElementById('issueForm');
+if (issueForm) {
+    issueForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userId = getCurrentUserId();
+        if (!userId) {
+            alert('Please login first to submit feedback.');
+            showSection('authSection');
+            showAuthMode('login');
+            return;
+        }
+
+        const scooterId = Number(document.getElementById('issueScooterId').value);
+        const severity = document.getElementById('issueSeverity').value;
+        const description = document.getElementById('issueDescription').value.trim();
+        const priority = calcPriorityBySeverity(severity, description);
+
+        try {
+            const response = await fetch('/api/issues/report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    scooterId,
+                    description,
+                    priority
+                })
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Issue submission failed'));
+            }
+            alert(text || 'Issue submitted.');
+            announce('Issue submitted successfully.');
+            this.reset();
+            await loadIssues();
+            renderHighPriorityIssues();
+            renderAdminHighPriorityIssues();
+        } catch (error) {
+            console.error('Issue submit error:', error);
+            alert(error.message || 'Issue submission failed.');
+        }
+    });
+}
+
 // Book form
 const bookForm = document.getElementById('bookForm');
 if (bookForm) {
@@ -527,8 +836,9 @@ if (bookForm) {
                 body: JSON.stringify({
                     userId,
                     scooterId,
+                    packageId: Number(packageId),
+                    // Keep totalCost for backward compatibility; backend recalculates from packageId.
                     totalCost: packagePrice
-                    // BookingController has no packageType field in Booking model.
                 })
             });
             if (!response.ok) {
@@ -879,6 +1189,8 @@ const homeLink = document.getElementById('homeLink');
 const scootersLink = document.getElementById('scootersLink');
 const rentLink = document.getElementById('rentLink');
 const myBookingsLink = document.getElementById('myBookingsLink');
+const feedbackLink = document.getElementById('feedbackLink');
+const analyticsLink = document.getElementById('analyticsLink');
 const returnLink = document.getElementById('returnLink');
 const adminLink = document.getElementById('adminLink');
 const loginLink = document.getElementById('loginLink');
@@ -916,6 +1228,20 @@ if (myBookingsLink) {
             return;
         }
         showSection('myBookingsSection');
+    });
+}
+
+if (feedbackLink) {
+    feedbackLink.addEventListener('click', event => {
+        event.preventDefault();
+        showSection('feedbackSection');
+    });
+}
+
+if (analyticsLink) {
+    analyticsLink.addEventListener('click', event => {
+        event.preventDefault();
+        showSection('analyticsSection');
     });
 }
 
@@ -1023,6 +1349,12 @@ window.addEventListener('load', async function() {
         await loadPackages();
         populatePackageSelect();
         await loadScooters();
+        await loadIssues();
+        setupDiscountCalculator();
+        setupAccessibilityTools();
+        renderRevenueCharts();
+        startMultiClientSync();
+        updateSyncStatus();
         if (currentUser || adminLoggedIn) {
             showSection('homeSection');
         } else {
