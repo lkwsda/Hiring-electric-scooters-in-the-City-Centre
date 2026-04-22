@@ -244,6 +244,27 @@ section h2 i {
     background: #fff5f5;
 }
 
+.issue-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.priority-btn {
+    background: #1d4ed8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.priority-btn:hover {
+    background: #1e40af;
+}
+
 .hint-text {
     color: #54606e;
     font-size: 0.9rem;

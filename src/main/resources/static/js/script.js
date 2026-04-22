@@ -225,6 +225,7 @@ function showSection(sectionId) {
         renderRevenueCharts();
     } else if (sectionId === 'adminStatsSection') {
         renderStats();
+        renderAdminIssueReviewList();
         renderAdminHighPriorityIssues();
     }
 }
@@ -409,12 +410,6 @@ async function renderStats() {
     }
 }
 
-function calcPriorityBySeverity(severity, description) {
-    const isUrgentText = /(urgent|fire|brake fail|crash|battery smoke|accident)/i.test(description || '');
-    // F14: urgent issue => high priority; normal issue => low priority.
-    return severity === 'urgent' || isUrgentText ? 'high' : 'low';
-}
-
 function renderHighPriorityIssues() {
     const container = document.getElementById('highPriorityIssueList');
     if (!container) return;
@@ -450,6 +445,53 @@ function renderAdminHighPriorityIssues() {
             <p>${issue.description}</p>
         </div>
     `).join('');
+}
+
+function renderAdminIssueReviewList() {
+    const container = document.getElementById('adminIssueReviewList');
+    if (!container) return;
+
+    if (!issues.length) {
+        container.innerHTML = '<p>No issues to review.</p>';
+        return;
+    }
+
+    container.innerHTML = issues.map(issue => {
+        const currentPriority = (issue.priority || 'medium').toLowerCase();
+        return `
+            <div class="issue-item">
+                <p><strong>ID:</strong> #${issue.id || 'N/A'} | <strong>User:</strong> ${issue.userId || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
+                <p><strong>Status:</strong> ${issue.status || 'pending'} | <strong>Current Priority:</strong> ${currentPriority}</p>
+                <p>${issue.description}</p>
+                <div class="issue-action-row">
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'high')">Set High</button>
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'medium')">Set Medium</button>
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'low')">Set Low</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function setIssuePriority(issueId, priority) {
+    if (!issueId || !priority) return;
+    try {
+        const response = await fetch(`/api/issues/${issueId}/priority?priority=${encodeURIComponent(priority)}`, {
+            method: 'PUT'
+        });
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(getTextError(text, 'Failed to update priority.'));
+        }
+        announce(`Issue ${issueId} priority set to ${priority}.`);
+        await loadIssues();
+        renderAdminIssueReviewList();
+        renderAdminHighPriorityIssues();
+        renderHighPriorityIssues();
+    } catch (error) {
+        console.error('Set priority error:', error);
+        alert('Priority update endpoint is not available yet. Please ask backend to provide PUT /api/issues/{id}/priority.');
+    }
 }
 
 async function loadIssues() {
@@ -776,9 +818,7 @@ if (issueForm) {
         }
 
         const scooterId = Number(document.getElementById('issueScooterId').value);
-        const severity = document.getElementById('issueSeverity').value;
         const description = document.getElementById('issueDescription').value.trim();
-        const priority = calcPriorityBySeverity(severity, description);
 
         try {
             const response = await fetch('/api/issues/report', {
@@ -788,7 +828,8 @@ if (issueForm) {
                     userId,
                     scooterId,
                     description,
-                    priority
+                    // User submits issue only; admin decides priority later.
+                    priority: 'medium'
                 })
             });
             const text = await response.text();
