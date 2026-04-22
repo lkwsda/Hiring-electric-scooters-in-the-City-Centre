@@ -17,6 +17,7 @@ REGISTER_URL = f"{BASE_URL}/api/users/register"
 LOGIN_URL = f"{BASE_URL}/api/users/login"
 SCOOTERS_URL = f"{BASE_URL}/api/scooters"
 ADD_SCOOTER_URL = f"{BASE_URL}/api/scooters/add"
+PACKAGES_URL = f"{BASE_URL}/api/packages"
 PLACE_BOOKING_URL = f"{BASE_URL}/api/bookings/place"
 CANCEL_BOOKING_URL = f"{BASE_URL}/api/bookings/cancel"
 
@@ -96,12 +97,30 @@ def ensure_available_scooter_id() -> int:
     raise AssertionError("前置失败：未找到可用车辆")
 
 
-def place_booking(user_id: int, scooter_id: int, total_cost: str = "10.00") -> requests.Response:
+def ensure_package_id() -> int:
+    """确保存在一个可用套餐，返回 packageId。"""
+    response = requests.get(PACKAGES_URL, timeout=10)
+    assert response.status_code == 200, (
+        f"前置失败：获取套餐列表失败，状态码 {response.status_code}，响应：{response.text}"
+    )
+
+    packages = response.json()
+    assert isinstance(packages, list) and packages, (
+        f"前置失败：套餐列表为空或结构异常，响应：{packages}"
+    )
+
+    first = packages[0]
+    package_id = first.get("id") if isinstance(first, dict) else None
+    assert isinstance(package_id, int), f"前置失败：未找到有效 packageId，响应元素：{first}"
+    return package_id
+
+
+def place_booking(user_id: int, scooter_id: int, package_id: int) -> requests.Response:
     """调用下单接口并返回响应。"""
     payload = {
         "userId": user_id,
         "scooterId": scooter_id,
-        "totalCost": total_cost,
+        "packageId": package_id,
     }
     return requests.post(PLACE_BOOKING_URL, json=payload, timeout=10)
 
@@ -117,10 +136,11 @@ def test_place_booking_success() -> None:
     """用例1:下单成功,返回 pending 订单。"""
     user_id = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
+    package_id = ensure_package_id()
 
     booking_id: int | None = None
     try:
-        response = place_booking(user_id, scooter_id, total_cost="15.50")
+        response = place_booking(user_id, scooter_id, package_id)
         assert response.status_code == 200, (
             f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
         )
@@ -131,7 +151,11 @@ def test_place_booking_success() -> None:
         assert isinstance(booking_id, int), f"下单成功后应返回 booking id，响应：{data}"
         assert data.get("userId") == user_id, f"userId 不匹配，响应：{data}"
         assert data.get("scooterId") == scooter_id, f"scooterId 不匹配，响应：{data}"
+        assert data.get("packageId") == package_id, f"packageId 不匹配，响应：{data}"
         assert data.get("status") == "pending", f"状态应为 pending，响应：{data}"
+        total_cost = data.get("totalCost")
+        assert total_cost is not None, f"下单成功后应返回 totalCost，响应：{data}"
+        assert float(total_cost) > 0, f"totalCost 应大于 0，响应：{data}"
     finally:
         cleanup_booking_if_possible(booking_id)
 
@@ -139,15 +163,16 @@ def test_place_booking_success() -> None:
 def test_place_booking_invalid_scooter_should_fail() -> None:
     """用例2:车辆不存在,下单应失败。"""
     user_id = create_test_user_and_get_id()
+    package_id = ensure_package_id()
     invalid_scooter_id = 99999999
 
-    response = place_booking(user_id, invalid_scooter_id, total_cost="10.00")
+    response = place_booking(user_id, invalid_scooter_id, package_id)
 
     assert response.status_code != 200, (
         f"车辆不存在不应下单成功，实际状态码 {response.status_code}，响应：{response.text}"
     )
     error_text = response.text.lower()
-    expected_keywords = ["not found", "validation failed", "incorrect result size"]
+    expected_keywords = ["not found", "validation failed", "incorrect result size", "scooter"]
     assert any(keyword in error_text for keyword in expected_keywords), (
         f"错误信息不符合预期，响应：{response.text}"
     )
@@ -158,10 +183,11 @@ def test_place_booking_same_scooter_twice_should_fail() -> None:
     user_id_1 = create_test_user_and_get_id()
     user_id_2 = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
+    package_id = ensure_package_id()
 
     first_booking_id: int | None = None
     try:
-        first_response = place_booking(user_id_1, scooter_id, total_cost="9.90")
+        first_response = place_booking(user_id_1, scooter_id, package_id)
         assert first_response.status_code == 200, (
             f"第一次下单应成功，实际状态码 {first_response.status_code}，响应：{first_response.text}"
         )
@@ -170,11 +196,12 @@ def test_place_booking_same_scooter_twice_should_fail() -> None:
         first_booking_id = first_data.get("id")
         assert isinstance(first_booking_id, int), f"第一次下单未返回有效 booking id，响应：{first_data}"
 
-        second_response = place_booking(user_id_2, scooter_id, total_cost="8.80")
+        second_response = place_booking(user_id_2, scooter_id, package_id)
         assert second_response.status_code != 200, (
             f"同车二次下单不应成功，实际状态码 {second_response.status_code}，响应：{second_response.text}"
         )
-        assert "already in use" in second_response.text.lower() or "validation failed" in second_response.text.lower(), (
+        error_text = second_response.text.lower()
+        assert "already in use" in error_text or "validation failed" in error_text or "scooter" in error_text, (
             f"错误信息不符合预期，响应：{second_response.text}"
         )
     finally:
