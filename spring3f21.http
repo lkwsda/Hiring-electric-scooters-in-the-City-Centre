@@ -1,0 +1,5 @@
+### F21: 为图表获取每日收入数据 (7-day complete)
+GET http://localhost:8080/api/bookings/admin/revenue/daily
+
+
+### 会看到一个包含 **7 条记录**的 JSON 数组。其中只有你付钱那天有金额，其他六天都是"dailyTotal": 0.00  前端拿到这个就能直接画图

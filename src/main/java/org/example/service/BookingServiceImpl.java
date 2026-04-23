@@ -237,8 +237,33 @@ public class BookingServiceImpl implements BookingService {
     // f20
     @Override
     public List<DailyRevenueReport> getDailyRevenue() {
-        System.out.println("[Service] Generating Daily Sales Report...");
-        return bookingDAO.getDailyRevenueReport();
+        // / 从DAO拿到有收入的那些天的数据
+        List<DailyRevenueReport> rawReport = bookingDAO.getDailyRevenueReport();
+        // 用Map把数据存起来，方便快速查找
+        java.util.Map<String, java.math.BigDecimal> revenueMap = new java.util.HashMap<>();
+        for (DailyRevenueReport report : rawReport) {
+            revenueMap.put(report.getDate(), report.getDailyTotal());
+        }
+        // 创建有 7 天记录的报表
+        List<DailyRevenueReport> finalReport = new java.util.ArrayList<>();
+        java.time.LocalDate today = java.time.LocalDate.now();
+
+        for (int i = 0; i < 7; i++) {
+            java.time.LocalDate date = today.minusDays(i);
+            String dateString = date.toString();
+            // 检查这一天有没有收入
+            java.math.BigDecimal revenue = revenueMap.getOrDefault(dateString, java.math.BigDecimal.ZERO);
+
+            // 创建一个记录放进最终报表
+            DailyRevenueReport daily = new DailyRevenueReport();
+            daily.setDate(dateString);
+            daily.setDailyTotal(revenue);
+            finalReport.add(daily);
+        }
+        // 按日期排序传输
+        finalReport.sort(java.util.Comparator.comparing(DailyRevenueReport::getDate));
+
+        return finalReport;
     }
 
 }

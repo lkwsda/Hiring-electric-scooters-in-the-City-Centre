@@ -1,6 +1,7 @@
 package org.example.dao;
 
 import org.example.model.Scooter;
+import org.example.model.ScooterLocationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,5 +70,18 @@ public class ScooterDAOImpl implements ScooterDAO {
         String sql = "UPDATE scooters SET status = ? WHERE id =?";
         jdbcTemplate.update(sql, status, id);
         System.out.println("[DAO] Scooter status updated, ID: " + id + ", Status: " + status);
+    }
+
+    @Override
+    public List<ScooterLocationDTO> findAvailableScootersForMap() {
+        String sql = "SELECT id, latitude, longitude FROM scooters WHERE status = 'available'";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            ScooterLocationDTO dto = new ScooterLocationDTO();
+            dto.setId(rs.getInt("id"));
+            dto.setLatitude(rs.getBigDecimal("latitude"));
+            dto.setLongitude(rs.getBigDecimal("longitude"));
+            return dto;
+        });
     }
 }
