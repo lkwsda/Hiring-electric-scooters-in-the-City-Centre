@@ -1,0 +1,25 @@
+### 已经清空数据库测试成功
+### Step 1: 先创建一个“准备被取消”的订单
+# 假设这个订单成功创建，ID 为 200
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scooterId": 1,
+  "packageId": 1
+}
+
+### Step 2: 支付这个订单，让它变成 'paid' 状态
+# 只有 'paid' 的订单才能取消
+POST http://localhost:8080/api/bookings/pay/1?cardNumber=111222333
+
+### Step 3: 执行第一次取消操作 (应该成功)
+# 期望结果: 返回 200 OK，内容为 "Booking canceled successfully..."
+# 数据库检查: bookings 表里 ID=1 的 status 变为 'canceled'
+#            scooters 表里 ID=1 的 status 变回 'available'
+POST http://localhost:8080/api/bookings/cancel/1
+
+### Step 4: 故意重复取消同一个订单 (应该失败)
+# 期望结果: 返回 400 Bad Request，内容为 "This booking is already canceled!"
+POST http://localhost:8080/api/bookings/cancel/1
