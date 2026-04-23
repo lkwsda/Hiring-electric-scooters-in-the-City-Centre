@@ -325,22 +325,30 @@
                 </div>
             </div>
         </div>
-        <div class="scooter-grid" id="scooterGrid">
-            <!-- 车辆卡片JS -->
+        <div class="scooter-view-switch" role="group" aria-label="Scooter page view switch">
+            <button id="scooterListViewBtn" type="button" class="btn-primary">Scooter Analysis</button>
+            <button id="scooterMapViewBtn" type="button" class="btn-secondary">Scooter Live Map</button>
         </div>
-        <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-map"></i> Scooter Live Map (F18)</h3>
-            <p class="hint-text">At least 5 scooter points should be visible when location data exists.</p>
-            <div id="scooterMap" style="height: 320px; border-radius: 8px; margin-bottom: 12px;"></div>
-            <p id="scooterMapHint" class="hint-text">Loading map...</p>
-        </div>
-        <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-map-location-dot"></i> Available Scooter Coordinates</h3>
-            <p class="hint-text">Live data from /api/scooters/locations</p>
-            <div id="scooterLocationsList" class="issue-list">
-                <p>Loading locations...</p>
+
+        <div id="scooterListModule" class="scooter-view-panel is-active">
+            <div class="scooter-grid" id="scooterGrid">
+                <!-- 车辆卡片JS -->
             </div>
         </div>
+
+        <div id="scooterMapModule" class="scooter-view-panel">
+            <div class="form-box" style="margin-top: 20px;">
+                <h3><i class="fa-solid fa-map"></i> Scooter Live Map (F18)</h3>
+                <p class="hint-text">Map shows scooter locations from backend.</p>
+                <div class="scooter-map-layout">
+                    <div class="scooter-map-stage">
+                        <div id="scooterMap" style="height: 420px; border-radius: 8px;"></div>
+                    </div>
+                </div>
+                <p id="scooterMapHint" class="hint-text">Loading map...</p>
+            </div>
+        </div>
+
         <div class="section-footer">
             <div class="scooter-tips">
                 <i class="fa-solid fa-lightbulb"></i>
@@ -348,6 +356,20 @@
             </div>
         </div>
     </section>
+
+    <aside id="floatingScooterSidebarLeft" class="floating-scooter-sidebar is-hidden" aria-label="Left scooter status sidebar">
+        <div id="mapScooterSidebarLeft" class="issue-list">
+            <p>Loading scooter status...</p>
+        </div>
+    </aside>
+
+    <aside id="floatingScooterSidebarRight" class="floating-scooter-sidebar is-hidden" aria-label="Right scooter status sidebar">
+        <div id="mapScooterSidebarRight" class="issue-list">
+            <p>Loading scooter status...</p>
+        </div>
+    </aside>
+
+    <div id="scooterInfoPopup" class="scooter-info-popup is-hidden" aria-live="polite"></div>
 
     <!-- 租赁 -->
     <section id="rentSection" class="rent-section">

@@ -21,11 +21,230 @@ section h2 i {
     color: #3498db;
 }
 
+.section-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.section-stats .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fbff;
+}
+
+.section-stats .stat-card > i {
+    font-size: 1.05rem;
+    color: #2d3f57;
+    flex: 0 0 auto;
+}
+
+.section-stats .stat-info {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+}
+
+.section-stats .stat-number {
+    display: inline;
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.1;
+}
+
+.section-stats .stat-label {
+    display: inline;
+    color: #334155;
+    font-size: 0.98rem;
+    line-height: 1.2;
+}
+
 /* 车辆列表样式 */
 .scooter-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 25px;
+}
+
+.scooter-view-switch {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0 16px;
+}
+
+.scooter-view-switch button {
+    transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
+}
+
+.scooter-view-switch button:hover {
+    transform: translateY(-1px);
+}
+
+.scooter-view-panel {
+    margin-top: 6px;
+    display: none;
+}
+
+.scooter-view-panel.is-active {
+    display: block;
+    animation: scooterViewFade 0.28s ease;
+}
+
+@keyframes scooterViewFade {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.scooter-map-layout {
+    display: block;
+}
+
+.scooter-map-stage {
+    min-width: 0;
+}
+
+.floating-scooter-sidebar {
+    position: absolute;
+    top: 148px;
+    width: 88px;
+    background: transparent;
+    padding: 0;
+    overflow: visible;
+    z-index: 48;
+    opacity: 0;
+    visibility: visible;
+    pointer-events: none;
+    transition: transform 0.36s ease, opacity 0.36s ease;
+}
+
+#floatingScooterSidebarLeft {
+    transform: translateX(68px);
+}
+
+#floatingScooterSidebarRight {
+    transform: translateX(-68px);
+}
+
+.floating-scooter-sidebar.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.floating-scooter-sidebar.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+.floating-scooter-sidebar h4 {
+    display: none;
+}
+
+.floating-scooter-sidebar .issue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scooter-mini-card {
+    background: #ffffff;
+    border: 1px solid #cfd9e8;
+    border-radius: 10px;
+    width: 76px;
+    min-height: 52px;
+    padding: 10px 6px;
+    box-shadow: 0 8px 18px rgba(31, 41, 55, 0.1);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #1f3a5f;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scooter-mini-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(31, 41, 55, 0.15);
+}
+
+.scooter-mini-card.status-available {
+    border-color: #8fd8b0;
+    background: #eafaf1;
+    color: #1f7a4e;
+}
+
+.scooter-mini-card.status-rented {
+    border-color: #eaa2a2;
+    background: #fff1f1;
+    color: #a33636;
+}
+
+.scooter-mini-card.status-maintenance {
+    border-color: #eac577;
+    background: #fff8e8;
+    color: #9a6400;
+}
+
+.scooter-info-popup {
+    position: fixed;
+    min-width: 250px;
+    max-width: 320px;
+    background: #ffffff;
+    border: 1px solid #dbe7f5;
+    border-left: 4px solid #4c89d9;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 18px 36px rgba(31, 41, 55, 0.25);
+    z-index: 1300;
+    animation: scooterPopupIn 0.2s ease;
+}
+
+.scooter-info-popup.is-hidden {
+    display: none;
+}
+
+.scooter-info-popup.status-available {
+    border-left-color: #27ae60;
+    border-color: #8fd8b0;
+    background: linear-gradient(180deg, #ffffff 0%, #eefcf3 100%);
+}
+
+.scooter-info-popup.status-rented {
+    border-left-color: #e74c3c;
+    border-color: #eaa2a2;
+    background: linear-gradient(180deg, #ffffff 0%, #fff2f2 100%);
+}
+
+.scooter-info-popup.status-maintenance {
+    border-left-color: #f39c12;
+    border-color: #eac577;
+    background: linear-gradient(180deg, #ffffff 0%, #fff8ec 100%);
+}
+
+@keyframes scooterPopupIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .scooter-card {
