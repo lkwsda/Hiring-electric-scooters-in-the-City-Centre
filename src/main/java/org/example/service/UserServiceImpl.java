@@ -36,6 +36,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Validation Failed: Email [" + user.getEmail() + "] is already registered");
         }
 
+        // 卡号校验
+        if (user.getCreditCardNumber() != null && !user.getCreditCardNumber().matches("\\d+")) {
+            throw new RuntimeException("Validation Failed: Credit card number must contain only digits!");
+        }
+
         // 校验通过
         userDAO.addUser(user);
     }

@@ -1,0 +1,10 @@
+POST http://localhost:8080/api/users/register?confirmPassword=supersecret
+Content-Type: application/json
+
+{
+  "username": "CardHolder",
+  "email": "card@test.com",
+  "passwordHash": "supersecret",
+  "dateOfBirth": "2002-02-02",
+  "creditCardNumber": "1234567890123456"
+}
