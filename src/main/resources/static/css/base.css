@@ -79,12 +79,13 @@ main.container section {
 }
 
 .accessibility-toolbar {
-    position: fixed;
-    right: 14px;
-    top: 84px;
+    position: sticky;
+    top: 8px;
+    margin: 10px 20px 0 auto;
+    width: fit-content;
     display: flex;
     gap: 8px;
-    z-index: 1200;
+    z-index: 10;
 }
 
 .accessibility-toolbar button {
@@ -118,4 +119,9 @@ body.high-contrast .scooter-card {
 body.high-contrast a,
 body.high-contrast button {
     color: #000;
+}
+
+#scooterMap {
+    width: 100%;
+    min-height: 320px;
 }

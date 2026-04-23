@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/pages.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <!-- 字体图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -327,6 +328,19 @@
         <div class="scooter-grid" id="scooterGrid">
             <!-- 车辆卡片JS -->
         </div>
+        <div class="form-box" style="margin-top: 20px;">
+            <h3><i class="fa-solid fa-map"></i> Scooter Live Map (F18)</h3>
+            <p class="hint-text">At least 5 scooter points should be visible when location data exists.</p>
+            <div id="scooterMap" style="height: 320px; border-radius: 8px; margin-bottom: 12px;"></div>
+            <p id="scooterMapHint" class="hint-text">Loading map...</p>
+        </div>
+        <div class="form-box" style="margin-top: 20px;">
+            <h3><i class="fa-solid fa-map-location-dot"></i> Available Scooter Coordinates</h3>
+            <p class="hint-text">Live data from /api/scooters/locations</p>
+            <div id="scooterLocationsList" class="issue-list">
+                <p>Loading locations...</p>
+            </div>
+        </div>
         <div class="section-footer">
             <div class="scooter-tips">
                 <i class="fa-solid fa-lightbulb"></i>
@@ -517,6 +531,17 @@
                     <span>Your payment information is encrypted and secure</span>
                 </div>
                 <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="savedCardSelect">
+                            <i class="fa-solid fa-wallet"></i> Saved Card:
+                        </label>
+                        <select id="savedCardSelect">
+                            <option value="">No saved card available</option>
+                        </select>
+                        <button type="button" id="useSavedCardBtn" class="btn-secondary" style="margin-top:8px;">
+                            <i class="fa-solid fa-download"></i> Use Saved Card
+                        </button>
+                    </div>
                     <div class="form-group">
                         <label for="paymentCardNumber">
                             <i class="fa-solid fa-credit-card"></i> Bank Card Number:
@@ -817,9 +842,27 @@
                     <label for="newScooterId">Scooter ID:</label>
                     <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
                     <label for="scooterStatus">Status:</label>
-                    <input type="text" id="scooterStatus" placeholder="e.g. normal/maintenance" required>
+                    <select id="scooterStatus" required>
+                        <option value="normal">normal</option>
+                        <option value="maintenance">maintenance</option>
+                        <option value="rented">rented</option>
+                    </select>
                     <button type="submit"><i class="fa-solid fa-plus"></i> Add Scooter</button>
                 </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-trash"></i> Scooter Query / Remove</h3>
+                <form id="adminScooterOpsForm">
+                    <label for="adminScooterOpsId">Scooter ID:</label>
+                    <input type="number" id="adminScooterOpsId" placeholder="Enter scooter ID" required>
+                    <div class="form-actions">
+                        <button type="button" id="adminGetScooterBtn"><i class="fa-solid fa-magnifying-glass"></i> Query</button>
+                        <button type="button" id="adminDeleteScooterBtn"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </div>
+                </form>
+                <div id="adminScooterOpsResult" class="issue-list">
+                    <p>No operation yet.</p>
+                </div>
             </div>
             <div class="form-box">
                 <h3><i class="fa-solid fa-tags"></i> Package Pricing</h3>
@@ -834,6 +877,25 @@
                     <input type="number" id="price1w" step="0.01" required>
                     <button type="submit"><i class="fa-solid fa-save"></i> Save and Sync</button>
                 </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
+                <form id="adminPlaceBookingForm">
+                    <label for="adminProxyUserId">User ID</label>
+                    <input type="number" id="adminProxyUserId" min="1" required>
+                    <label for="adminProxyScooterId">Scooter ID</label>
+                    <input type="number" id="adminProxyScooterId" min="1" required>
+                    <label for="adminProxyPackageId">Package ID</label>
+                    <input type="number" id="adminProxyPackageId" min="1" required>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Place Booking as Admin</button>
+                </form>
+            </div>
+            <div class="form-box">
+                <h3><i class="fa-solid fa-users"></i> User List</h3>
+                <button type="button" id="refreshUsersBtn"><i class="fa-solid fa-rotate"></i> Refresh Users</button>
+                <div id="adminUsersList" class="issue-list" style="margin-top: 12px;">
+                    <p>No user data loaded.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -853,6 +915,11 @@
         </div>
         <div class="form-box" style="margin-top: 20px;">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues (F15)</h3>
+            <form id="adminResolveIssueForm" style="margin-bottom: 12px;">
+                <label for="resolveIssueId">Issue ID to resolve</label>
+                <input type="number" id="resolveIssueId" min="1" placeholder="Enter issue ID" required>
+                <button type="submit"><i class="fa-solid fa-check"></i> Resolve Issue</button>
+            </form>
             <div id="adminHighPriorityIssues" class="issue-list">
                 <p>No data loaded.</p>
             </div>
@@ -868,6 +935,7 @@
     </div>
 </footer>
 
-<script src="js/script.js?v=20260421"></script>
+<script src="js/script.js?v=20260423"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </body>
 </html>
