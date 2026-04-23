@@ -20,10 +20,17 @@ public class UserDAOImpl implements UserDAO {
     //【增】添加用户
     @Override
     public void addUser(User user) {
-        String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
+        // SQL 语句
+        String sql = "INSERT INTO users (username, email, password_hash, role, date_of_birth, credit_card_number) VALUES (?, ?, ?, ?, ?, ?)";
 
-        jdbcTemplate.update(sql, user.getUsername(), user.getEmail(), user.getPasswordHash());
-        System.out.println("[Spring Boot] User added: " + user.getUsername());
+        jdbcTemplate.update(sql,
+                user.getUsername(),
+                user.getEmail(),
+                user.getPasswordHash(),
+                "user", // 默认角色
+                user.getDateOfBirth(), // 生日
+                user.getCreditCardNumber() // 信用卡号
+        );
     }
 
     // 【查】通过 ID 找人

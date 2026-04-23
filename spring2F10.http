@@ -1,0 +1,13 @@
+###预订 1 号车
+POST http://localhost:8080/api/bookings/place
+Content-Type: application/json
+
+{ "userId": 1, "scooterId": 1, "totalCost": 10.0 }
+
+
+
+###结束 1 号订单
+POST http://localhost:8080/api/bookings/end/1
+
+# 数据库 scooters 表，1 号车变回 available
+# 数据库 bookings 表，1 号单的 end_time
