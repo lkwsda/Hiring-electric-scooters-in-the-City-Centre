@@ -1,0 +1,37 @@
+### 测试 A: 正常进货一台满电的车 (应该成功)
+# 期望结果: 返回 200 OK，内容为 "Scooter added successfully: Xiaomi-Pro3"
+POST http://localhost:8080/api/scooters/add
+Content-Type: application/json
+
+{
+  "model": "xiaoming",
+  "batteryLevel": 100,
+  "latitude": 53.8015,
+  "longitude": -1.5488,
+  "status": "available"
+}
+
+### 测试 B: 尝试进货一台没充满电的车 (应该失败)
+# 期望结果: 返回 400 Bad Request，内容为 "New scooters must have 100% battery level!"
+POST http://localhost:8080/api/scooters/add
+Content-Type: application/json
+
+{
+  "model": "Defective-Scooter",
+  "batteryLevel": 80,
+  "latitude": 53.8016,
+  "longitude": -1.5489,
+  "status": "available"
+}
+
+### 测试 C: 尝试进货一台缺少关键信息的车 (应该失败)
+# 期望结果: 可能会报 500 错误，因为数据库 model 字段是 NOT NULL
+POST http://localhost:8080/api/scooters/add
+Content-Type: application/json
+
+{
+  "batteryLevel": 100,
+  "latitude": 53.8017,
+  "longitude": -1.5491,
+  "status": "available"
+}
