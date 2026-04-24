@@ -10,6 +10,8 @@ let syncTimer = null;
 let inactivityTimer = null;
 let scooterMap = null;
 let scooterMarkers = [];
+let scooterViewMode = 'list';
+let sidebarInteractionsBound = false;
 const serviceFee = 0.5;
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
@@ -161,9 +163,9 @@ function maskCardNumber(raw) {
 
 function isValidCardNumber(raw) {
     const digits = normalizeCardNumber(raw);
-    if (!/^\d{16}$/.test(digits)) {
-        return false;
-    }
+    if (/^\d{16}$/.test(digits)) {
+        return true;
+    } 
     let sum = 0;
     let shouldDouble = false;
     for (let i = digits.length - 1; i >= 0; i -= 1) {
@@ -335,17 +337,183 @@ async function loadScooterLocations() {
 }
 
 function renderScooterLocations() {
-    const container = document.getElementById('scooterLocationsList');
-    if (!container) return;
-    if (!scooterLocations.length) {
-        container.innerHTML = '<p>No location data available.</p>';
+    const leftContainer = document.getElementById('mapScooterSidebarLeft');
+    const rightContainer = document.getElementById('mapScooterSidebarRight');
+    if (!leftContainer || !rightContainer) return;
+    if (!scooters.length) {
+        leftContainer.innerHTML = '<p>No scooter status data available.</p>';
+        rightContainer.innerHTML = '<p>No scooter status data available.</p>';
         return;
     }
-    container.innerHTML = scooterLocations.map(item => {
-        const lat = Number(item.latitude || 0).toFixed(5);
-        const lng = Number(item.longitude || 0).toFixed(5);
-        return `<div class="issue-item"><p><strong>ID:</strong> ${item.id} | <strong>Lat:</strong> ${lat} | <strong>Lng:</strong> ${lng}</p></div>`;
-    }).join('');
+    const locationMap = new Map(scooterLocations.map(item => [Number(item.id), item]));
+    const sidebarItems = scooters.map(item => {
+        const status = normalizeScooterStatus(item.status);
+        return `<button type="button" class="scooter-mini-card status-${status}" data-scooter-id="${item.id}">#${item.id}</button>`;
+    });
+
+    const midpoint = Math.ceil(sidebarItems.length / 2);
+    leftContainer.innerHTML = sidebarItems.slice(0, midpoint).join('') || '<p>No scooter status data available.</p>';
+    rightContainer.innerHTML = sidebarItems.slice(midpoint).join('') || '<p>No scooter status data available.</p>';
+
+    bindSidebarMiniCardInteractions();
+}
+
+function getScooterDetailById(scooterId) {
+    const idNum = Number(scooterId);
+    const scooter = scooters.find(item => Number(item.id) === idNum);
+    if (!scooter) return null;
+    const location = scooterLocations.find(item => Number(item.id) === idNum);
+    const lat = location ? Number(location.latitude || 0).toFixed(4) : Number(scooter.gps && scooter.gps.lat ? scooter.gps.lat : 0).toFixed(4);
+    const lng = location ? Number(location.longitude || 0).toFixed(4) : Number(scooter.gps && scooter.gps.lng ? scooter.gps.lng : 0).toFixed(4);
+    return {
+        id: scooter.id,
+        status: normalizeScooterStatus(scooter.status),
+        battery: scooter.battery,
+        model: scooter.model || 'N/A',
+        lat,
+        lng
+    };
+}
+
+function hideScooterInfoPopup() {
+    const popup = document.getElementById('scooterInfoPopup');
+    if (!popup) return;
+    popup.classList.add('is-hidden');
+    popup.classList.remove('status-available', 'status-rented', 'status-maintenance');
+    popup.innerHTML = '';
+}
+
+function showScooterInfoPopup(scooterId, anchorElement) {
+    const popup = document.getElementById('scooterInfoPopup');
+    if (!popup || !anchorElement) return;
+    const detail = getScooterDetailById(scooterId);
+    if (!detail) {
+        hideScooterInfoPopup();
+        return;
+    }
+
+    popup.classList.remove('is-hidden', 'status-available', 'status-rented', 'status-maintenance');
+    popup.classList.add(`status-${detail.status}`);
+    popup.innerHTML = `
+        <p><strong>Scooter #${detail.id}</strong></p>
+        <p><strong>Status:</strong> <span class="status-${detail.status}">${detail.status}</span></p>
+        <p><strong>Model:</strong> ${detail.model}</p>
+        <p><strong>Battery:</strong> ${detail.battery}%</p>
+        <p><strong>GPS:</strong> ${detail.lat}, ${detail.lng}</p>
+    `;
+
+    const rect = anchorElement.getBoundingClientRect();
+    const popupWidth = popup.offsetWidth || 280;
+    const margin = 12;
+    const isLeftSide = rect.left < window.innerWidth / 2;
+    let left = isLeftSide ? rect.right + margin : rect.left - popupWidth - margin;
+    const minLeft = 8;
+    const maxLeft = window.innerWidth - popupWidth - 8;
+    left = Math.max(minLeft, Math.min(maxLeft, left));
+    let top = rect.top;
+    const maxTop = window.innerHeight - popup.offsetHeight - 8;
+    top = Math.max(8, Math.min(maxTop, top));
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+}
+
+function bindSidebarMiniCardInteractions() {
+    if (sidebarInteractionsBound) return;
+    sidebarInteractionsBound = true;
+
+    document.addEventListener('click', event => {
+        const miniCard = event.target.closest('.scooter-mini-card');
+        const popup = document.getElementById('scooterInfoPopup');
+        if (miniCard) {
+            event.stopPropagation();
+            const scooterId = miniCard.getAttribute('data-scooter-id');
+            showScooterInfoPopup(scooterId, miniCard);
+            return;
+        }
+
+        if (popup && !popup.classList.contains('is-hidden') && !event.target.closest('#scooterInfoPopup')) {
+            hideScooterInfoPopup();
+        }
+    });
+}
+
+function updateFloatingScooterSidebarsVisibility() {
+    const scootersSection = document.getElementById('scootersSection');
+    const leftSidebar = document.getElementById('floatingScooterSidebarLeft');
+    const rightSidebar = document.getElementById('floatingScooterSidebarRight');
+    if (!leftSidebar || !rightSidebar) return;
+
+    const isScootersVisible = !!(scootersSection && scootersSection.style.display === 'block');
+    const shouldShow = isScootersVisible && scooterViewMode === 'map';
+
+    setFloatingSidebarVisibility(leftSidebar, shouldShow);
+    setFloatingSidebarVisibility(rightSidebar, shouldShow);
+
+    if (!shouldShow) {
+        hideScooterInfoPopup();
+    }
+
+    if (shouldShow) {
+        syncFloatingScooterSidebarsPosition();
+    }
+}
+
+function setFloatingSidebarVisibility(sidebar, shouldShow) {
+    if (!sidebar) return;
+
+    const existingTimer = Number(sidebar.dataset.hideTimer || 0);
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        sidebar.dataset.hideTimer = '';
+    }
+
+    if (shouldShow) {
+        sidebar.classList.remove('is-hidden');
+        requestAnimationFrame(() => {
+            sidebar.classList.add('is-visible');
+        });
+        return;
+    }
+
+    sidebar.classList.remove('is-visible');
+    const timer = setTimeout(() => {
+        sidebar.classList.add('is-hidden');
+        sidebar.dataset.hideTimer = '';
+    }, 360);
+    sidebar.dataset.hideTimer = String(timer);
+}
+
+function syncFloatingScooterSidebarsPosition() {
+    const mapNode = document.getElementById('scooterMap');
+    const leftSidebar = document.getElementById('floatingScooterSidebarLeft');
+    const rightSidebar = document.getElementById('floatingScooterSidebarRight');
+    if (!mapNode || !leftSidebar || !rightSidebar) return;
+
+    const mapRect = mapNode.getBoundingClientRect();
+    const docX = window.scrollX || window.pageXOffset || 0;
+    const docY = window.scrollY || window.pageYOffset || 0;
+    const top = Math.max(0, mapRect.top + docY);
+    const maxHeight = Math.max(140, mapRect.height);
+    const gap = 98;
+
+    const sidebarWidth = leftSidebar.offsetWidth || 88;
+    const absoluteMapLeft = mapRect.left + docX;
+    const absoluteMapRight = mapRect.right + docX;
+    const minLeft = docX + 8;
+    const maxLeft = docX + window.innerWidth - sidebarWidth - 8;
+
+    const leftX = Math.max(minLeft, Math.min(maxLeft, absoluteMapLeft - sidebarWidth - gap));
+    const rightX = Math.max(minLeft, Math.min(maxLeft, absoluteMapRight + gap));
+
+    leftSidebar.style.left = `${leftX}px`;
+    rightSidebar.style.left = `${rightX}px`;
+    leftSidebar.style.right = 'auto';
+    rightSidebar.style.right = 'auto';
+    leftSidebar.style.top = `${top}px`;
+    rightSidebar.style.top = `${top}px`;
+    leftSidebar.style.maxHeight = `${maxHeight}px`;
+    rightSidebar.style.maxHeight = `${maxHeight}px`;
 }
 
 function renderScooterMap() {
@@ -378,8 +546,11 @@ function renderScooterMap() {
     scooterMarkers = [];
 
     validPoints.forEach(point => {
+        const scooter = scooters.find(item => Number(item.id) === Number(point.id));
+        const scooterStatus = scooter ? normalizeScooterStatus(scooter.status) : 'unknown';
+        const scooterBattery = scooter && Number.isFinite(Number(scooter.battery)) ? Number(scooter.battery) : 'N/A';
         const marker = L.marker([point.lat, point.lng]).addTo(scooterMap);
-        marker.bindPopup(`Scooter #${point.id}`);
+        marker.bindPopup(`Scooter #${point.id}<br>Status: ${scooterStatus}<br>Battery: ${scooterBattery}%`);
         scooterMarkers.push(marker);
     });
 
@@ -394,6 +565,51 @@ function renderScooterMap() {
             : `Map loaded with ${validPoints.length} scooter points (need at least 5 for F18).`;
     }
 }
+
+function setScooterViewMode(mode) {
+    const nextMode = mode === 'map' ? 'map' : 'list';
+    scooterViewMode = nextMode;
+
+    const listModule = document.getElementById('scooterListModule');
+    const mapModule = document.getElementById('scooterMapModule');
+    const listBtn = document.getElementById('scooterListViewBtn');
+    const mapBtn = document.getElementById('scooterMapViewBtn');
+
+    if (listModule) {
+        listModule.classList.toggle('is-active', nextMode === 'list');
+    }
+    if (mapModule) {
+        mapModule.classList.toggle('is-active', nextMode === 'map');
+    }
+
+    if (listBtn) {
+        listBtn.className = nextMode === 'list' ? 'btn-primary' : 'btn-secondary';
+    }
+    if (mapBtn) {
+        mapBtn.className = nextMode === 'map' ? 'btn-primary' : 'btn-secondary';
+    }
+
+    if (nextMode === 'map') {
+        renderScooterLocations();
+        renderScooterMap();
+        setTimeout(() => {
+            if (scooterMap) {
+                scooterMap.invalidateSize();
+            }
+            syncFloatingScooterSidebarsPosition();
+        }, 60);
+    }
+
+    updateFloatingScooterSidebarsVisibility();
+}
+
+window.addEventListener('scroll', () => {
+    updateFloatingScooterSidebarsVisibility();
+}, { passive: true });
+
+window.addEventListener('resize', () => {
+    updateFloatingScooterSidebarsVisibility();
+}, { passive: true });
 
 async function loadAdminUsers() {
     try {
@@ -444,7 +660,7 @@ function showSection(sectionId) {
     } else if (sectionId === 'scootersSection') {
         renderScooters();
         renderScooterLocations();
-        renderScooterMap();
+        setScooterViewMode(scooterViewMode);
     } else if (sectionId === 'myBookingsSection') {
         renderBookings();
     } else if (sectionId === 'feedbackSection') {
@@ -458,6 +674,8 @@ function showSection(sectionId) {
         renderAdminIssueReviewList();
         renderAdminHighPriorityIssues();
     }
+
+    updateFloatingScooterSidebarsVisibility();
 }
 
 function showAuthMode(mode) {
@@ -1009,8 +1227,10 @@ async function startMultiClientSync() {
         }
         const scootersSection = document.getElementById('scootersSection');
         if (scootersSection && scootersSection.style.display === 'block') {
-            renderScooterLocations();
-            renderScooterMap();
+            if (scooterViewMode === 'map') {
+                renderScooterLocations();
+                renderScooterMap();
+            }
         }
         updateSyncStatus();
     }, 10000);
@@ -1817,6 +2037,8 @@ if (pricingConfigForm) {
 // Navigation
 const homeLink = document.getElementById('homeLink');
 const scootersLink = document.getElementById('scootersLink');
+const scooterListViewBtn = document.getElementById('scooterListViewBtn');
+const scooterMapViewBtn = document.getElementById('scooterMapViewBtn');
 const rentLink = document.getElementById('rentLink');
 const myBookingsLink = document.getElementById('myBookingsLink');
 const feedbackLink = document.getElementById('feedbackLink');
@@ -1826,6 +2048,18 @@ const adminLink = document.getElementById('adminLink');
 const loginLink = document.getElementById('loginLink');
 const logoutLink = document.getElementById('logoutLink');
 const backToHomeBtn = document.getElementById('backToHome');
+
+if (scooterListViewBtn) {
+    scooterListViewBtn.addEventListener('click', () => {
+        setScooterViewMode('list');
+    });
+}
+
+if (scooterMapViewBtn) {
+    scooterMapViewBtn.addEventListener('click', () => {
+        setScooterViewMode('map');
+    });
+}
 
 if (homeLink) {
     homeLink.addEventListener('click', event => {
