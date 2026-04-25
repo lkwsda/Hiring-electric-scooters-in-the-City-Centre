@@ -46,6 +46,14 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
+    
+    - name: Wait for MySQL ready
+      run: sleep 30
+
+    - name: Check if tables exist
+      run: |
+        mysql -h127.0.0.1 -uroot -p123123 -D scooter_sharing -e "SHOW TABLES;"
+
     - name: Start Spring Boot Application
       run: |
        nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
