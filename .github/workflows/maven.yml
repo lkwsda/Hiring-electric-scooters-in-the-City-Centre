@@ -82,6 +82,12 @@ jobs:
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
         python test/test_run_all_api.py 2>&1 | tee test/reports_md/api_test_report_${TIMESTAMP}.md
 
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-test-report
+        path: test/reports_md/
+
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
