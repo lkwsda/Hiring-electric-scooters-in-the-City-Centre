@@ -47,6 +47,11 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
+    - name: Initialize Database Tables
+      run: |
+        sudo apt-get install -y mysql-client
+        mysql -h127.0.0.1 -P3306 -uroot -p123123 scooter_sharing < sql/init_db.sql
+
     
     - name: Verify config file in JAR
       run: |
@@ -54,7 +59,7 @@ jobs:
 
     - name: Start Spring Boot Application
       run: |
-       nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
+        nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
         until nc -z localhost 8080; do
           echo "Waiting for Spring Boot to start..."
           sleep 10
