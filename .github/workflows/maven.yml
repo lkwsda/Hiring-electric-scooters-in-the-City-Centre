@@ -55,9 +55,9 @@ jobs:
     - name: Run pytest API Tests
       run: |
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-         pytest test/test_run_all_api.py -v \
-          --md=test/reports_md/API测试报告_${TIMESTAMP}.md \
-          --html=test/reports_md/API测试报告_${TIMESTAMP}.html
+        python -m pytest test/test_run_all_api.py -v \
+        --md=test/reports_md/API测试报告_${TIMESTAMP}.md \
+        --html=test/reports_md/API测试报告_${TIMESTAMP}.html
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
