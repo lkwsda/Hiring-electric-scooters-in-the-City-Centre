@@ -80,7 +80,7 @@ jobs:
     - name: Run pytest API Tests
       run: |
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-         python test/test_run_all_api.py 2>&1 | tee test/reports_md/API测试报告_${TIMESTAMP}.md
+        python test/test_run_all_api.py 2>&1 | tee test/reports_md/api_test_report_${TIMESTAMP}.md
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
