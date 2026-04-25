@@ -47,12 +47,9 @@ jobs:
       run: mvn -B package --file pom.xml
 
     
-    - name: Wait for MySQL ready
-      run: sleep 30
-
-    - name: Check if tables exist
+    - name: Verify config file in JAR
       run: |
-        mysql -h127.0.0.1 -uroot -p123123 -D scooter_sharing -e "SHOW TABLES;"
+        unzip -l target/ScooterRentalSystem-1.0-SNAPSHOT.jar | grep application.properties
 
     - name: Start Spring Boot Application
       run: |

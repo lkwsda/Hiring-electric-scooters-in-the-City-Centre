@@ -54,6 +54,18 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+             
+        <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <!-- 强制包含目录下所有文件，避免漏打包 -->
+            <includes>
+                <include>**/*</include>
+            </includes>
+            <!-- 过滤只在需要替换变量时开，这里直接关掉 -->
+            <filtering>false</filtering>
+        </resource>
+    </resources>
     </build>
 
 
