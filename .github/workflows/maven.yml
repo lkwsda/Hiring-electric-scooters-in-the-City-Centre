@@ -43,8 +43,9 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+        
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn clean package -DskipTests
 
     
     - name: Verify config file in JAR
