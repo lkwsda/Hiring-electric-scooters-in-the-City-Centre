@@ -106,7 +106,10 @@ public class BookingServiceImpl implements BookingService {
         // 记录结束时间
         bookingDAO.updateEndTime(bookingId, java.time.LocalDateTime.now());
 
-        System.out.println("[Service] F10 Sync: Trip #" + bookingId + " ended. Scooter #" + scooterId + " is now AVAILABLE.");
+        // 改为结束订单
+        bookingDAO.updateBookingStatus(bookingId, "finished");
+
+        System.out.println("[Service] F10 Sync: Trip #" + bookingId + " has FINISHED.");
     }
 
     /**

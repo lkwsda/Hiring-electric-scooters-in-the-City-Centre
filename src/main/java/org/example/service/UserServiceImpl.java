@@ -3,14 +3,17 @@ package org.example.service;
 import org.example.dao.UserDAO;
 import org.example.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service // 贴上这个标签，是“大堂经理”
+@Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    private UserDAO userDAO; // 经理指挥厨师
+    private UserDAO userDAO;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public void registerUser(User user,String confirmPassword) {
@@ -41,6 +44,10 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Validation Failed: Credit card number must contain only digits!");
         }
 
+        // 隐藏明文
+        String hashedPassword = passwordEncoder.encode(user.getPasswordHash());
+        user.setPasswordHash(hashedPassword);
+
         // 校验通过
         userDAO.addUser(user);
     }
@@ -55,12 +62,11 @@ public class UserServiceImpl implements UserService {
         User user = userDAO.getUserByName(username);
 
         // 验证：账号，密码
-        if (user != null && user.getPasswordHash().equals(password)) {
-            System.out.println("[Service] Login success! Role: " + user.getRole());
-            return user; // 验证成功，把整个用户信息（包含 role）发给前端
+        if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
+            System.out.println("[Service] Secure Login success! Role: " + user.getRole());
+            return user;
         }
 
-        // 验证失败
         throw new RuntimeException("Login Failed: Incorrect username or password!");
     }
 }
