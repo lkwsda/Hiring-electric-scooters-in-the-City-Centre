@@ -1,5 +1,0 @@
-### 1. 看看现在的价目表 (F04)
-GET http://localhost:8080/api/packages
-
-### 2. 管理员把 1 小时 5 块钱，改成 8 块 (F16)
-PUT http://localhost:8080/api/packages/update/1?price=8.00

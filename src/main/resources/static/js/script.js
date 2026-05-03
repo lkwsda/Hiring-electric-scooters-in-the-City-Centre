@@ -2,9 +2,18 @@ let packages = [];
 let scooters = [];
 let bookings = [];
 let issues = [];
+let scooterLocations = [];
+let adminUsers = [];
 let currentUser = null;
 let adminLoggedIn = false; // Remove hardcoded admin
 let syncTimer = null;
+let inactivityTimer = null;
+let scooterMap = null;
+let scooterMarkers = [];
+let scooterViewMode = 'list';
+let sidebarInteractionsBound = false;
+const serviceFee = 0.5;
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 const storedCurrentUser = localStorage.getItem('currentUser');
 if (storedCurrentUser) {
@@ -130,11 +139,108 @@ function getTextError(responseText, fallback) {
     return responseText && responseText.trim() ? responseText : fallback;
 }
 
+function formatCurrency(value) {
+    const amount = Number(value || 0);
+    return `$${amount.toFixed(2)}`;
+}
+
 function announce(message) {
     const live = document.getElementById('liveStatus');
     if (live) {
         live.textContent = message;
     }
+}
+
+function normalizeCardNumber(raw) {
+    return String(raw || '').replace(/\s+/g, '');
+}
+
+function maskCardNumber(raw) {
+    const digits = normalizeCardNumber(raw);
+    if (digits.length < 4) return '****';
+    return `**** **** **** ${digits.slice(-4)}`;
+}
+
+function isValidCardNumber(raw) {
+    const digits = normalizeCardNumber(raw);
+    if (/^\d{16}$/.test(digits)) {
+        return true;
+    } 
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = digits.length - 1; i >= 0; i -= 1) {
+        let digit = Number(digits[i]);
+        if (shouldDouble) {
+            digit *= 2;
+            if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+        shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+}
+
+function isStrongPassword(password) {
+    if (!password || password.length < 8) return false;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    return hasUpper && hasLower && hasDigit && hasSpecial;
+}
+
+function saveUserCard(rawCardNumber) {
+    const userId = getCurrentUserId();
+    if (!userId) return;
+    const digits = normalizeCardNumber(rawCardNumber);
+    if (!/^\d{16}$/.test(digits)) return;
+    localStorage.setItem(`savedCard:${userId}`, digits);
+}
+
+function getSavedUserCard() {
+    const userId = getCurrentUserId();
+    if (!userId) return '';
+    return localStorage.getItem(`savedCard:${userId}`) || '';
+}
+
+function savePendingCardForUsername(username, rawCardNumber) {
+    const normalizedUsername = String(username || '').trim().toLowerCase();
+    const digits = normalizeCardNumber(rawCardNumber);
+    if (!normalizedUsername || !/^\d{16}$/.test(digits)) return;
+    localStorage.setItem(`savedCardByUsername:${normalizedUsername}`, digits);
+}
+
+function getPendingCardForUsername(username) {
+    const normalizedUsername = String(username || '').trim().toLowerCase();
+    if (!normalizedUsername) return '';
+    return localStorage.getItem(`savedCardByUsername:${normalizedUsername}`) || '';
+}
+
+function logoutByTimeout() {
+    currentUser = null;
+    adminLoggedIn = false;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('adminLoggedIn');
+    updateNav();
+    showSection('authSection');
+    showAuthMode('login');
+    alert('You were logged out due to 30 minutes of inactivity.');
+}
+
+function resetSessionTimer() {
+    if (!currentUser && !adminLoggedIn) return;
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    inactivityTimer = setTimeout(() => {
+        logoutByTimeout();
+    }, SESSION_TIMEOUT_MS);
+}
+
+function setupInactivityTracking() {
+    ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(eventName => {
+        window.addEventListener(eventName, resetSessionTimer, { passive: true });
+    });
 }
 
 function normalizePackageTypeText(type) {
@@ -202,10 +308,346 @@ async function loadScooters() {
     }
 }
 
+async function loadScooterLocations() {
+    try {
+        const response = await fetch('/api/scooters/locations');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(getTextError(errorText, 'Failed to load scooter locations'));
+        }
+        const data = await response.json();
+        scooterLocations = Array.isArray(data) ? data : [];
+        if (!scooterLocations.length && Array.isArray(scooters) && scooters.length) {
+            scooterLocations = scooters.slice(0, 20).map(item => ({
+                id: item.id,
+                latitude: Number(item.gps && item.gps.lat ? item.gps.lat : item.latitude),
+                longitude: Number(item.gps && item.gps.lng ? item.gps.lng : item.longitude)
+            })).filter(point => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
+        }
+    } catch (error) {
+        console.error('Failed to load scooter locations:', error);
+        scooterLocations = Array.isArray(scooters)
+            ? scooters.slice(0, 20).map(item => ({
+                id: item.id,
+                latitude: Number(item.gps && item.gps.lat ? item.gps.lat : item.latitude),
+                longitude: Number(item.gps && item.gps.lng ? item.gps.lng : item.longitude)
+            })).filter(point => Number.isFinite(point.latitude) && Number.isFinite(point.longitude))
+            : [];
+    }
+}
+
+function renderScooterLocations() {
+    const leftContainer = document.getElementById('mapScooterSidebarLeft');
+    const rightContainer = document.getElementById('mapScooterSidebarRight');
+    if (!leftContainer || !rightContainer) return;
+    if (!scooters.length) {
+        leftContainer.innerHTML = '<p>No scooter status data available.</p>';
+        rightContainer.innerHTML = '<p>No scooter status data available.</p>';
+        return;
+    }
+    const locationMap = new Map(scooterLocations.map(item => [Number(item.id), item]));
+    const sidebarItems = scooters.map(item => {
+        const status = normalizeScooterStatus(item.status);
+        return `<button type="button" class="scooter-mini-card status-${status}" data-scooter-id="${item.id}">#${item.id}</button>`;
+    });
+
+    const midpoint = Math.ceil(sidebarItems.length / 2);
+    leftContainer.innerHTML = sidebarItems.slice(0, midpoint).join('') || '<p>No scooter status data available.</p>';
+    rightContainer.innerHTML = sidebarItems.slice(midpoint).join('') || '<p>No scooter status data available.</p>';
+
+    bindSidebarMiniCardInteractions();
+}
+
+function getScooterDetailById(scooterId) {
+    const idNum = Number(scooterId);
+    const scooter = scooters.find(item => Number(item.id) === idNum);
+    if (!scooter) return null;
+    const location = scooterLocations.find(item => Number(item.id) === idNum);
+    const lat = location ? Number(location.latitude || 0).toFixed(4) : Number(scooter.gps && scooter.gps.lat ? scooter.gps.lat : 0).toFixed(4);
+    const lng = location ? Number(location.longitude || 0).toFixed(4) : Number(scooter.gps && scooter.gps.lng ? scooter.gps.lng : 0).toFixed(4);
+    return {
+        id: scooter.id,
+        status: normalizeScooterStatus(scooter.status),
+        battery: scooter.battery,
+        model: scooter.model || 'N/A',
+        lat,
+        lng
+    };
+}
+
+function hideScooterInfoPopup() {
+    const popup = document.getElementById('scooterInfoPopup');
+    if (!popup) return;
+    popup.classList.add('is-hidden');
+    popup.classList.remove('status-available', 'status-rented', 'status-maintenance');
+    popup.innerHTML = '';
+}
+
+function showScooterInfoPopup(scooterId, anchorElement) {
+    const popup = document.getElementById('scooterInfoPopup');
+    if (!popup || !anchorElement) return;
+    const detail = getScooterDetailById(scooterId);
+    if (!detail) {
+        hideScooterInfoPopup();
+        return;
+    }
+
+    popup.classList.remove('is-hidden', 'status-available', 'status-rented', 'status-maintenance');
+    popup.classList.add(`status-${detail.status}`);
+    popup.innerHTML = `
+        <p><strong>Scooter #${detail.id}</strong></p>
+        <p><strong>Status:</strong> <span class="status-${detail.status}">${detail.status}</span></p>
+        <p><strong>Model:</strong> ${detail.model}</p>
+        <p><strong>Battery:</strong> ${detail.battery}%</p>
+        <p><strong>GPS:</strong> ${detail.lat}, ${detail.lng}</p>
+    `;
+
+    const rect = anchorElement.getBoundingClientRect();
+    const popupWidth = popup.offsetWidth || 280;
+    const margin = 12;
+    const isLeftSide = rect.left < window.innerWidth / 2;
+    let left = isLeftSide ? rect.right + margin : rect.left - popupWidth - margin;
+    const minLeft = 8;
+    const maxLeft = window.innerWidth - popupWidth - 8;
+    left = Math.max(minLeft, Math.min(maxLeft, left));
+    let top = rect.top;
+    const maxTop = window.innerHeight - popup.offsetHeight - 8;
+    top = Math.max(8, Math.min(maxTop, top));
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+}
+
+function bindSidebarMiniCardInteractions() {
+    if (sidebarInteractionsBound) return;
+    sidebarInteractionsBound = true;
+
+    document.addEventListener('click', event => {
+        const miniCard = event.target.closest('.scooter-mini-card');
+        const popup = document.getElementById('scooterInfoPopup');
+        if (miniCard) {
+            event.stopPropagation();
+            const scooterId = miniCard.getAttribute('data-scooter-id');
+            showScooterInfoPopup(scooterId, miniCard);
+            return;
+        }
+
+        if (popup && !popup.classList.contains('is-hidden') && !event.target.closest('#scooterInfoPopup')) {
+            hideScooterInfoPopup();
+        }
+    });
+}
+
+function updateFloatingScooterSidebarsVisibility() {
+    const scootersSection = document.getElementById('scootersSection');
+    const leftSidebar = document.getElementById('floatingScooterSidebarLeft');
+    const rightSidebar = document.getElementById('floatingScooterSidebarRight');
+    if (!leftSidebar || !rightSidebar) return;
+
+    const isScootersVisible = !!(scootersSection && scootersSection.style.display === 'block');
+    const shouldShow = isScootersVisible && scooterViewMode === 'map';
+
+    setFloatingSidebarVisibility(leftSidebar, shouldShow);
+    setFloatingSidebarVisibility(rightSidebar, shouldShow);
+
+    if (!shouldShow) {
+        hideScooterInfoPopup();
+    }
+
+    if (shouldShow) {
+        syncFloatingScooterSidebarsPosition();
+    }
+}
+
+function setFloatingSidebarVisibility(sidebar, shouldShow) {
+    if (!sidebar) return;
+
+    const existingTimer = Number(sidebar.dataset.hideTimer || 0);
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        sidebar.dataset.hideTimer = '';
+    }
+
+    if (shouldShow) {
+        sidebar.classList.remove('is-hidden');
+        requestAnimationFrame(() => {
+            sidebar.classList.add('is-visible');
+        });
+        return;
+    }
+
+    sidebar.classList.remove('is-visible');
+    const timer = setTimeout(() => {
+        sidebar.classList.add('is-hidden');
+        sidebar.dataset.hideTimer = '';
+    }, 360);
+    sidebar.dataset.hideTimer = String(timer);
+}
+
+function syncFloatingScooterSidebarsPosition() {
+    const mapNode = document.getElementById('scooterMap');
+    const leftSidebar = document.getElementById('floatingScooterSidebarLeft');
+    const rightSidebar = document.getElementById('floatingScooterSidebarRight');
+    if (!mapNode || !leftSidebar || !rightSidebar) return;
+
+    const mapRect = mapNode.getBoundingClientRect();
+    const docX = window.scrollX || window.pageXOffset || 0;
+    const docY = window.scrollY || window.pageYOffset || 0;
+    const top = Math.max(0, mapRect.top + docY);
+    const maxHeight = Math.max(140, mapRect.height);
+    const gap = 98;
+
+    const sidebarWidth = leftSidebar.offsetWidth || 88;
+    const absoluteMapLeft = mapRect.left + docX;
+    const absoluteMapRight = mapRect.right + docX;
+    const minLeft = docX + 8;
+    const maxLeft = docX + window.innerWidth - sidebarWidth - 8;
+
+    const leftX = Math.max(minLeft, Math.min(maxLeft, absoluteMapLeft - sidebarWidth - gap));
+    const rightX = Math.max(minLeft, Math.min(maxLeft, absoluteMapRight + gap));
+
+    leftSidebar.style.left = `${leftX}px`;
+    rightSidebar.style.left = `${rightX}px`;
+    leftSidebar.style.right = 'auto';
+    rightSidebar.style.right = 'auto';
+    leftSidebar.style.top = `${top}px`;
+    rightSidebar.style.top = `${top}px`;
+    leftSidebar.style.maxHeight = `${maxHeight}px`;
+    rightSidebar.style.maxHeight = `${maxHeight}px`;
+}
+
+function renderScooterMap() {
+    const mapNode = document.getElementById('scooterMap');
+    const hintNode = document.getElementById('scooterMapHint');
+    if (!mapNode || typeof L === 'undefined') {
+        if (hintNode) {
+            hintNode.textContent = 'Map library unavailable. Showing coordinates list only.';
+        }
+        return;
+    }
+
+    const validPoints = scooterLocations
+        .map(item => ({
+            id: item.id,
+            lat: Number(item.latitude),
+            lng: Number(item.longitude)
+        }))
+        .filter(point => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+
+    if (!scooterMap) {
+        scooterMap = L.map('scooterMap').setView([51.5074, -0.1278], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(scooterMap);
+    }
+
+    scooterMarkers.forEach(marker => marker.remove());
+    scooterMarkers = [];
+
+    validPoints.forEach(point => {
+        const scooter = scooters.find(item => Number(item.id) === Number(point.id));
+        const scooterStatus = scooter ? normalizeScooterStatus(scooter.status) : 'unknown';
+        const scooterBattery = scooter && Number.isFinite(Number(scooter.battery)) ? Number(scooter.battery) : 'N/A';
+        const marker = L.marker([point.lat, point.lng]).addTo(scooterMap);
+        marker.bindPopup(`Scooter #${point.id}<br>Status: ${scooterStatus}<br>Battery: ${scooterBattery}%`);
+        scooterMarkers.push(marker);
+    });
+
+    if (validPoints.length) {
+        const bounds = L.latLngBounds(validPoints.map(point => [point.lat, point.lng]));
+        scooterMap.fitBounds(bounds.pad(0.2));
+    }
+
+    if (hintNode) {
+        hintNode.textContent = validPoints.length >= 5
+            ? `Map loaded with ${validPoints.length} scooter points.`
+            : `Map loaded with ${validPoints.length} scooter points (need at least 5 for F18).`;
+    }
+}
+
+function setScooterViewMode(mode) {
+    const nextMode = mode === 'map' ? 'map' : 'list';
+    scooterViewMode = nextMode;
+
+    const listModule = document.getElementById('scooterListModule');
+    const mapModule = document.getElementById('scooterMapModule');
+    const listBtn = document.getElementById('scooterListViewBtn');
+    const mapBtn = document.getElementById('scooterMapViewBtn');
+
+    if (listModule) {
+        listModule.classList.toggle('is-active', nextMode === 'list');
+    }
+    if (mapModule) {
+        mapModule.classList.toggle('is-active', nextMode === 'map');
+    }
+
+    if (listBtn) {
+        listBtn.className = nextMode === 'list' ? 'btn-primary' : 'btn-secondary';
+    }
+    if (mapBtn) {
+        mapBtn.className = nextMode === 'map' ? 'btn-primary' : 'btn-secondary';
+    }
+
+    if (nextMode === 'map') {
+        renderScooterLocations();
+        renderScooterMap();
+        setTimeout(() => {
+            if (scooterMap) {
+                scooterMap.invalidateSize();
+            }
+            syncFloatingScooterSidebarsPosition();
+        }, 60);
+    }
+
+    updateFloatingScooterSidebarsVisibility();
+}
+
+window.addEventListener('scroll', () => {
+    updateFloatingScooterSidebarsVisibility();
+}, { passive: true });
+
+window.addEventListener('resize', () => {
+    updateFloatingScooterSidebarsVisibility();
+}, { passive: true });
+
+async function loadAdminUsers() {
+    try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(getTextError(errorText, 'Failed to load users'));
+        }
+        const data = await response.json();
+        adminUsers = Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Failed to load users:', error);
+        adminUsers = [];
+    }
+}
+
+function renderAdminUsers() {
+    const container = document.getElementById('adminUsersList');
+    if (!container) return;
+    if (!adminUsers.length) {
+        container.innerHTML = '<p>No user data loaded.</p>';
+        return;
+    }
+    container.innerHTML = adminUsers.map(user => `
+        <div class="issue-item">
+            <p><strong>ID:</strong> ${user.id} | <strong>Name:</strong> ${user.username || 'N/A'} | <strong>Role:</strong> ${user.role || 'user'}</p>
+            <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+        </div>
+    `).join('');
+}
+
 // Sections
 const sections = ['authSection', 'homeSection', 'scootersSection', 'rentSection', 'paymentSection', 'successSection', 'myBookingsSection', 'feedbackSection', 'analyticsSection', 'scooterDetailSection', 'returnSection', 'adminLoginSection', 'adminConfigSection', 'adminStatsSection'];
 
 function showSection(sectionId) {
+    if (sectionId === 'authSection' && (currentUser || adminLoggedIn)) {
+        sectionId = 'homeSection';
+    }
     sections.forEach(id => {
         const sectionElement = document.getElementById(id);
         if (sectionElement) {
@@ -217,16 +659,23 @@ function showSection(sectionId) {
         updateHomeStats();
     } else if (sectionId === 'scootersSection') {
         renderScooters();
+        renderScooterLocations();
+        setScooterViewMode(scooterViewMode);
     } else if (sectionId === 'myBookingsSection') {
         renderBookings();
     } else if (sectionId === 'feedbackSection') {
         renderHighPriorityIssues();
     } else if (sectionId === 'analyticsSection') {
         renderRevenueCharts();
+    } else if (sectionId === 'adminConfigSection') {
+        renderAdminUsers();
     } else if (sectionId === 'adminStatsSection') {
         renderStats();
+        renderAdminIssueReviewList();
         renderAdminHighPriorityIssues();
     }
+
+    updateFloatingScooterSidebarsVisibility();
 }
 
 function showAuthMode(mode) {
@@ -301,6 +750,20 @@ function updateHomeStats() {
     document.getElementById('totalRides').textContent = 0;
 }
 
+function updateBookingSummary(bookingList) {
+    const source = Array.isArray(bookingList) ? bookingList : [];
+    const activeCount = source.filter(item => item.status === 'paid').length;
+    const totalCount = source.length;
+    const totalSpent = source.reduce((sum, item) => sum + Number(item.totalCost || 0), 0);
+
+    const activeNode = document.getElementById('activeBookings');
+    const totalNode = document.getElementById('totalBookings');
+    const spentNode = document.querySelector('#myBookingsSection .summary-card:nth-child(3) .summary-number');
+    if (activeNode) activeNode.textContent = String(activeCount);
+    if (totalNode) totalNode.textContent = String(totalCount);
+    if (spentNode) spentNode.textContent = formatCurrency(totalSpent);
+}
+
 // Render scooters
 function renderScooters() {
     const grid = document.getElementById('scooterGrid');
@@ -346,6 +809,7 @@ async function renderBookings() {
     const userId = getCurrentUserId();
     if (!userId) {
         list.innerHTML = '<p>Please login first.</p>';
+        updateBookingSummary([]);
         return;
     }
     try {
@@ -356,6 +820,7 @@ async function renderBookings() {
         }
         const userBookings = await response.json();
         bookings = userBookings;
+        updateBookingSummary(userBookings);
         userBookings.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
         userBookings.forEach(booking => {
             const item = document.createElement('div');
@@ -369,6 +834,12 @@ async function renderBookings() {
                     <button onclick="extendRental(${booking.id})" class="extend-rental-btn"><i class="fa-solid fa-clock"></i> Extend</button>
                     <button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop"></i> End Rental</button>
                 `;
+            } else {
+                const statusText = String(booking.status || '').toLowerCase();
+                const canCancel = ['pending', 'unpaid', 'placed', 'booked', 'created'].includes(statusText);
+                if (canCancel) {
+                    buttonHtml = `<button onclick="cancelBooking(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-xmark"></i> Cancel</button>`;
+                }
             }
             item.innerHTML = `
                 <p>Scooter ID: ${booking.scooterId}</p>
@@ -383,7 +854,62 @@ async function renderBookings() {
     } catch (error) {
         console.error('Failed to load bookings:', error);
         list.innerHTML = '<p>Failed to load bookings.</p>';
+        updateBookingSummary([]);
     }
+}
+
+function updatePaymentBreakdown(packagePrice) {
+    const rentalCostNode = document.getElementById('rentalCost');
+    const totalAmountNode = document.getElementById('totalAmount');
+    const rentalCost = Number(packagePrice || 0);
+    const totalAmount = rentalCost + serviceFee;
+    if (rentalCostNode) rentalCostNode.textContent = formatCurrency(rentalCost);
+    if (totalAmountNode) totalAmountNode.textContent = formatCurrency(totalAmount);
+}
+
+function refreshSavedCardOptions() {
+    const select = document.getElementById('savedCardSelect');
+    if (!select) return;
+    select.innerHTML = '';
+
+    const userCard = getSavedUserCard();
+    if (userCard) {
+        const option = document.createElement('option');
+        option.value = userCard;
+        option.textContent = `Saved: ${maskCardNumber(userCard)}`;
+        select.appendChild(option);
+    }
+
+    if (!select.options.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No saved card available';
+        select.appendChild(option);
+    }
+
+    const cardInput = document.getElementById('paymentCardNumber');
+    if (cardInput && !cardInput.value.trim() && select.value) {
+        cardInput.value = select.value;
+    }
+}
+
+function useSavedCardInPayment() {
+    const select = document.getElementById('savedCardSelect');
+    const cardInput = document.getElementById('paymentCardNumber');
+    if (!select || !cardInput) return;
+    if (!select.value) {
+        alert('No saved card available for this account.');
+        return;
+    }
+    cardInput.value = select.value;
+    announce('Saved card has been filled into payment form.');
+}
+
+function simulatePaymentEmailNotification(bookingId) {
+    const username = getCurrentUsername() || 'user';
+    const emailText = `Email notification simulated: Booking #${bookingId} payment confirmation sent to ${username}.`;
+    announce(emailText);
+    console.log(emailText);
 }
 
 // Render stats
@@ -407,12 +933,6 @@ async function renderStats() {
         console.error('Failed to load stats:', error);
         table.innerHTML = '<p>Failed to load stats.</p>';
     }
-}
-
-function calcPriorityBySeverity(severity, description) {
-    const isUrgentText = /(urgent|fire|brake fail|crash|battery smoke|accident)/i.test(description || '');
-    // F14: urgent issue => high priority; normal issue => low priority.
-    return severity === 'urgent' || isUrgentText ? 'high' : 'low';
 }
 
 function renderHighPriorityIssues() {
@@ -445,11 +965,60 @@ function renderAdminHighPriorityIssues() {
     }
     container.innerHTML = high.map(issue => `
         <div class="issue-item issue-high">
+            <p><strong>ID:</strong> ${issue.id || 'N/A'}</p>
             <p><strong>User:</strong> ${issue.userId || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
             <p><strong>Status:</strong> ${issue.status || 'pending'} | <strong>Priority:</strong> ${issue.priority}</p>
             <p>${issue.description}</p>
+            ${(issue.id && String(issue.status || '').toLowerCase() !== 'resolved') ? `<button onclick="resolveIssue(${issue.id})" class="btn-primary" type="button">Resolve</button>` : ''}
         </div>
     `).join('');
+}
+
+function renderAdminIssueReviewList() {
+    const container = document.getElementById('adminIssueReviewList');
+    if (!container) return;
+
+    if (!issues.length) {
+        container.innerHTML = '<p>No issues to review.</p>';
+        return;
+    }
+
+    container.innerHTML = issues.map(issue => {
+        const currentPriority = (issue.priority || 'medium').toLowerCase();
+        return `
+            <div class="issue-item">
+                <p><strong>ID:</strong> #${issue.id || 'N/A'} | <strong>User:</strong> ${issue.userId || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
+                <p><strong>Status:</strong> ${issue.status || 'pending'} | <strong>Current Priority:</strong> ${currentPriority}</p>
+                <p>${issue.description}</p>
+                <div class="issue-action-row">
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'high')">Set High</button>
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'medium')">Set Medium</button>
+                    <button type="button" class="priority-btn" onclick="setIssuePriority(${issue.id}, 'low')">Set Low</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function setIssuePriority(issueId, priority) {
+    if (!issueId || !priority) return;
+    try {
+        const response = await fetch(`/api/issues/${issueId}/priority?priority=${encodeURIComponent(priority)}`, {
+            method: 'PUT'
+        });
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(getTextError(text, 'Failed to update priority.'));
+        }
+        announce(`Issue ${issueId} priority set to ${priority}.`);
+        await loadIssues();
+        renderAdminIssueReviewList();
+        renderAdminHighPriorityIssues();
+        renderHighPriorityIssues();
+    } catch (error) {
+        console.error('Set priority error:', error);
+        alert('Priority update endpoint is not available yet. Please ask backend to provide PUT /api/issues/{id}/priority.');
+    }
 }
 
 async function loadIssues() {
@@ -650,13 +1219,42 @@ async function startMultiClientSync() {
     // F23: frontend periodic sync; full real-time collaboration would need backend websocket support.
     syncTimer = setInterval(async () => {
         await loadScooters();
+        await loadScooterLocations();
         await loadPackages();
         await loadIssues();
         if (getCurrentUserId()) {
             await renderBookings();
         }
+        const scootersSection = document.getElementById('scootersSection');
+        if (scootersSection && scootersSection.style.display === 'block') {
+            if (scooterViewMode === 'map') {
+                renderScooterLocations();
+                renderScooterMap();
+            }
+        }
         updateSyncStatus();
     }, 10000);
+}
+
+function handleCrossTabSync(event) {
+    if (event.key === 'currentUser') {
+        try {
+            const nextUser = event.newValue ? JSON.parse(event.newValue) : null;
+            currentUser = nextUser && nextUser.id ? nextUser : null;
+            adminLoggedIn = !!(currentUser && String(currentUser.role || '').toLowerCase() === 'admin');
+        } catch (error) {
+            currentUser = null;
+            adminLoggedIn = false;
+        }
+        updateNav();
+        if (currentUser || adminLoggedIn) {
+            resetSessionTimer();
+            showSection('homeSection');
+        } else {
+            showSection('authSection');
+            showAuthMode('login');
+        }
+    }
 }
 
 // Login form
@@ -679,7 +1277,17 @@ if (loginForm) {
             currentUser = user;
             adminLoggedIn = (user.role || '').toLowerCase() === 'admin';
             localStorage.setItem('currentUser', JSON.stringify(user));
+            const backendCard = normalizeCardNumber(user.creditCardNumber || '');
+            if (/^\d{16}$/.test(backendCard)) {
+                saveUserCard(backendCard);
+            }
+            const pendingCard = getPendingCardForUsername(user.username);
+            if (/^\d{16}$/.test(pendingCard)) {
+                saveUserCard(pendingCard);
+            }
             updateNav();
+            refreshSavedCardOptions();
+            resetSessionTimer();
             showSection('homeSection');
             alert(`Login successful! Welcome ${user.username}.`);
         } catch (error) {
@@ -705,9 +1313,8 @@ if (registerForm) {
         const cardCVV = document.getElementById('cardCVV').value.trim();
         const acceptTerms = document.getElementById('acceptTerms').checked;
         
-        // Sprint 2: Password validation
-        if (password.length < 6) {
-            alert('Password must be at least 6 characters long!');
+        if (!isStrongPassword(password)) {
+            alert('Password must be at least 8 chars and include upper, lower, number and special character.');
             return;
         }
         
@@ -716,9 +1323,8 @@ if (registerForm) {
             return;
         }
         
-        // Credit card validation
-        if (!/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/.test(cardNumber)) {
-            alert('Please enter a valid card number (format: 1234 5678 9012 3456)');
+        if (!isValidCardNumber(cardNumber)) {
+            alert('Please enter a valid 16-digit card number.');
             return;
         }
         
@@ -754,6 +1360,7 @@ if (registerForm) {
             }
             alert(text || 'Registration successful!');
             // Backend has no card binding endpoint yet, so card data is only front-end validated for now.
+            savePendingCardForUsername(username, cardNumber);
             showAuthMode('login');
         } catch (error) {
             console.error('Registration error:', error);
@@ -776,9 +1383,7 @@ if (issueForm) {
         }
 
         const scooterId = Number(document.getElementById('issueScooterId').value);
-        const severity = document.getElementById('issueSeverity').value;
         const description = document.getElementById('issueDescription').value.trim();
-        const priority = calcPriorityBySeverity(severity, description);
 
         try {
             const response = await fetch('/api/issues/report', {
@@ -788,7 +1393,8 @@ if (issueForm) {
                     userId,
                     scooterId,
                     description,
-                    priority
+                    // User submits issue only; admin decides priority later.
+                    priority: 'medium'
                 })
             });
             const text = await response.text();
@@ -848,6 +1454,8 @@ if (bookForm) {
             const booking = await response.json();
             localStorage.setItem('pendingBookingId', String(booking.id));
             document.getElementById('bookingDetails').textContent = `Scooter ${scooterId}, Package ID ${packageId}`;
+            updatePaymentBreakdown(packagePrice);
+            refreshSavedCardOptions();
             showSection('paymentSection');
         } catch (error) {
             console.error('Booking error:', error);
@@ -859,12 +1467,18 @@ if (bookForm) {
 
 // Payment form
 const paymentForm = document.getElementById('paymentForm');
+const useSavedCardBtn = document.getElementById('useSavedCardBtn');
+if (useSavedCardBtn) {
+    useSavedCardBtn.addEventListener('click', () => {
+        useSavedCardInPayment();
+    });
+}
 if (paymentForm) {
     paymentForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const cardNumber = document.getElementById('paymentCardNumber').value.trim();
-        if (!cardNumber) {
-            alert('Please enter bank card number!');
+        if (!isValidCardNumber(cardNumber)) {
+            alert('Please enter a valid 16-digit card number.');
             return;
         }
         const bookingId = localStorage.getItem('pendingBookingId');
@@ -881,14 +1495,20 @@ if (paymentForm) {
             if (!response.ok) {
                 throw new Error(getTextError(text, 'Payment failed!'));
             }
+            saveUserCard(cardNumber);
             localStorage.removeItem('pendingBookingId');
             await loadScooters();
+            await loadScooterLocations();
             renderScooters();
+            renderScooterLocations();
+            renderScooterMap();
             document.getElementById('confirmationDetails').innerHTML = `
                 <p>User: ${getCurrentUsername()}</p>
                 <p>Booking ID: ${bookingId}</p>
                 <p>Status: paid</p>
+                <p>Email notification: queued (simulated)</p>
             `;
+            simulatePaymentEmailNotification(bookingId);
             alert(text || 'Payment successful!');
             updateNav();
             showSection('successSection');
@@ -912,12 +1532,40 @@ async function endRental(bookingId) {
         }
         alert(text || 'Rental ended!');
         await loadScooters();
+        await loadScooterLocations();
         renderScooters();
+        renderScooterLocations();
+        renderScooterMap();
         await renderBookings();
         updateNav();
+        showSection('homeSection');
     } catch (error) {
         console.error('End rental error:', error);
         alert(error.message || 'Failed to end rental!');
+    }
+}
+
+async function cancelBooking(bookingId) {
+    const confirmed = confirm(`Cancel booking #${bookingId}?`);
+    if (!confirmed) return;
+    try {
+        const response = await fetch(`/api/bookings/cancel/${bookingId}`, {
+            method: 'POST'
+        });
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(getTextError(text, 'Failed to cancel booking!'));
+        }
+        alert(text || 'Booking cancelled.');
+        await loadScooters();
+        await loadScooterLocations();
+        renderScooters();
+        renderScooterLocations();
+        await renderBookings();
+        updateNav();
+    } catch (error) {
+        console.error('Cancel booking error:', error);
+        alert(error.message || 'Failed to cancel booking.');
     }
 }
 
@@ -1134,7 +1782,208 @@ function rentFromDetail() {
 
 // Admin login removed - use user login for admin
 
-// Scooter config removed - managed by backend
+const scooterConfigForm = document.getElementById('scooterConfigForm');
+if (scooterConfigForm) {
+    scooterConfigForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!adminLoggedIn) {
+            alert('Admin account required. Please login as admin first.');
+            showSection('authSection');
+            showAuthMode('login');
+            return;
+        }
+
+        const newScooterId = Number(document.getElementById('newScooterId').value);
+        const scooterStatus = document.getElementById('scooterStatus').value.trim().toLowerCase();
+
+        if (!Number.isInteger(newScooterId) || newScooterId <= 0) {
+            alert('Please enter a valid scooter ID.');
+            return;
+        }
+        if (!scooterStatus) {
+            alert('Please enter scooter status.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/scooters/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: newScooterId,
+                    model: 'EcoRide X1',
+                    batteryLevel: 100,
+                    latitude: 51.5074,
+                    longitude: -0.1278,
+                    status: scooterStatus
+                })
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Failed to add scooter.'));
+            }
+            alert(text || 'Scooter added successfully.');
+            this.reset();
+            await loadScooters();
+            renderScooters();
+            updateHomeStats();
+        } catch (error) {
+            console.error('Add scooter error:', error);
+            alert(error.message || 'Failed to add scooter.');
+        }
+    });
+}
+
+const adminScooterOpsId = document.getElementById('adminScooterOpsId');
+const adminGetScooterBtn = document.getElementById('adminGetScooterBtn');
+const adminDeleteScooterBtn = document.getElementById('adminDeleteScooterBtn');
+const adminScooterOpsResult = document.getElementById('adminScooterOpsResult');
+
+if (adminGetScooterBtn) {
+    adminGetScooterBtn.addEventListener('click', async () => {
+        const scooterId = Number(adminScooterOpsId ? adminScooterOpsId.value : 0);
+        if (!Number.isInteger(scooterId) || scooterId <= 0) {
+            alert('Please enter a valid scooter ID.');
+            return;
+        }
+        try {
+            const response = await fetch(`/api/scooters/${scooterId}`);
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Failed to query scooter.'));
+            }
+            const data = text ? JSON.parse(text) : null;
+            if (!adminScooterOpsResult) return;
+            adminScooterOpsResult.innerHTML = data ? `
+                <div class="issue-item">
+                    <p><strong>ID:</strong> ${data.id}</p>
+                    <p><strong>Model:</strong> ${data.model || 'N/A'} | <strong>Status:</strong> ${data.status || 'N/A'}</p>
+                    <p><strong>Battery:</strong> ${data.batteryLevel ?? 'N/A'}%</p>
+                </div>
+            ` : '<p>No scooter data returned.</p>';
+        } catch (error) {
+            console.error('Query scooter error:', error);
+            if (adminScooterOpsResult) {
+                adminScooterOpsResult.innerHTML = `<p>${error.message || 'Failed to query scooter.'}</p>`;
+            }
+        }
+    });
+}
+
+if (adminDeleteScooterBtn) {
+    adminDeleteScooterBtn.addEventListener('click', async () => {
+        const scooterId = Number(adminScooterOpsId ? adminScooterOpsId.value : 0);
+        if (!Number.isInteger(scooterId) || scooterId <= 0) {
+            alert('Please enter a valid scooter ID.');
+            return;
+        }
+        const confirmed = confirm(`Delete scooter #${scooterId}? This cannot be undone.`);
+        if (!confirmed) return;
+        try {
+            const response = await fetch(`/api/scooters/${scooterId}`, {
+                method: 'DELETE'
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Failed to delete scooter.'));
+            }
+            alert(text || `Scooter #${scooterId} deleted.`);
+            await loadScooters();
+            await loadScooterLocations();
+            renderScooters();
+            renderScooterLocations();
+            if (adminScooterOpsResult) {
+                adminScooterOpsResult.innerHTML = `<p>Scooter #${scooterId} deleted.</p>`;
+            }
+        } catch (error) {
+            console.error('Delete scooter error:', error);
+            if (adminScooterOpsResult) {
+                adminScooterOpsResult.innerHTML = `<p>${error.message || 'Failed to delete scooter.'}</p>`;
+            }
+        }
+    });
+}
+
+const adminPlaceBookingForm = document.getElementById('adminPlaceBookingForm');
+if (adminPlaceBookingForm) {
+    adminPlaceBookingForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!adminLoggedIn) {
+            alert('Admin account required.');
+            return;
+        }
+        const userId = Number(document.getElementById('adminProxyUserId').value);
+        const scooterId = Number(document.getElementById('adminProxyScooterId').value);
+        const packageId = Number(document.getElementById('adminProxyPackageId').value);
+        if (!Number.isInteger(userId) || !Number.isInteger(scooterId) || !Number.isInteger(packageId)) {
+            alert('Please enter valid IDs.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/bookings/admin/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    scooterId,
+                    packageId
+                })
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(getTextError(text, 'Admin proxy booking failed.'));
+            }
+            alert('Admin proxy booking created successfully.');
+            this.reset();
+            await loadScooters();
+            await loadScooterLocations();
+            renderScooters();
+            renderScooterLocations();
+        } catch (error) {
+            console.error('Admin proxy booking error:', error);
+            alert(error.message || 'Admin proxy booking failed.');
+        }
+    });
+}
+
+const refreshUsersBtn = document.getElementById('refreshUsersBtn');
+if (refreshUsersBtn) {
+    refreshUsersBtn.addEventListener('click', async () => {
+        await loadAdminUsers();
+        renderAdminUsers();
+    });
+}
+
+const adminResolveIssueForm = document.getElementById('adminResolveIssueForm');
+if (adminResolveIssueForm) {
+    adminResolveIssueForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const issueId = Number(document.getElementById('resolveIssueId').value);
+        if (!Number.isInteger(issueId) || issueId <= 0) {
+            alert('Please enter a valid issue ID.');
+            return;
+        }
+        await resolveIssue(issueId);
+        this.reset();
+    });
+}
+
+function fillPricingFormFromPackages() {
+    const map = {
+        price1h: ['1h', '1hour'],
+        price4h: ['4h', '4hours'],
+        price1d: ['1d', '1day'],
+        price1w: ['1w', '1week']
+    };
+
+    Object.keys(map).forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+        const matched = packages.find(item => map[fieldId].includes(normalizePackageTypeText(item.packageType)));
+        input.value = matched ? Number(matched.price || 0) : '';
+    });
+}
 
 // Pricing config
 const pricingConfigForm = document.getElementById('pricingConfigForm');
@@ -1175,6 +2024,7 @@ if (pricingConfigForm) {
             // If some package types are not present in backend data, they are skipped intentionally.
             await loadPackages();
             populatePackageSelect();
+            fillPricingFormFromPackages();
             alert('Pricing saved and synced!');
         } catch (error) {
             console.error('Pricing update error:', error);
@@ -1187,6 +2037,8 @@ if (pricingConfigForm) {
 // Navigation
 const homeLink = document.getElementById('homeLink');
 const scootersLink = document.getElementById('scootersLink');
+const scooterListViewBtn = document.getElementById('scooterListViewBtn');
+const scooterMapViewBtn = document.getElementById('scooterMapViewBtn');
 const rentLink = document.getElementById('rentLink');
 const myBookingsLink = document.getElementById('myBookingsLink');
 const feedbackLink = document.getElementById('feedbackLink');
@@ -1196,6 +2048,18 @@ const adminLink = document.getElementById('adminLink');
 const loginLink = document.getElementById('loginLink');
 const logoutLink = document.getElementById('logoutLink');
 const backToHomeBtn = document.getElementById('backToHome');
+
+if (scooterListViewBtn) {
+    scooterListViewBtn.addEventListener('click', () => {
+        setScooterViewMode('list');
+    });
+}
+
+if (scooterMapViewBtn) {
+    scooterMapViewBtn.addEventListener('click', () => {
+        setScooterViewMode('map');
+    });
+}
 
 if (homeLink) {
     homeLink.addEventListener('click', event => {
@@ -1310,6 +2174,10 @@ if (logoutLink) {
         event.preventDefault();
         currentUser = null;
         adminLoggedIn = false;
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = null;
+        }
         localStorage.removeItem('currentUser');
         localStorage.removeItem('adminLoggedIn');
         updateNav();
@@ -1348,14 +2216,20 @@ window.addEventListener('load', async function() {
         updateNav();
         await loadPackages();
         populatePackageSelect();
+        fillPricingFormFromPackages();
         await loadScooters();
+        await loadScooterLocations();
         await loadIssues();
+        await loadAdminUsers();
         setupDiscountCalculator();
         setupAccessibilityTools();
+        setupInactivityTracking();
+        refreshSavedCardOptions();
         renderRevenueCharts();
         startMultiClientSync();
         updateSyncStatus();
         if (currentUser || adminLoggedIn) {
+            resetSessionTimer();
             showSection('homeSection');
         } else {
             showSection('authSection');
@@ -1363,3 +2237,5 @@ window.addEventListener('load', async function() {
         }
     }, 200);
 });
+
+window.addEventListener('storage', handleCrossTabSync);

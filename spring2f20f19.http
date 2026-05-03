@@ -1,6 +1,0 @@
-### F20: 管理员查看每日收入汇总 (Daily Stats)
-GET http://localhost:8080/api/bookings/admin/revenue/daily
-
-
-### F19: 管理员查看每周收入汇总
-GET http://localhost:8080/api/bookings/admin/revenue

@@ -17,6 +17,23 @@ body {
     line-height: 1.6;
     opacity: 0;
     animation: fadeIn 0.8s ease-in-out forwards;
+    transition: background 0.35s ease, color 0.35s ease;
+}
+
+section,
+.form-box,
+.feature-card,
+.scooter-card,
+.stat-card,
+.accessibility-toolbar button,
+header,
+footer,
+a,
+button,
+input,
+select,
+textarea {
+    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 @keyframes fadeIn {
@@ -80,8 +97,8 @@ main.container section {
 
 .accessibility-toolbar {
     position: fixed;
-    right: 14px;
-    top: 84px;
+    top: 12px;
+    right: 12px;
     display: flex;
     gap: 8px;
     z-index: 1200;
@@ -118,4 +135,9 @@ body.high-contrast .scooter-card {
 body.high-contrast a,
 body.high-contrast button {
     color: #000;
+}
+
+#scooterMap {
+    width: 100%;
+    min-height: 320px;
 }
