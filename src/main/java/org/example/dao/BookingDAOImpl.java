@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -20,7 +21,7 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public void createBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (user_id, scooter_id, total_cost, status, guest_name, guest_phone) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (user_id, scooter_id, package_id, total_cost, status, guest_name, guest_phone) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
         // 插入数据
@@ -31,12 +32,11 @@ public class BookingDAOImpl implements BookingDAO {
             } else {
                 ps.setNull(1, java.sql.Types.INTEGER);
             }
-            ps.setInt(2, booking.getScooterId());
-            ps.setBigDecimal(3, booking.getTotalCost());
-            ps.setString(4, booking.getStatus());
-
-            ps.setString(5, booking.getGuestName());
-            ps.setString(6, booking.getGuestPhone());
+            ps.setInt(3, booking.getPackageId());
+            ps.setBigDecimal(4, booking.getTotalCost());
+            ps.setString(5, booking.getStatus());
+            ps.setString(6, booking.getGuestName());
+            ps.setString(7, booking.getGuestPhone());
             return ps;
         }, keyHolder);
 
@@ -71,24 +71,19 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public List<RevenueReport> getWeeklyRevenueReport() {
-        // f19 把订单、车辆、套餐表三表合一，算出每种套餐这周赚了多少钱。
-        String sql = "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
-                "FROM bookings b " +
-                "JOIN scooters s ON b.scooter_id = s.id " +
-                "JOIN packages p ON s.model = p.package_type " + // 这里的关联逻辑可以根据实际业务调整
-                "WHERE b.status IN ('paid', 'finished') " +
-                "AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
-                "GROUP BY p.package_type";
+        String perfectSql =
+                "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
+                        "FROM bookings b " +
+                        "JOIN packages p ON b.package_id = p.id " +
+                        "WHERE b.status IN ('paid', 'finished') AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                        "GROUP BY p.package_type";
 
-        // 目前数据库表关联很简单，演示 SQL如下
-        String simpleSql = "SELECT '1 Hour' as package_type, COUNT(*) as order_count, SUM(total_cost) as revenue " +
-                "FROM bookings WHERE status = 'paid' AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-
-        return jdbcTemplate.query(simpleSql, (rs, rowNum) -> {
+        return jdbcTemplate.query(perfectSql, (rs, rowNum) -> {
             RevenueReport report = new RevenueReport();
             report.setPackageType(rs.getString("package_type"));
             report.setTotalOrders(rs.getInt("order_count"));
-            report.setTotalRevenue(rs.getBigDecimal("revenue"));
+            BigDecimal revenue = rs.getBigDecimal("revenue");
+            report.setTotalRevenue(revenue == null ? BigDecimal.ZERO : revenue);
             return report;
         });
     }
