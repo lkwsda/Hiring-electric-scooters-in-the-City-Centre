@@ -28,6 +28,7 @@ def main() -> int:
         "test_user_login.py",
         "test_user_list.py",
         "test_scooter_list.py",
+        "test_scooter_locations.py",
         "test_scooter_management.py",
         "test_package_api.py",
         "test_booking_place.py",
