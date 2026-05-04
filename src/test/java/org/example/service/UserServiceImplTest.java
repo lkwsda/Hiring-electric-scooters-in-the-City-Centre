@@ -2,7 +2,6 @@ package org.example.service;
 
 import org.example.dao.UserDAO;
 import org.example.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,11 +28,19 @@ class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     private User createUser(String username) {
         User user = new User();
         user.setUsername(username);
         user.setEmail(username + "@test.com");
         user.setPasswordHash("password123");
+        return user;
+    }
+
+    private User createUserWithEncodedPassword(String username) {
+        User user = createUser(username);
+        user.setPasswordHash(passwordEncoder.encode("password123"));
         return user;
     }
 
@@ -120,7 +128,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("should return user when credentials match")
         void shouldReturnUserWhenCredentialsMatch() {
-            User user = createUser("testuser");
+            User user = createUserWithEncodedPassword("testuser");
             when(userDAO.getUserByName("testuser")).thenReturn(user);
 
             User result = userService.login("testuser", "password123");
@@ -131,7 +139,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("should reject wrong password")
         void shouldRejectWrongPassword() {
-            User user = createUser("testuser");
+            User user = createUserWithEncodedPassword("testuser");
             when(userDAO.getUserByName("testuser")).thenReturn(user);
 
             assertThrows(RuntimeException.class,

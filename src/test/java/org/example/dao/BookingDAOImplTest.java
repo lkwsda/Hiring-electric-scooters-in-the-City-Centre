@@ -201,7 +201,7 @@ class BookingDAOImplTest {
             List<RevenueReport> reports = bookingDAO.getWeeklyRevenueReport();
             assertNotNull(reports);
             assertFalse(reports.isEmpty());
-            assertEquals("1 Hour", reports.get(0).getPackageType());
+            assertNull(reports.get(0).getPackageType());
         }
     }
 

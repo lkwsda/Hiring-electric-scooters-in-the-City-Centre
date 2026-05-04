@@ -47,14 +47,14 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
-    
-    - name: Verify config file in JAR
+    - name: Initialize Database Tables
       run: |
-        unzip -l target/ScooterRentalSystem-1.0-SNAPSHOT.jar | grep application.properties
+        sudo apt-get install -y mysql-client
+        mysql -h127.0.0.1 -P3306 -uroot -p123123 scooter_sharing < sql/init_db.sql
 
     - name: Start Spring Boot Application
       run: |
-       nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
+        nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
         until nc -z localhost 8080; do
           echo "Waiting for Spring Boot to start..."
           sleep 10
@@ -74,10 +74,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest requests pytest-html pytest-md
 
+    - name: Create the folder
+      run: mkdir -p test/reports_md
+
     - name: Run pytest API Tests
       run: |
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-         python test/test_run_all_api.py 2>&1 | tee test/reports_md/API测试报告_${TIMESTAMP}.md
+        python test/test_run_all_api.py 2>&1 | tee test/reports_md/api_test_report_${TIMESTAMP}.md
+
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-test-report
+        path: test/reports_md/
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4

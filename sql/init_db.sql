@@ -45,6 +45,7 @@ CREATE TABLE packages (
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL,                      -- Linked to users.id (关联用户)
+    package_id INT NULL,
     scooter_id INT NOT NULL,                   -- Linked to scooters.id (关联车辆)
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Start time (开始时间)
     end_time TIMESTAMP NULL,                   -- End time (结束时间)
@@ -53,7 +54,8 @@ CREATE TABLE bookings (
     guest_name VARCHAR(50),  -- 被代下单的用户名
     guest_phone VARCHAR(20),   -- 被代下单的用户号码
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (scooter_id) REFERENCES scooters(id)
+    FOREIGN KEY (scooter_id) REFERENCES scooters(id),
+    FOREIGN KEY (package_id) REFERENCES packages(id)
 );
 
 # Table:  issues   跟踪用户记录的问题/故障的表格

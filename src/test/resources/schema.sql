@@ -38,6 +38,7 @@ CREATE TABLE packages (
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL,
+    package_id INT NULL,
     scooter_id INT NOT NULL,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NULL,
@@ -46,7 +47,8 @@ CREATE TABLE bookings (
     guest_name VARCHAR(50),
     guest_phone VARCHAR(20),
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (scooter_id) REFERENCES scooters(id)
+    FOREIGN KEY (scooter_id) REFERENCES scooters(id),
+    FOREIGN KEY (package_id) REFERENCES packages(id)
 );
 
 CREATE TABLE issues (

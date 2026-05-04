@@ -56,6 +56,12 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- 隐藏密码明文 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
