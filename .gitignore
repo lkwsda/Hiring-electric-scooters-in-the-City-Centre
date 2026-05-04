@@ -38,3 +38,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Node.js / Frontend ###
+node_modules/
+coverage/
+npm-debug.log
+
+### Python ###
+__pycache__/
+*.pyc
