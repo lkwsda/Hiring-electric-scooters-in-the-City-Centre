@@ -277,6 +277,29 @@ body.high-contrast .section-subtitle {
     color: #8b949e !important;
 }
 
+body.high-contrast .feedback-section .section-header,
+body.high-contrast .analytics-section .section-header {
+    background: linear-gradient(135deg, #161b22 0%, #1c2430 100%) !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .feedback-section .section-header h2,
+body.high-contrast .analytics-section .section-header h2,
+body.high-contrast .feedback-section .section-header h2 i,
+body.high-contrast .analytics-section .section-header h2 i {
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .analytics-access-note {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .analytics-access-note i {
+    color: #58a6ff !important;
+}
+
 /* 状态颜色 —— 保持可读性 */
 body.high-contrast .status-available  { color: #3fb950 !important; }
 body.high-contrast .status-rented     { color: #d29922 !important; }

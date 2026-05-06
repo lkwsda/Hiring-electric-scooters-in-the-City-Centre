@@ -66,6 +66,7 @@ function updateNav() {
     // Admin-only UI elements
     const adminHighPriorityBox = document.getElementById('adminOnlyHighPriorityBox');
     const adminRevenueSection = document.getElementById('adminOnlyRevenueSection');
+    const analyticsRevenueNotice = document.getElementById('analyticsRevenueNotice');
 
     if (currentUser || adminLoggedIn) {
         loginLink.style.display = 'none';
@@ -82,6 +83,7 @@ function updateNav() {
     // Show admin-only sections only when admin is logged in
     if (adminHighPriorityBox) adminHighPriorityBox.style.display = adminLoggedIn ? '' : 'none';
     if (adminRevenueSection) adminRevenueSection.style.display = adminLoggedIn ? '' : 'none';
+    if (analyticsRevenueNotice) analyticsRevenueNotice.style.display = adminLoggedIn ? 'none' : '';
 }
 
 // Render packages
@@ -603,7 +605,21 @@ function setupDiscountCalculator() {
 
         const discountAmount = basePrice * rate;
         const finalPrice = Math.max(0, basePrice - discountAmount);
-        output.innerHTML = `Base: $${basePrice.toFixed(2)} | Discount: ${(rate * 100).toFixed(0)}% ($${discountAmount.toFixed(2)}) | Final: $${finalPrice.toFixed(2)}`;
+        output.classList.add('is-ready');
+        output.innerHTML = `
+            <div class="discount-row">
+                <span>Base Price</span>
+                <strong>$${basePrice.toFixed(2)}</strong>
+            </div>
+            <div class="discount-row">
+                <span>Discount (${(rate * 100).toFixed(0)}%)</span>
+                <strong>-$${discountAmount.toFixed(2)}</strong>
+            </div>
+            <div class="discount-row total">
+                <span>Final Price</span>
+                <strong>$${finalPrice.toFixed(2)}</strong>
+            </div>
+        `;
         announce('Discount calculated successfully.');
     });
 }

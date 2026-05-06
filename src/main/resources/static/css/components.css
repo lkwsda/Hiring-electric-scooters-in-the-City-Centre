@@ -446,6 +446,46 @@ section h2 i {
     border-top-color: #4f46e5;
 }
 
+.feedback-section .section-header,
+.analytics-section .section-header {
+    margin-bottom: 18px;
+    padding: 18px 20px;
+    border: 1px solid #dbe7f5;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.feedback-section .section-header h2,
+.analytics-section .section-header h2 {
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+}
+
+.section-subtitle {
+    color: #516074;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.feedback-section .form-container,
+.analytics-section .form-container {
+    align-items: stretch;
+}
+
+.feedback-section .form-box,
+.analytics-section .form-box {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    border: 1px solid #dce8f8;
+    border-top-width: 3px;
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.feedback-section .form-box h3,
+.analytics-section .form-box h3 {
+    margin-bottom: 14px;
+}
+
 .issue-list {
     display: grid;
     gap: 12px;
@@ -454,13 +494,29 @@ section h2 i {
 .issue-item {
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    padding: 12px;
+    padding: 14px;
     background: #f9fbff;
+    border-left: 4px solid #60a5fa;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.issue-item p {
+    margin: 0 0 8px;
+    line-height: 1.55;
+    color: #1f2937;
+}
+
+.issue-item p:last-child {
+    margin-bottom: 0;
+}
+
+.issue-item strong {
+    color: #334155;
 }
 
 .issue-item.issue-high {
     border-left: 4px solid #dc2626;
-    background: #fff5f5;
+    background: linear-gradient(180deg, #fff8f8 0%, #fff3f3 100%);
 }
 
 .issue-action-row {
@@ -478,10 +534,32 @@ section h2 i {
     padding: 6px 10px;
     cursor: pointer;
     font-size: 0.85rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .priority-btn:hover {
     background: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.28);
+}
+
+.priority-btn:nth-child(2) {
+    background: #0f766e;
+}
+
+.priority-btn:nth-child(2):hover {
+    background: #0d665f;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.26);
+}
+
+.priority-btn:nth-child(3) {
+    background: #475569;
+}
+
+.priority-btn:nth-child(3):hover {
+    background: #334155;
+    box-shadow: 0 4px 12px rgba(51, 65, 85, 0.26);
 }
 
 .hint-text {
@@ -494,12 +572,30 @@ section h2 i {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #e8f5ff;
+    background: linear-gradient(135deg, #f0f7ff 0%, #e7f1ff 100%);
     color: #1e3a5f;
-    border: 1px solid #bfdbfe;
+    border: 1px solid #c6ddff;
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     margin-bottom: 18px;
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.08);
+}
+
+.analytics-access-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -6px 0 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #c7d2fe;
+    background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+    color: #374151;
+    font-size: 0.92rem;
+}
+
+.analytics-access-note i {
+    color: #4f46e5;
 }
 
 .analytics-grid {
@@ -509,20 +605,62 @@ section h2 i {
     margin-bottom: 20px;
 }
 
+.analytics-grid .form-box {
+    padding-bottom: 16px;
+}
+
 .analytics-grid canvas {
     width: 100%;
     max-width: 100%;
     height: auto;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid #d7e5f7;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+    padding: 6px;
 }
 
 .discount-result {
     margin-top: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: #f4f9ff;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f7fbff;
     border: 1px solid #d4e6ff;
-    font-weight: 600;
+    color: #334155;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.discount-result.is-ready {
+    background: linear-gradient(180deg, #f0f8ff 0%, #eaf4ff 100%);
+    border-color: #b8d8ff;
+}
+
+.discount-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px dashed #d5e6fb;
+    padding: 4px 0;
+}
+
+.discount-row:last-child {
+    border-bottom: none;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.discount-row span {
+    color: #4b5563;
+    font-size: 0.92rem;
+}
+
+.discount-row strong {
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.discount-row.total strong {
+    color: #0f766e;
+    font-size: 1.02rem;
 }
