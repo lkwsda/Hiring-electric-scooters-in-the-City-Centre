@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 public class Scooter {
     private Integer id;
     private String model;
+    private String imageUrl;
     private Integer batteryLevel;
     private BigDecimal latitude;
     private BigDecimal longitude;
@@ -27,6 +28,9 @@ public class Scooter {
     public void setModel(String model) {
         this.model = model;
     }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Integer getBatteryLevel() {
         return batteryLevel;

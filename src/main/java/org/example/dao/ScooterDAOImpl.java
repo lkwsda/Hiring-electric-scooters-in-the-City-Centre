@@ -45,6 +45,7 @@ public class ScooterDAOImpl implements ScooterDAO {
             Scooter s = new Scooter();
             s.setId(rs.getInt("id"));
             s.setModel(rs.getString("model"));
+            s.setImageUrl(rs.getString("image_url"));
             s.setBatteryLevel(rs.getInt("battery_level"));
             s.setLatitude(rs.getBigDecimal("latitude"));
             s.setLongitude(rs.getBigDecimal("longitude"));

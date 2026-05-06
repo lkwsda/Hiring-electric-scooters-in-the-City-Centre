@@ -26,6 +26,7 @@ CREATE TABLE users (
 CREATE TABLE scooters (
     id INT AUTO_INCREMENT PRIMARY KEY,
     model VARCHAR(50) NOT NULL,                -- Model name (型号，比如 "Xiaomi-Pro2")
+    image_url VARCHAR(255) NULL,
     battery_level INT DEFAULT 100,             -- Battery 0-100 (电量)
     latitude DECIMAL(10, 8),                   -- GPS Latitude (纬度，用于地图显示)
     longitude DECIMAL(11, 8),                  -- GPS Longitude (经度)
@@ -88,14 +89,14 @@ INSERT INTO packages (package_type, price, description,discount_percent) VALUES
 
 
 -- 预置滑板车数据
-INSERT INTO scooters (model, battery_level, latitude, longitude, status) VALUES
-     ('1', 100, 53.8012, -1.5485, 'available'),
-     ('2', 95, 53.8020, -1.5490, 'available'),
-     ('4', 97, 53.8021, -1.5494, 'available'),
-     ('5', 98, 53.8022, -1.5493, 'available'),
-     ('6', 99, 53.8023, -1.5492, 'available'),
-     ('7', 96, 53.8024, -1.5491, 'available'),
-     ('3', 100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
+INSERT INTO scooters (model, image_url, battery_level, latitude, longitude, status) VALUES
+     ('1', '/images/EcoRide_X1.png',100, 53.8012, -1.5485, 'available'),
+     ('2', '/images/EcoRide_X2.png',95, 53.8020, -1.5490, 'available'),
+     ('4', '/images/EcoRide_X3.png',97, 53.8021, -1.5494, 'available'),
+     ('5', '/images/EcoRide_X2.png',98, 53.8022, -1.5493, 'available'),
+     ('6', '/images/EcoRide_X1.png',99, 53.8023, -1.5492, 'available'),
+     ('7', '/images/EcoRide_X3.png',96, 53.8024, -1.5491, 'available'),
+     ('3', '/images/EcoRide_X1.png',100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
 
 -- 预置测试用户数据
 INSERT INTO users (username, email, password_hash, role, date_of_birth)VALUES
