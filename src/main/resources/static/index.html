@@ -598,6 +598,10 @@
                 <!-- 确认信息JS -->
             </div>
 
+            <div class="issue-list" id="paymentEmailNotice" aria-live="polite" style="margin-top: 12px;">
+                <p>No payment notification yet.</p>
+            </div>
+
             <div class="success-actions">
                 <div class="action-card">
                     <i class="fa-solid fa-qrcode"></i>
@@ -904,13 +908,22 @@
                 <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
                 <form id="adminPlaceBookingForm">
                     <label for="adminProxyUserId">User ID</label>
-                    <input type="number" id="adminProxyUserId" min="1" required>
+                    <select id="adminProxyUserId" required>
+                        <option value="">Select user</option>
+                    </select>
                     <label for="adminProxyScooterId">Scooter ID</label>
-                    <input type="number" id="adminProxyScooterId" min="1" required>
+                    <select id="adminProxyScooterId" required>
+                        <option value="">Select available scooter</option>
+                    </select>
                     <label for="adminProxyPackageId">Package ID</label>
-                    <input type="number" id="adminProxyPackageId" min="1" required>
+                    <select id="adminProxyPackageId" required>
+                        <option value="">Select package</option>
+                    </select>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Place Booking as Admin</button>
                 </form>
+                <div id="adminProxyBookingResult" class="issue-list" style="margin-top: 12px;">
+                    <p>No proxy booking submitted yet.</p>
+                </div>
             </div>
             <div class="form-box">
                 <h3><i class="fa-solid fa-users"></i> User List</h3>
@@ -957,8 +970,12 @@
     </div>
 </footer>
 
-<script src="js/utils.js"></script>
-<script src="js/script.js?v=20260423"></script>
+<script src="js/modules/core.js?v=20260429b"></script>
+<script src="js/modules/ui-and-render.js?v=20260429b"></script>
+<script src="js/modules/auth-booking-flow.js?v=20260429b"></script>
+<script src="js/modules/booking-actions-and-detail.js?v=20260429b"></script>
+<script src="js/modules/admin.js?v=20260429b"></script>
+<script src="js/modules/navigation-and-init.js?v=20260429b"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </body>
 </html>
