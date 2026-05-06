@@ -36,6 +36,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional // 这个标签下面的动作要么全成功，要么全失败
     public void placeBooking(Booking booking) {
+        // 下单时必须告诉我买的哪个套餐
+        if (booking.getPackageId() == null) {
+            throw new RuntimeException("Validation Failed: packageId is required to place a booking!");
+        }
         // 检查车子存不存在
         Scooter scooter = scooterDAO.getScooterById(booking.getScooterId());
         if (scooter == null) {
@@ -122,6 +126,11 @@ public class BookingServiceImpl implements BookingService {
         // 卡号不能为空
         if (cardNumber == null || cardNumber.trim().isEmpty()) {
             throw new RuntimeException("Validation Failed: Please enter card number!");
+        }
+
+        // 卡号要纯数字
+        if (!cardNumber.matches("\\d+")) {
+            throw new RuntimeException("Validation Failed: Card number must contain only digits!");
         }
 
         // 查查订单现在的状态

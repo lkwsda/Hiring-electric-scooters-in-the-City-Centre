@@ -26,24 +26,21 @@ public class BookingDAOImpl implements BookingDAO {
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
         // 插入数据
         jdbcTemplate.update(connection -> {
-            java.sql.PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
             if (booking.getUserId() != null) {
                 ps.setInt(1, booking.getUserId());
             } else {
                 ps.setNull(1, java.sql.Types.INTEGER);
             }
             ps.setInt(2, booking.getScooterId());
-            if (booking.getPackageId() != null) {
-                ps.setInt(3, booking.getPackageId());
-            } else {
-                ps.setNull(3, java.sql.Types.INTEGER);
-            }
+            ps.setInt(3, booking.getPackageId());
             ps.setBigDecimal(4, booking.getTotalCost());
             ps.setString(5, booking.getStatus());
             ps.setString(6, booking.getGuestName());
             ps.setString(7, booking.getGuestPhone());
             return ps;
         }, keyHolder);
+
 
         // 把领回来的单号塞进 Booking 盒子里
         if (keyHolder.getKey() != null) {

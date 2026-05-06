@@ -55,8 +55,10 @@ public class ScooterDAOImpl implements ScooterDAO {
 
     @Override
     public Scooter getScooterById(int id) {
-        String sql = "SELECT * FROM scooters WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new ScooterDAOImpl.ScooterRowMapper(), id);
+        String sql = "SELECT * FROM scooters WHERE id = ? FOR UPDATE";
+
+        List<Scooter> list = jdbcTemplate.query(sql, new ScooterRowMapper(), id);
+        return list.isEmpty() ? null : list.get(0);
     }
     @Override
     public void deleteScooter(int id) {
@@ -67,7 +69,7 @@ public class ScooterDAOImpl implements ScooterDAO {
 
     @Override
     public void updateScooterStatus(int id, String status) {
-        String sql = "UPDATE scooters SET status = ? WHERE id =?";
+        String sql = "UPDATE scooters SET status = ? WHERE id = ?";
         jdbcTemplate.update(sql, status, id);
         System.out.println("[DAO] Scooter status updated, ID: " + id + ", Status: " + status);
     }
