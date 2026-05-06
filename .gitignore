@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+.claude/
 .kotlin
 
 ### IntelliJ IDEA ###
@@ -37,3 +38,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Node.js / Frontend ###
+node_modules/
+coverage/
+npm-debug.log
+
+### Python ###
+__pycache__/
+*.pyc

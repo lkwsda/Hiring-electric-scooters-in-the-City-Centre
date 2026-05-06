@@ -41,6 +41,7 @@ public class BookingDAOImpl implements BookingDAO {
             return ps;
         }, keyHolder);
 
+
         // 把领回来的单号塞进 Booking 盒子里
         if (keyHolder.getKey() != null) {
             booking.setId(keyHolder.getKey().intValue());
@@ -72,21 +73,21 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public List<RevenueReport> getWeeklyRevenueReport() {
-        String perfectSql =
-                "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
-                        "FROM bookings b " +
-                        "JOIN packages p ON b.package_id = p.id " +
-                        "WHERE b.status IN ('paid', 'finished') AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
-                        "GROUP BY p.package_type";
+        java.time.LocalDateTime sevenDaysAgo = java.time.LocalDateTime.now().minusDays(7);
+        String sql = "SELECT p.package_type, COUNT(b.id) as order_count, SUM(b.total_cost) as revenue " +
+                "FROM bookings b " +
+                "LEFT JOIN packages p ON b.package_id = p.id " +
+                "WHERE b.status IN ('paid', 'finished') AND b.start_time >= ? " +
+                "GROUP BY p.package_type";
 
-        return jdbcTemplate.query(perfectSql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             RevenueReport report = new RevenueReport();
             report.setPackageType(rs.getString("package_type"));
             report.setTotalOrders(rs.getInt("order_count"));
             BigDecimal revenue = rs.getBigDecimal("revenue");
             report.setTotalRevenue(revenue == null ? BigDecimal.ZERO : revenue);
             return report;
-        });
+        }, sevenDaysAgo);
     }
 
     @Override
@@ -111,36 +112,41 @@ public class BookingDAOImpl implements BookingDAO {
     // f20
     @Override
     public List<DailyRevenueReport> getDailyRevenueReport() {
-        // Select date and sum cost, grouped by date, for last 7 days.
-        // 提取日期并求和，按天分组，只看最近 7 天。
-        String sql = "SELECT DATE(start_time) as sale_date, SUM(total_cost) as daily_sum " +
+        java.time.LocalDateTime sevenDaysAgo = java.time.LocalDateTime.now().minusDays(7);
+        String sql = "SELECT CAST(start_time AS DATE) as sale_date, SUM(total_cost) as daily_sum " +
                 "FROM bookings " +
-                "WHERE status IN ('paid', 'finished') " + // 只有付过钱的才算收入哦！
-                "AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                "WHERE status IN ('paid', 'finished') " +
+                "AND start_time >= ? " +
                 "GROUP BY sale_date " +
-                "ORDER BY sale_date DESC"; // 最近的日期排在上面
+                "ORDER BY sale_date DESC";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             DailyRevenueReport report = new DailyRevenueReport();
             report.setDate(rs.getString("sale_date"));
             report.setDailyTotal(rs.getBigDecimal("daily_sum"));
             return report;
-        });
+        }, sevenDaysAgo);
     }
 
     // 计算某用户过去7天租车总时长（分钟）
     @Override
     public Integer getTotalRentalMinutesForUserLastWeek(int userId) {
-        // TIMESTAMPDIFF(MINUTE, start_time, end_time) 算出两个时间差了多少分钟
-        String sql = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes " +
-                "FROM bookings " +
-                "WHERE user_id = ? AND status = 'finished' " + // 只算完成了的订单
-                "AND end_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        java.time.LocalDateTime sevenDaysAgo = java.time.LocalDateTime.now().minusDays(7);
+        String sql = "SELECT start_time, end_time FROM bookings " +
+                "WHERE user_id = ? AND status = 'finished' " +
+                "AND end_time >= ?";
 
-        // 处理queryForObject 可能返回的 null
-        Integer totalMinutes = jdbcTemplate.queryForObject(sql, Integer.class, userId);
-        return totalMinutes == null ? 0 : totalMinutes;
-
+        java.util.List<java.util.Map<String, Object>> rows = jdbcTemplate.queryForList(sql, userId, sevenDaysAgo);
+        long totalMinutes = 0;
+        for (java.util.Map<String, Object> row : rows) {
+            java.sql.Timestamp startTs = (java.sql.Timestamp) row.get("start_time");
+            java.sql.Timestamp endTs = (java.sql.Timestamp) row.get("end_time");
+            if (startTs != null && endTs != null) {
+                totalMinutes += java.time.Duration.between(
+                        startTs.toLocalDateTime(), endTs.toLocalDateTime()).toMinutes();
+            }
+        }
+        return (int) totalMinutes;
     }
 
     // 小票装载
@@ -158,6 +164,12 @@ public class BookingDAOImpl implements BookingDAO {
             }
             b.setTotalCost(rs.getBigDecimal("total_cost"));
             b.setStatus(rs.getString("status"));
+            b.setGuestName(rs.getString("guest_name"));
+            b.setGuestPhone(rs.getString("guest_phone"));
+            int packageId = rs.getInt("package_id");
+            if (!rs.wasNull()) {
+                b.setPackageId(packageId);
+            }
             return b;
         }
     }
