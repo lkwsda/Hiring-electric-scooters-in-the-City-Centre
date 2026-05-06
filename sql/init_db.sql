@@ -91,6 +91,10 @@ INSERT INTO packages (package_type, price, description,discount_percent) VALUES
 INSERT INTO scooters (model, battery_level, latitude, longitude, status) VALUES
      ('1', 100, 53.8012, -1.5485, 'available'),
      ('2', 95, 53.8020, -1.5490, 'available'),
+     ('4', 97, 53.8021, -1.5494, 'available'),
+     ('5', 98, 53.8022, -1.5493, 'available'),
+     ('6', 99, 53.8023, -1.5492, 'available'),
+     ('7', 96, 53.8024, -1.5491, 'available'),
      ('3', 100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
 
 -- 预置测试用户数据
