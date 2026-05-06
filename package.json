@@ -1,0 +1,31 @@
+{
+  "name": "hiring-electric-scooters-in-the-city-centre",
+  "version": "1.0.0",
+  "description": "Software Engineering Project for hiring electric scooters in the City Centre",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lkwsda/Hiring-electric-scooters-in-the-City-Centre.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lkwsda/Hiring-electric-scooters-in-the-City-Centre/issues"
+  },
+  "homepage": "https://github.com/lkwsda/Hiring-electric-scooters-in-the-City-Centre#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "playwright": "^1.59.1"
+  }
+}

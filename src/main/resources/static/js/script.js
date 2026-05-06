@@ -139,54 +139,11 @@ function getTextError(responseText, fallback) {
     return responseText && responseText.trim() ? responseText : fallback;
 }
 
-function formatCurrency(value) {
-    const amount = Number(value || 0);
-    return `$${amount.toFixed(2)}`;
-}
-
 function announce(message) {
     const live = document.getElementById('liveStatus');
     if (live) {
         live.textContent = message;
     }
-}
-
-function normalizeCardNumber(raw) {
-    return String(raw || '').replace(/\s+/g, '');
-}
-
-function maskCardNumber(raw) {
-    const digits = normalizeCardNumber(raw);
-    if (digits.length < 4) return '****';
-    return `**** **** **** ${digits.slice(-4)}`;
-}
-
-function isValidCardNumber(raw) {
-    const digits = normalizeCardNumber(raw);
-    if (/^\d{16}$/.test(digits)) {
-        return true;
-    } 
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = digits.length - 1; i >= 0; i -= 1) {
-        let digit = Number(digits[i]);
-        if (shouldDouble) {
-            digit *= 2;
-            if (digit > 9) digit -= 9;
-        }
-        sum += digit;
-        shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-}
-
-function isStrongPassword(password) {
-    if (!password || password.length < 8) return false;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasDigit = /\d/.test(password);
-    const hasSpecial = /[^A-Za-z0-9]/.test(password);
-    return hasUpper && hasLower && hasDigit && hasSpecial;
 }
 
 function saveUserCard(rawCardNumber) {
@@ -241,16 +198,6 @@ function setupInactivityTracking() {
     ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(eventName => {
         window.addEventListener(eventName, resetSessionTimer, { passive: true });
     });
-}
-
-function normalizePackageTypeText(type) {
-    return String(type || '').trim().toLowerCase().replace(/\s+/g, '');
-}
-
-function normalizeScooterStatus(status) {
-    if (!status) return 'available';
-    if (status === 'normal') return 'available';
-    return status;
 }
 
 function normalizeScooter(scooter) {
