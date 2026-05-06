@@ -32,6 +32,7 @@ public class BookingDAOImpl implements BookingDAO {
             } else {
                 ps.setNull(1, java.sql.Types.INTEGER);
             }
+            ps.setInt(2, booking.getScooterId());
             ps.setInt(3, booking.getPackageId());
             ps.setBigDecimal(4, booking.getTotalCost());
             ps.setString(5, booking.getStatus());
