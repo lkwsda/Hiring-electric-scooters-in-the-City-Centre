@@ -8,7 +8,10 @@ async function endRental(bookingId) {
         if (!response.ok) {
             throw new Error(getTextError(text, 'Failed to end rental!'));
         }
-        alert(text || 'Rental ended!');
+        // Locally update booking status so UI reflects the change immediately
+        const idx = bookings.findIndex(b => b.id === bookingId);
+        if (idx !== -1) bookings[idx].status = 'finished';
+
         await loadScooters();
         await loadScooterLocations();
         renderScooters();
@@ -18,6 +21,17 @@ async function endRental(bookingId) {
         updateNav();
         showSection('myBookingsSection');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Show inline success banner instead of blocking alert
+        const list = document.getElementById('bookingList');
+        if (list) {
+            const banner = document.createElement('div');
+            banner.className = 'issue-item issue-high';
+            banner.style.cssText = 'background:#e8f5e9;border-left:4px solid #27ae60;margin-bottom:12px;';
+            banner.innerHTML = `<p><strong>✓ Rental #${bookingId} ended successfully.</strong> ${text || ''}</p>`;
+            list.insertBefore(banner, list.firstChild);
+            setTimeout(() => banner.remove(), 5000);
+        }
         announce(`Booking #${bookingId} ended. Booking list has been refreshed.`);
     } catch (error) {
         console.error('End rental error:', error);

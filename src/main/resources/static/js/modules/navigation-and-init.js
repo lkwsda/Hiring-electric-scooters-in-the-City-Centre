@@ -1,4 +1,15 @@
 ﻿// Navigation
+function showAdminStats() {
+    if (!adminLoggedIn) {
+        alert('Admin access required.');
+        return;
+    }
+    showSection('adminStatsSection');
+    renderStats();
+    renderAdminIssueReviewList();
+    renderAdminHighPriorityIssues();
+}
+
 const homeLink = document.getElementById('homeLink');
 const scootersLink = document.getElementById('scootersLink');
 const scooterListViewBtn = document.getElementById('scooterListViewBtn');

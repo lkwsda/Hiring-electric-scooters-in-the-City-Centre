@@ -209,6 +209,25 @@ if (bookForm) {
 // Payment form
 const paymentForm = document.getElementById('paymentForm');
 const useSavedCardBtn = document.getElementById('useSavedCardBtn');
+
+// Card number masking preview
+const paymentCardInput = document.getElementById('paymentCardNumber');
+const paymentCardMasked = document.getElementById('paymentCardMasked');
+if (paymentCardInput && paymentCardMasked) {
+    paymentCardInput.addEventListener('input', () => {
+        const raw = paymentCardInput.value.replace(/\D/g, '');
+        if (raw.length >= 8) {
+            const first4 = raw.slice(0, 4);
+            const last4 = raw.slice(-4);
+            const masked = `${first4} **** **** ${last4}`;
+            paymentCardMasked.textContent = `Display: ${masked}`;
+            paymentCardMasked.style.display = '';
+        } else {
+            paymentCardMasked.style.display = 'none';
+        }
+    });
+}
+
 if (useSavedCardBtn) {
     useSavedCardBtn.addEventListener('click', () => {
         useSavedCardInPayment();

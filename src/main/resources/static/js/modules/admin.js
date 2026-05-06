@@ -170,8 +170,18 @@ if (adminPlaceBookingForm) {
         const userId = Number(document.getElementById('adminProxyUserId').value);
         const scooterId = Number(document.getElementById('adminProxyScooterId').value);
         const packageId = Number(document.getElementById('adminProxyPackageId').value);
+        const guestName = (document.getElementById('adminProxyGuestName').value || '').trim();
+        const guestPhone = (document.getElementById('adminProxyGuestPhone').value || '').trim();
         if (!Number.isInteger(userId) || !Number.isInteger(scooterId) || !Number.isInteger(packageId)) {
             alert('Please enter valid IDs.');
+            return;
+        }
+        if (!guestName) {
+            alert('Guest name is required.');
+            return;
+        }
+        if (!guestPhone) {
+            alert('Guest phone is required.');
             return;
         }
 
@@ -182,7 +192,9 @@ if (adminPlaceBookingForm) {
                 body: JSON.stringify({
                     userId,
                     scooterId,
-                    packageId
+                    packageId,
+                    guestName,
+                    guestPhone
                 })
             });
             const text = await response.text();
@@ -195,6 +207,7 @@ if (adminPlaceBookingForm) {
                     <div class="issue-item">
                         <p><strong>Proxy booking submitted successfully.</strong></p>
                         <p><strong>User ID:</strong> ${userId} | <strong>Scooter ID:</strong> ${scooterId} | <strong>Package ID:</strong> ${packageId}</p>
+                        <p><strong>Guest:</strong> ${guestName} | <strong>Phone:</strong> ${guestPhone}</p>
                         <p><strong>Server response:</strong> ${text || 'Booking created.'}</p>
                     </div>
                 `;

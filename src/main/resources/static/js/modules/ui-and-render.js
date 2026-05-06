@@ -62,11 +62,15 @@ function updateNav() {
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
     const returnLink = document.getElementById('returnLink');
-    
+
+    // Admin-only UI elements
+    const adminHighPriorityBox = document.getElementById('adminOnlyHighPriorityBox');
+    const adminRevenueSection = document.getElementById('adminOnlyRevenueSection');
+
     if (currentUser || adminLoggedIn) {
         loginLink.style.display = 'none';
         logoutLink.style.display = 'inline';
-        
+
         const hasActiveBooking = bookings.some(b => b.status === 'paid');
         returnLink.style.display = hasActiveBooking ? 'inline' : 'none';
     } else {
@@ -74,6 +78,10 @@ function updateNav() {
         logoutLink.style.display = 'none';
         returnLink.style.display = 'none';
     }
+
+    // Show admin-only sections only when admin is logged in
+    if (adminHighPriorityBox) adminHighPriorityBox.style.display = adminLoggedIn ? '' : 'none';
+    if (adminRevenueSection) adminRevenueSection.style.display = adminLoggedIn ? '' : 'none';
 }
 
 // Render packages
@@ -161,6 +169,9 @@ function renderScooters() {
 }
 
 // Render bookings
+const BOOKINGS_PER_PAGE = 5;
+let bookingsCurrentPage = 1;
+
 async function renderBookings() {
     const list = document.getElementById('bookingList');
     list.innerHTML = '';
@@ -180,35 +191,7 @@ async function renderBookings() {
         bookings = userBookings;
         updateBookingSummary(userBookings);
         userBookings.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-        userBookings.forEach(booking => {
-            const item = document.createElement('div');
-            item.className = 'booking-item';
-            const startTime = new Date(booking.startTime).toLocaleString();
-            const endTime = booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing';
-            const cost = booking.totalCost ? `$${booking.totalCost}` : 'Calculating...';
-            let buttonHtml = '';
-            if (booking.status === 'paid') {
-                buttonHtml = `
-                    <button onclick="extendRental(${booking.id})" class="extend-rental-btn"><i class="fa-solid fa-clock"></i> Extend</button>
-                    <button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop"></i> End Rental</button>
-                `;
-            } else {
-                const statusText = String(booking.status || '').toLowerCase();
-                const canCancel = ['pending', 'unpaid', 'placed', 'booked', 'created'].includes(statusText);
-                if (canCancel) {
-                    buttonHtml = `<button onclick="cancelBooking(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-xmark"></i> Cancel</button>`;
-                }
-            }
-            item.innerHTML = `
-                <p>Scooter ID: ${booking.scooterId}</p>
-                <p>Start Time: ${startTime}</p>
-                <p>End Time: ${endTime}</p>
-                <p>Cost: ${cost}</p>
-                <p>Status: ${booking.status}</p>
-                ${buttonHtml}
-            `;
-            list.appendChild(item);
-        });
+        renderBookingsPage(userBookings, list);
     } catch (error) {
         console.error('Failed to load bookings:', error);
         list.innerHTML = '<p>Failed to load bookings.</p>';
@@ -216,12 +199,99 @@ async function renderBookings() {
     }
 }
 
+function renderBookingsPage(userBookings, list) {
+    list.innerHTML = '';
+    const totalPages = Math.max(1, Math.ceil(userBookings.length / BOOKINGS_PER_PAGE));
+    if (bookingsCurrentPage > totalPages) bookingsCurrentPage = totalPages;
+    const start = (bookingsCurrentPage - 1) * BOOKINGS_PER_PAGE;
+    const pageItems = userBookings.slice(start, start + BOOKINGS_PER_PAGE);
+
+    pageItems.forEach(booking => {
+        const item = document.createElement('div');
+        item.className = 'booking-item';
+        const startTime = new Date(booking.startTime).toLocaleString();
+        const endTime = booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing';
+        const cost = booking.totalCost ? `$${booking.totalCost}` : 'Calculating...';
+        let buttonHtml = '';
+        if (booking.status === 'paid') {
+            buttonHtml = `
+                <button onclick="extendRental(${booking.id})" class="extend-rental-btn"><i class="fa-solid fa-clock"></i> Extend</button>
+                <button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop"></i> End Rental</button>
+            `;
+        } else {
+            const statusText = String(booking.status || '').toLowerCase();
+            const canCancel = ['pending', 'unpaid', 'placed', 'booked', 'created'].includes(statusText);
+            if (canCancel) {
+                buttonHtml = `<button onclick="cancelBooking(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-xmark"></i> Cancel</button>`;
+            }
+        }
+        item.innerHTML = `
+            <p>Scooter ID: ${booking.scooterId}</p>
+            <p>Start Time: ${startTime}</p>
+            <p>End Time: ${endTime}</p>
+            <p>Cost: ${cost}</p>
+            <p>Status: ${booking.status}</p>
+            ${buttonHtml}
+        `;
+        list.appendChild(item);
+    });
+
+    // Pagination controls
+    if (totalPages > 1) {
+        const pager = document.createElement('div');
+        pager.className = 'booking-pagination';
+        pager.style.cssText = 'display:flex;gap:10px;align-items:center;margin-top:12px;';
+        pager.innerHTML = `
+            <button onclick="changeBookingsPage(-1)" ${bookingsCurrentPage <= 1 ? 'disabled' : ''}
+                style="padding:6px 14px;border-radius:6px;border:1px solid #ccc;cursor:pointer;">
+                <i class="fa-solid fa-chevron-left"></i> Prev
+            </button>
+            <span>Page ${bookingsCurrentPage} / ${totalPages}</span>
+            <button onclick="changeBookingsPage(1)" ${bookingsCurrentPage >= totalPages ? 'disabled' : ''}
+                style="padding:6px 14px;border-radius:6px;border:1px solid #ccc;cursor:pointer;">
+                Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        `;
+        list.appendChild(pager);
+    }
+}
+
+function changeBookingsPage(delta) {
+    const totalPages = Math.max(1, Math.ceil(bookings.length / BOOKINGS_PER_PAGE));
+    bookingsCurrentPage = Math.max(1, Math.min(totalPages, bookingsCurrentPage + delta));
+    const list = document.getElementById('bookingList');
+    if (list) renderBookingsPage(bookings, list);
+}
+
+function getAutoDiscountRate() {
+    if (!currentUser) return 0;
+    const role = (currentUser.role || '').toLowerCase();
+    if (role === 'student') return 0.10;
+    if (role === 'senior') return 0.15;
+    if (role === 'high-frequency' || role === 'highfrequency') return 0.20;
+    return 0;
+}
+
 function updatePaymentBreakdown(packagePrice) {
     const rentalCostNode = document.getElementById('rentalCost');
     const totalAmountNode = document.getElementById('totalAmount');
+    const discountRow = document.getElementById('discountRow');
+    const discountLabel = document.getElementById('discountLabel');
+    const discountAmountNode = document.getElementById('discountAmount');
     const rentalCost = Number(packagePrice || 0);
-    const totalAmount = rentalCost + serviceFee;
+    const discountRate = getAutoDiscountRate();
+    const discountAmt = rentalCost * discountRate;
+    const totalAmount = rentalCost - discountAmt + serviceFee;
     if (rentalCostNode) rentalCostNode.textContent = formatCurrency(rentalCost);
+    if (discountRow) {
+        if (discountRate > 0) {
+            discountRow.style.display = '';
+            if (discountLabel) discountLabel.textContent = `Discount (${(discountRate * 100).toFixed(0)}%)`;
+            if (discountAmountNode) discountAmountNode.textContent = `-${formatCurrency(discountAmt)}`;
+        } else {
+            discountRow.style.display = 'none';
+        }
+    }
     if (totalAmountNode) totalAmountNode.textContent = formatCurrency(totalAmount);
 }
 
@@ -270,7 +340,7 @@ function simulatePaymentEmailNotification(bookingId) {
     if (notice) {
         notice.innerHTML = `
             <div class="issue-item issue-high">
-                <p><strong>F7 Notification:</strong> payment email simulated.</p>
+                <p><strong>Payment Notification:</strong> email confirmation simulated.</p>
                 <p><strong>Booking ID:</strong> ${bookingId}</p>
                 <p><strong>Recipient:</strong> ${username}</p>
                 <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
@@ -544,21 +614,34 @@ function setupAccessibilityTools() {
     const decreaseBtn = document.getElementById('fontDecreaseBtn');
     const contrastBtn = document.getElementById('highContrastBtn');
 
+    // MAX_FONT_SCALE: 1.10 keeps the navigation bar in one line without wrapping
+    const MAX_FONT_SCALE = 1.10;
+    const MIN_FONT_SCALE = 0.90;
+
     let fontScale = Number(localStorage.getItem('fontScale') || 1);
     const applyScale = () => {
-        root.style.fontSize = `${Math.max(0.9, Math.min(1.25, fontScale)) * 100}%`;
+        fontScale = Math.max(MIN_FONT_SCALE, Math.min(MAX_FONT_SCALE, fontScale));
+        root.style.fontSize = `${fontScale * 100}%`;
         localStorage.setItem('fontScale', String(fontScale));
     };
     applyScale();
 
     if (increaseBtn) {
         increaseBtn.addEventListener('click', () => {
+            if (fontScale >= MAX_FONT_SCALE) {
+                alert('已达到最大字体大小（导航栏保持一行的最大值）。');
+                return;
+            }
             fontScale += 0.05;
             applyScale();
         });
     }
     if (decreaseBtn) {
         decreaseBtn.addEventListener('click', () => {
+            if (fontScale <= MIN_FONT_SCALE) {
+                alert('已达到最小字体大小。');
+                return;
+            }
             fontScale -= 0.05;
             applyScale();
         });
