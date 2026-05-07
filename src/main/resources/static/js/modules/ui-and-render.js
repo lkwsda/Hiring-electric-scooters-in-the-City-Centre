@@ -1,9 +1,184 @@
 ﻿// Sections
 const sections = ['authSection', 'homeSection', 'scootersSection', 'rentSection', 'paymentSection', 'successSection', 'myBookingsSection', 'feedbackSection', 'analyticsSection', 'scooterDetailSection', 'returnSection', 'adminLoginSection', 'adminConfigSection', 'adminStatsSection'];
+let activeAdminPanelId = 'adminPanelOverview';
+let homeSpotlightTimer = null;
+let homeSpotlightIndex = 0;
+let homeSpotlightPrevIndex = 0;
+
+function setupHomeSpotlightCarousel() {
+    const root = document.getElementById('homeSpotlight');
+    if (!root) return;
+
+    const tabs = Array.from(root.querySelectorAll('.spotlight-tab'));
+    const panels = Array.from(root.querySelectorAll('.home-spotlight-panel'));
+    if (!tabs.length || !panels.length) return;
+
+    const activatePanel = index => {
+        const safeIndex = ((index % panels.length) + panels.length) % panels.length;
+        const direction = safeIndex >= homeSpotlightIndex ? 'forward' : 'backward';
+        panels.forEach((panel, i) => {
+            panel.classList.toggle('is-active', i === safeIndex);
+            panel.classList.remove('slide-forward', 'slide-backward');
+            if (i === safeIndex) {
+                panel.classList.add(direction === 'forward' ? 'slide-forward' : 'slide-backward');
+            }
+        });
+        tabs.forEach((tab, i) => {
+            const isActive = i === safeIndex;
+            tab.classList.toggle('is-active', isActive);
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        homeSpotlightPrevIndex = homeSpotlightIndex;
+        homeSpotlightIndex = safeIndex;
+    };
+
+    const startTimer = () => {
+        if (homeSpotlightTimer) clearInterval(homeSpotlightTimer);
+        homeSpotlightTimer = setInterval(() => {
+            activatePanel(homeSpotlightIndex + 1);
+        }, 3500);
+    };
+
+    if (root.dataset.boundSpotlight !== 'true') {
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                activatePanel(index);
+                startTimer();
+            });
+        });
+
+        root.addEventListener('mouseenter', () => {
+            if (homeSpotlightTimer) {
+                clearInterval(homeSpotlightTimer);
+                homeSpotlightTimer = null;
+            }
+        });
+
+        root.addEventListener('mouseleave', () => {
+            startTimer();
+        });
+
+        root.dataset.boundSpotlight = 'true';
+    }
+
+    activatePanel(homeSpotlightIndex);
+    startTimer();
+}
+
+function measurePanelNaturalHeight(panel) {
+    if (!panel) return 0;
+    const wasActive = panel.classList.contains('is-active');
+    let measured = 0;
+    if (wasActive) {
+        measured = panel.scrollHeight || panel.offsetHeight || 0;
+        return measured;
+    }
+
+    panel.classList.add('is-active');
+    panel.style.visibility = 'hidden';
+    panel.style.position = 'absolute';
+    panel.style.left = '-9999px';
+    panel.style.top = '0';
+    panel.style.pointerEvents = 'none';
+    panel.style.display = 'block';
+
+    measured = panel.scrollHeight || panel.offsetHeight || 0;
+
+    panel.style.visibility = '';
+    panel.style.position = '';
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.pointerEvents = '';
+    panel.style.display = '';
+    panel.classList.remove('is-active');
+    return measured;
+}
+
+function syncAdminPanelFixedHeight() {
+    const adminSection = document.getElementById('adminConfigSection');
+    const pricingPanel = document.getElementById('adminPanelPricing');
+    if (!adminSection || !pricingPanel) return;
+
+    const measuredHeight = measurePanelNaturalHeight(pricingPanel);
+    const fixedHeight = Math.max(520, measuredHeight + 8);
+    adminSection.style.setProperty('--admin-fixed-panel-height', `${fixedHeight}px`);
+}
+
+function renderAdminOverview() {
+    const available = scooters.filter(item => normalizeScooterStatus(item.status) === 'available').length;
+    const maintenance = scooters.filter(item => normalizeScooterStatus(item.status) === 'maintenance').length;
+    const openIssues = issues.filter(item => String(item.status || 'pending').toLowerCase() !== 'resolved').length;
+    const highIssues = issues.filter(item => String(item.priority || '').toLowerCase() === 'high').length;
+    const totalScooters = Math.max(1, scooters.length);
+
+    const availableNode = document.getElementById('adminKpiAvailable');
+    const maintenanceNode = document.getElementById('adminKpiMaintenance');
+    const openIssueNode = document.getElementById('adminKpiIssues');
+    const highIssueNode = document.getElementById('adminKpiHigh');
+    const availabilityMeter = document.getElementById('adminMeterAvailability');
+    const availabilityText = document.getElementById('adminMeterAvailabilityText');
+    const issueMeter = document.getElementById('adminMeterIssue');
+    const issueText = document.getElementById('adminMeterIssueText');
+    const feedSync = document.getElementById('adminFeedSync');
+    const feedIssue = document.getElementById('adminFeedIssue');
+    const feedFleet = document.getElementById('adminFeedFleet');
+
+    const availabilityRate = Math.min(100, Math.round((available / totalScooters) * 100));
+    const issueRate = Math.min(100, Math.round((openIssues / totalScooters) * 100));
+
+    if (availableNode) availableNode.textContent = String(available);
+    if (maintenanceNode) maintenanceNode.textContent = String(maintenance);
+    if (openIssueNode) openIssueNode.textContent = String(openIssues);
+    if (highIssueNode) highIssueNode.textContent = String(highIssues);
+    if (availabilityMeter) availabilityMeter.style.width = `${availabilityRate}%`;
+    if (availabilityText) availabilityText.textContent = `${availabilityRate}%`;
+    if (issueMeter) issueMeter.style.width = `${issueRate}%`;
+    if (issueText) issueText.textContent = `${issueRate}%`;
+    if (feedSync) feedSync.textContent = `Last refresh ${new Date().toLocaleTimeString()}`;
+    if (feedIssue) feedIssue.textContent = `${openIssues} items pending (${highIssues} high)`;
+    if (feedFleet) feedFleet.textContent = `${available} available / ${maintenance} maintenance`;
+}
+
+function showAdminPanel(panelId) {
+    const fallbackPanel = 'adminPanelOverview';
+    const targetPanelId = panelId || activeAdminPanelId || fallbackPanel;
+    const panels = Array.from(document.querySelectorAll('#adminConfigSection .admin-panel'));
+    const sidebarButtons = Array.from(document.querySelectorAll('#adminConfigSection .admin-sidebar-btn'));
+    const targetPanel = document.getElementById(targetPanelId);
+    if (!panels.length || !targetPanel) return;
+
+    panels.forEach(panel => {
+        panel.classList.remove('is-active');
+    });
+    targetPanel.classList.add('is-active');
+
+    sidebarButtons.forEach(button => {
+        button.classList.toggle('is-active', button.dataset.adminPanel === targetPanelId);
+    });
+
+    activeAdminPanelId = targetPanelId;
+    syncAdminPanelFixedHeight();
+
+    if (targetPanelId === 'adminPanelUsers') {
+        renderAdminUsers();
+    } else if (targetPanelId === 'adminPanelAnalytics') {
+        renderRevenueCharts();
+    } else if (targetPanelId === 'adminPanelIssues') {
+        renderAdminIssueReviewList();
+        renderAdminHighPriorityIssues();
+    } else if (targetPanelId === 'adminPanelOverview') {
+        renderAdminOverview();
+    }
+}
 
 function showSection(sectionId) {
+    let pendingAdminPanel = '';
     if (sectionId === 'authSection' && (currentUser || adminLoggedIn)) {
         sectionId = 'homeSection';
+    }
+    if (sectionId === 'analyticsSection' && adminLoggedIn) {
+        sectionId = 'adminConfigSection';
+        pendingAdminPanel = 'adminPanelAnalytics';
     }
     sections.forEach(id => {
         const sectionElement = document.getElementById(id);
@@ -12,6 +187,7 @@ function showSection(sectionId) {
         }
     });
     if (sectionId === 'homeSection') {
+        setupHomeSpotlightCarousel();
         renderPackages();
         updateHomeStats();
     } else if (sectionId === 'scootersSection') {
@@ -23,9 +199,12 @@ function showSection(sectionId) {
     } else if (sectionId === 'feedbackSection') {
         renderHighPriorityIssues();
     } else if (sectionId === 'analyticsSection') {
-        renderRevenueCharts();
+        // Analytics module has been moved into admin dashboard.
     } else if (sectionId === 'adminConfigSection') {
         renderAdminUsers();
+        renderAdminOverview();
+        syncAdminPanelFixedHeight();
+        showAdminPanel(pendingAdminPanel || activeAdminPanelId);
     } else if (sectionId === 'adminStatsSection') {
         renderAdminIssueReviewList();
         renderAdminHighPriorityIssues();
@@ -64,8 +243,6 @@ function updateNav() {
 
     // Admin-only UI elements
     const adminHighPriorityBox = document.getElementById('adminOnlyHighPriorityBox');
-    const adminRevenueSection = document.getElementById('adminOnlyRevenueSection');
-    const analyticsRevenueNotice = document.getElementById('analyticsRevenueNotice');
 
     if (currentUser || adminLoggedIn) {
         loginLink.style.display = 'none';
@@ -81,8 +258,6 @@ function updateNav() {
 
     // Show admin-only sections only when admin is logged in
     if (adminHighPriorityBox) adminHighPriorityBox.style.display = adminLoggedIn ? '' : 'none';
-    if (adminRevenueSection) adminRevenueSection.style.display = adminLoggedIn ? '' : 'none';
-    if (analyticsRevenueNotice) analyticsRevenueNotice.style.display = adminLoggedIn ? 'none' : '';
 }
 
 // Render packages
@@ -577,10 +752,28 @@ async function renderRevenueCharts() {
         const dailyLabels = (Array.isArray(daily) ? daily : []).map(item => item.date || 'N/A');
         const dailyValues = (Array.isArray(daily) ? daily : []).map(item => Number(item.dailyTotal || 0));
 
+        const weeklyTotal = weeklyValues.reduce((sum, value) => sum + value, 0);
+        const dailyAvg = dailyValues.length ? (dailyValues.reduce((sum, value) => sum + value, 0) / dailyValues.length) : 0;
+        const maxWeeklyIndex = weeklyValues.length ? weeklyValues.indexOf(Math.max(...weeklyValues)) : -1;
+        const bestPackage = maxWeeklyIndex >= 0 ? weeklyLabels[maxWeeklyIndex] : 'N/A';
+
+        const weeklyTotalNode = document.getElementById('adminRevenueWeeklyTotal');
+        const dailyAvgNode = document.getElementById('adminRevenueDailyAvg');
+        const bestPackageNode = document.getElementById('adminRevenueBestPackage');
+        if (weeklyTotalNode) weeklyTotalNode.textContent = `$${weeklyTotal.toFixed(2)}`;
+        if (dailyAvgNode) dailyAvgNode.textContent = `$${dailyAvg.toFixed(2)}`;
+        if (bestPackageNode) bestPackageNode.textContent = bestPackage;
+
         drawBarChart('weeklyRevenueChart', weeklyLabels, weeklyValues);
         drawLineChart('dailyRevenueChart', dailyLabels.reverse(), dailyValues.reverse());
     } catch (error) {
         console.error('Chart render error:', error);
+        const weeklyTotalNode = document.getElementById('adminRevenueWeeklyTotal');
+        const dailyAvgNode = document.getElementById('adminRevenueDailyAvg');
+        const bestPackageNode = document.getElementById('adminRevenueBestPackage');
+        if (weeklyTotalNode) weeklyTotalNode.textContent = '$0.00';
+        if (dailyAvgNode) dailyAvgNode.textContent = '$0.00';
+        if (bestPackageNode) bestPackageNode.textContent = 'N/A';
         drawBarChart('weeklyRevenueChart', [], []);
         drawLineChart('dailyRevenueChart', [], []);
     }

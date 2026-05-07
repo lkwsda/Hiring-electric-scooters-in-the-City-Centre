@@ -113,6 +113,16 @@ if (registerForm) {
 
 const issueForm = document.getElementById('issueForm');
 if (issueForm) {
+    const issueDescriptionInput = document.getElementById('issueDescription');
+    const issueDescriptionCount = document.getElementById('issueDescriptionCount');
+    if (issueDescriptionInput && issueDescriptionCount) {
+        const syncIssueDescCount = () => {
+            issueDescriptionCount.textContent = `${issueDescriptionInput.value.length}/300`;
+        };
+        syncIssueDescCount();
+        issueDescriptionInput.addEventListener('input', syncIssueDescCount);
+    }
+
     issueForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const userId = getCurrentUserId();

@@ -4,9 +4,8 @@ function showAdminStats() {
         alert('Admin access required.');
         return;
     }
-    showSection('adminStatsSection');
-    renderAdminIssueReviewList();
-    renderAdminHighPriorityIssues();
+    showSection('adminConfigSection');
+    showAdminPanel('adminPanelIssues');
 }
 
 const homeLink = document.getElementById('homeLink');
@@ -16,12 +15,21 @@ const scooterMapViewBtn = document.getElementById('scooterMapViewBtn');
 const rentLink = document.getElementById('rentLink');
 const myBookingsLink = document.getElementById('myBookingsLink');
 const feedbackLink = document.getElementById('feedbackLink');
-const analyticsLink = document.getElementById('analyticsLink');
 const returnLink = document.getElementById('returnLink');
 const adminLink = document.getElementById('adminLink');
+const debugAdminLink = document.getElementById('debugAdminLink');
+const adminSidebarBtns = document.querySelectorAll('#adminConfigSection .admin-sidebar-btn');
 const loginLink = document.getElementById('loginLink');
 const logoutLink = document.getElementById('logoutLink');
 const backToHomeBtn = document.getElementById('backToHome');
+
+if (adminSidebarBtns.length) {
+    adminSidebarBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showAdminPanel(btn.dataset.adminPanel || 'adminPanelOverview');
+        });
+    });
+}
 
 if (scooterListViewBtn) {
     scooterListViewBtn.addEventListener('click', () => {
@@ -76,13 +84,6 @@ if (feedbackLink) {
     });
 }
 
-if (analyticsLink) {
-    analyticsLink.addEventListener('click', event => {
-        event.preventDefault();
-        showSection('analyticsSection');
-    });
-}
-
 if (returnLink) {
     returnLink.addEventListener('click', event => {
         event.preventDefault();
@@ -101,6 +102,7 @@ if (adminLink) {
         event.preventDefault();
         if (adminLoggedIn) {
             showSection('adminConfigSection');
+            showAdminPanel('adminPanelOverview');
             populateAdminProxyBookingOptions();
         } else {
             // No dedicated admin login endpoint in controller layer.
@@ -111,6 +113,29 @@ if (adminLink) {
         }
     });
 }
+
+// Debug admin link - only visible in development mode
+// start
+if (debugAdminLink) {
+    debugAdminLink.addEventListener('click', event => {
+        event.preventDefault();
+        const fallbackId = currentUser && Number.isInteger(currentUser.id) ? currentUser.id : 1;
+        currentUser = {
+            id: fallbackId,
+            username: (currentUser && currentUser.username) ? currentUser.username : 'debug-admin',
+            role: 'admin'
+        };
+        adminLoggedIn = true;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('adminLoggedIn', 'true');
+        updateNav();
+        populateAdminProxyBookingOptions();
+        showSection('adminConfigSection');
+        showAdminPanel('adminPanelOverview');
+        alert('Debug admin mode enabled.');
+    });
+}
+//end
 
 if (loginLink) {
     loginLink.addEventListener('click', event => {

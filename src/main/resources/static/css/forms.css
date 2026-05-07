@@ -75,7 +75,7 @@
 }
 
 .form-box {
-    background-color: #f8f9fa;
+    background: linear-gradient(160deg, #ffffff 0%, #f7fbff 58%, #fffdf9 100%);
     padding: 25px;
     border-radius: 10px;
     border-top: 3px solid #2980b9;
