@@ -76,9 +76,9 @@ CREATE TABLE IF NOT EXISTS issues (
    DATA SEEDING (初始化预置数据)
    ============================================================== */
 
--- 预置管理员账号 (响应测试同学的需求！)
+-- 预置管理员账号
 INSERT INTO users (username, email, password_hash, role)
-VALUES ('admin', 'admin@scooter.com', '123456', 'admin');
+VALUES ('admin', 'admin@scooter.com', '$2a$10$P2dldIKmaeJmRYTZlmeCVeXRZpdDX8TKgUzKsaPuRzH5l8z9EAs0C', 'admin');
 
 -- 预置默认套餐
 INSERT INTO packages (package_type, price, description,discount_percent) VALUES
@@ -98,9 +98,5 @@ INSERT INTO scooters (model, image_url, battery_level, latitude, longitude, stat
      ('7', '/images/EcoRide_X3.png',96, 53.8024, -1.5491, 'available'),
      ('3', '/images/EcoRide_X1.png',100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
 
--- 预置测试用户数据
-INSERT INTO users (username, email, password_hash, role, date_of_birth)VALUES
-                                                                           ('student', 'student@test.com', '12345678', 'user', '2005-01-01'),
-                                                                           ('grandpa', 'grandpa@test.com', '87654321', 'user', '1960-01-01');
 
 
