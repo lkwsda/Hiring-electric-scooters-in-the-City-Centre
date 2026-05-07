@@ -5,7 +5,6 @@ function showAdminStats() {
         return;
     }
     showSection('adminStatsSection');
-    renderStats();
     renderAdminIssueReviewList();
     renderAdminHighPriorityIssues();
 }
@@ -198,7 +197,6 @@ window.addEventListener('load', async function() {
         await loadIssues();
         await loadAdminUsers();
         populateAdminProxyBookingOptions();
-        setupDiscountCalculator();
         setupAccessibilityTools();
         setupInactivityTracking();
         refreshSavedCardOptions();

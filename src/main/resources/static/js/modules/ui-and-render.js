@@ -27,7 +27,6 @@ function showSection(sectionId) {
     } else if (sectionId === 'adminConfigSection') {
         renderAdminUsers();
     } else if (sectionId === 'adminStatsSection') {
-        renderStats();
         renderAdminIssueReviewList();
         renderAdminHighPriorityIssues();
     }

@@ -126,20 +126,9 @@ const adminPlaceBookingForm = document.getElementById('adminPlaceBookingForm');
 const adminProxyBookingResult = document.getElementById('adminProxyBookingResult');
 
 function populateAdminProxyBookingOptions() {
-    const userSelect = document.getElementById('adminProxyUserId');
     const scooterSelect = document.getElementById('adminProxyScooterId');
     const packageSelect = document.getElementById('adminProxyPackageId');
-    if (!userSelect || !scooterSelect || !packageSelect) return;
-
-    userSelect.innerHTML = '<option value="">Select user</option>';
-    adminUsers
-        .filter(user => String(user.role || '').toLowerCase() !== 'admin')
-        .forEach(user => {
-            const option = document.createElement('option');
-            option.value = String(user.id);
-            option.textContent = `${user.id} - ${user.username || 'Unknown User'}`;
-            userSelect.appendChild(option);
-        });
+    if (!scooterSelect || !packageSelect) return;
 
     scooterSelect.innerHTML = '<option value="">Select available scooter</option>';
     scooters
@@ -167,13 +156,17 @@ if (adminPlaceBookingForm) {
             alert('Admin account required.');
             return;
         }
-        const userId = Number(document.getElementById('adminProxyUserId').value);
+        const userId = getCurrentUserId();
         const scooterId = Number(document.getElementById('adminProxyScooterId').value);
         const packageId = Number(document.getElementById('adminProxyPackageId').value);
         const guestName = (document.getElementById('adminProxyGuestName').value || '').trim();
         const guestPhone = (document.getElementById('adminProxyGuestPhone').value || '').trim();
-        if (!Number.isInteger(userId) || !Number.isInteger(scooterId) || !Number.isInteger(packageId)) {
-            alert('Please enter valid IDs.');
+        if (!Number.isInteger(userId)) {
+            alert('Unable to identify current admin user. Please login again.');
+            return;
+        }
+        if (!Number.isInteger(scooterId) || !Number.isInteger(packageId)) {
+            alert('Please select valid scooter and package.');
             return;
         }
         if (!guestName) {
@@ -206,7 +199,7 @@ if (adminPlaceBookingForm) {
                 adminProxyBookingResult.innerHTML = `
                     <div class="issue-item">
                         <p><strong>Proxy booking submitted successfully.</strong></p>
-                        <p><strong>User ID:</strong> ${userId} | <strong>Scooter ID:</strong> ${scooterId} | <strong>Package ID:</strong> ${packageId}</p>
+                        <p><strong>Scooter ID:</strong> ${scooterId} | <strong>Package ID:</strong> ${packageId}</p>
                         <p><strong>Guest:</strong> ${guestName} | <strong>Phone:</strong> ${guestPhone}</p>
                         <p><strong>Server response:</strong> ${text || 'Booking created.'}</p>
                     </div>

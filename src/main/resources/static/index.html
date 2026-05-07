@@ -153,7 +153,7 @@
     <section id="analyticsSection" class="analytics-section">
         <div class="section-header">
             <h2><i class="fa-solid fa-chart-line"></i> Analytics & Discounts</h2>
-            <p class="section-subtitle">Revenue insights and discount simulation tools.</p>
+            <p class="section-subtitle">Revenue insights. Payment discount is automatically applied at checkout based on user type.</p>
         </div>
 
         <div class="sync-status" id="syncStatusBanner">
@@ -174,34 +174,6 @@
             <div class="form-box">
                 <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend</h3>
                 <canvas id="dailyRevenueChart" width="640" height="280" aria-label="Daily revenue line chart"></canvas>
-            </div>
-        </div>
-
-        <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-tags"></i> Discount Calculator</h3>
-                <form id="discountForm">
-                    <label for="discountBasePrice">Base Price</label>
-                    <input type="number" id="discountBasePrice" min="0" step="0.01" value="15" required>
-
-                    <label for="discountUserType">User Type</label>
-                    <select id="discountUserType" required>
-                        <option value="regular">Regular</option>
-                        <option value="student">Student</option>
-                        <option value="senior">Senior</option>
-                        <option value="high-frequency">High Frequency User</option>
-                    </select>
-
-                    <label for="discountRideCount">Rides in Last 30 Days</label>
-                    <input type="number" id="discountRideCount" min="0" value="0" required>
-
-                    <button type="submit"><i class="fa-solid fa-calculator"></i> Calculate</button>
-                </form>
-
-                <div id="discountResult" class="discount-result" aria-live="polite">
-                    Enter values to preview discount.
-                </div>
-                <p class="hint-text">Note: final billing discount application requires dedicated backend pricing rules API.</p>
             </div>
         </div>
     </section>
@@ -917,10 +889,6 @@
             <div class="form-box">
                 <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
                 <form id="adminPlaceBookingForm">
-                    <label for="adminProxyUserId">User ID</label>
-                    <select id="adminProxyUserId" required>
-                        <option value="">Select user</option>
-                    </select>
                     <label for="adminProxyScooterId">Scooter ID</label>
                     <select id="adminProxyScooterId" required>
                         <option value="">Select available scooter</option>
@@ -948,9 +916,9 @@
             </div>
             <div class="form-box" style="text-align:center;">
                 <h3><i class="fa-solid fa-chart-bar"></i> Revenue Stats & Issue Management</h3>
-                <p class="hint-text">View weekly/daily revenue reports and manage issue priority.</p>
+                <p class="hint-text">Manage issue priority and resolution workflow.</p>
                 <button type="button" onclick="showAdminStats()" class="btn-primary" style="margin-top:8px;">
-                    <i class="fa-solid fa-arrow-right"></i> Go to Admin Stats &amp; Issues
+                    <i class="fa-solid fa-arrow-right"></i> Go to Admin Issues
                 </button>
             </div>
         </div>
@@ -958,10 +926,7 @@
 
     <!-- 管理员统计 -->
     <section id="adminStatsSection" class="admin-stats-section">
-        <h2><i class="fa-solid fa-chart-bar"></i> Weekly Revenue Stats</h2>
-        <div class="stats-table" id="statsTable">
-            <!-- 统计表格JS -->
-        </div>
+        <h2><i class="fa-solid fa-list-check"></i> Issue Review & Resolution</h2>
         <div class="form-box" style="margin-top: 20px;">
             <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
             <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
