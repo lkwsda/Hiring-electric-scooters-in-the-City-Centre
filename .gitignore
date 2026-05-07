@@ -47,3 +47,7 @@ npm-debug.log
 ### Python ###
 __pycache__/
 *.pyc
+
+
+# Python Virtual Environments & Cache
+.pytest_cache/

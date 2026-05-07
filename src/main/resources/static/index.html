@@ -119,7 +119,7 @@
         </div>
     </section>
 
-    <!-- 故障反馈 F13/F14/F15 -->
+    <!-- 故障反馈 -->
     <section id="feedbackSection" class="feedback-section">
         <div class="section-header">
             <h2><i class="fa-solid fa-triangle-exclamation"></i> Issue Feedback</h2>
@@ -127,7 +127,7 @@
         </div>
         <div class="form-container">
             <div class="form-box">
-                <h3><i class="fa-solid fa-pen-to-square"></i> Submit an Issue (F13)</h3>
+                <h3><i class="fa-solid fa-pen-to-square"></i> Submit an Issue</h3>
                 <form id="issueForm">
                     <label for="issueScooterId">Scooter ID</label>
                     <input type="number" id="issueScooterId" placeholder="Enter scooter ID" required>
@@ -135,12 +135,12 @@
                     <label for="issueDescription">Description</label>
                     <textarea id="issueDescription" rows="4" placeholder="Describe the issue in detail" required></textarea>
 
-                    <p class="hint-text">Priority is reviewed and assigned by admin (F14).</p>
+                    <p class="hint-text">Priority is reviewed and assigned by admin.</p>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
                 </form>
             </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-bell"></i> High Priority Queue (F15)</h3>
+            <div class="form-box" id="adminOnlyHighPriorityBox" style="display:none;">
+                <h3><i class="fa-solid fa-bell"></i> High Priority Queue</h3>
                 <p class="hint-text">Admin view is filtered to high priority issues only.</p>
                 <div id="highPriorityIssueList" class="issue-list">
                     <p>No high priority issues yet.</p>
@@ -149,11 +149,11 @@
         </div>
     </section>
 
-    <!-- 收入与折扣分析 F21/F22/F23 -->
+    <!-- 收入与折扣分析 -->
     <section id="analyticsSection" class="analytics-section">
         <div class="section-header">
             <h2><i class="fa-solid fa-chart-line"></i> Analytics & Discounts</h2>
-            <p class="section-subtitle">Revenue insights and discount simulation tools.</p>
+            <p class="section-subtitle">Revenue insights. Payment discount is automatically applied at checkout based on user type.</p>
         </div>
 
         <div class="sync-status" id="syncStatusBanner">
@@ -161,42 +161,19 @@
             <span id="syncStatusText">Multi-client sync active. Last sync: not yet.</span>
         </div>
 
-        <div class="analytics-grid">
+        <div class="analytics-access-note" id="analyticsRevenueNotice" style="display:none;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Revenue charts are currently available to admin accounts only.</span>
+        </div>
+
+        <div class="analytics-grid" id="adminOnlyRevenueSection" style="display:none;">
             <div class="form-box">
-                <h3><i class="fa-solid fa-chart-column"></i> Weekly Revenue (F21)</h3>
+                <h3><i class="fa-solid fa-chart-column"></i> Weekly Revenue</h3>
                 <canvas id="weeklyRevenueChart" width="640" height="280" aria-label="Weekly revenue bar chart"></canvas>
             </div>
             <div class="form-box">
-                <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend (F21)</h3>
+                <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend</h3>
                 <canvas id="dailyRevenueChart" width="640" height="280" aria-label="Daily revenue line chart"></canvas>
-            </div>
-        </div>
-
-        <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-tags"></i> Discount Calculator (F22)</h3>
-                <form id="discountForm">
-                    <label for="discountBasePrice">Base Price</label>
-                    <input type="number" id="discountBasePrice" min="0" step="0.01" value="15" required>
-
-                    <label for="discountUserType">User Type</label>
-                    <select id="discountUserType" required>
-                        <option value="regular">Regular</option>
-                        <option value="student">Student</option>
-                        <option value="senior">Senior</option>
-                        <option value="high-frequency">High Frequency User</option>
-                    </select>
-
-                    <label for="discountRideCount">Rides in Last 30 Days</label>
-                    <input type="number" id="discountRideCount" min="0" value="0" required>
-
-                    <button type="submit"><i class="fa-solid fa-calculator"></i> Calculate</button>
-                </form>
-
-                <div id="discountResult" class="discount-result" aria-live="polite">
-                    Enter values to preview discount.
-                </div>
-                <p class="hint-text">Note: final billing discount application requires dedicated backend pricing rules API.</p>
             </div>
         </div>
     </section>
@@ -338,7 +315,7 @@
 
         <div id="scooterMapModule" class="scooter-view-panel">
             <div class="form-box" style="margin-top: 20px;">
-                <h3><i class="fa-solid fa-map"></i> Scooter Live Map (F18)</h3>
+                <h3><i class="fa-solid fa-map"></i> Scooter Live Map</h3>
                 <p class="hint-text">Map shows scooter locations from backend.</p>
                 <div class="scooter-map-layout">
                     <div class="scooter-map-stage">
@@ -533,6 +510,10 @@
                             <span>Service Fee</span>
                             <span>$0.50</span>
                         </div>
+                        <div class="breakdown-item" id="discountRow" style="display:none;color:#27ae60;">
+                            <span id="discountLabel">Discount</span>
+                            <span id="discountAmount">-$0.00</span>
+                        </div>
                         <div class="breakdown-item total">
                             <span>Total Amount</span>
                             <span id="totalAmount">$0.50</span>
@@ -568,7 +549,8 @@
                         <label for="paymentCardNumber">
                             <i class="fa-solid fa-credit-card"></i> Bank Card Number:
                         </label>
-                        <input type="text" id="paymentCardNumber" placeholder="Enter card number" required>
+                        <input type="text" id="paymentCardNumber" placeholder="Enter card number (digits only)" autocomplete="cc-number" required>
+                        <p id="paymentCardMasked" style="font-size:0.85em;color:#888;margin-top:4px;display:none;"></p>
                     </div>
                     <div class="payment-actions">
                         <button type="button" onclick="showSection('rentSection')" class="btn-secondary">
@@ -596,6 +578,10 @@
 
             <div class="success-details" id="confirmationDetails">
                 <!-- 确认信息JS -->
+            </div>
+
+            <div class="issue-list" id="paymentEmailNotice" aria-live="polite" style="margin-top: 12px;">
+                <p>No payment notification yet.</p>
             </div>
 
             <div class="success-actions">
@@ -865,7 +851,7 @@
                     <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
                     <label for="scooterStatus">Status:</label>
                     <select id="scooterStatus" required>
-                        <option value="normal">normal</option>
+                        <option value="available">available</option>
                         <option value="maintenance">maintenance</option>
                         <option value="rented">rented</option>
                     </select>
@@ -903,14 +889,23 @@
             <div class="form-box">
                 <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
                 <form id="adminPlaceBookingForm">
-                    <label for="adminProxyUserId">User ID</label>
-                    <input type="number" id="adminProxyUserId" min="1" required>
                     <label for="adminProxyScooterId">Scooter ID</label>
-                    <input type="number" id="adminProxyScooterId" min="1" required>
+                    <select id="adminProxyScooterId" required>
+                        <option value="">Select available scooter</option>
+                    </select>
                     <label for="adminProxyPackageId">Package ID</label>
-                    <input type="number" id="adminProxyPackageId" min="1" required>
+                    <select id="adminProxyPackageId" required>
+                        <option value="">Select package</option>
+                    </select>
+                    <label for="adminProxyGuestName">Guest Name</label>
+                    <input type="text" id="adminProxyGuestName" placeholder="Full name of guest" required>
+                    <label for="adminProxyGuestPhone">Guest Phone</label>
+                    <input type="text" id="adminProxyGuestPhone" placeholder="Guest phone number" required>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Place Booking as Admin</button>
                 </form>
+                <div id="adminProxyBookingResult" class="issue-list" style="margin-top: 12px;">
+                    <p>No proxy booking submitted yet.</p>
+                </div>
             </div>
             <div class="form-box">
                 <h3><i class="fa-solid fa-users"></i> User List</h3>
@@ -919,24 +914,28 @@
                     <p>No user data loaded.</p>
                 </div>
             </div>
+            <div class="form-box" style="text-align:center;">
+                <h3><i class="fa-solid fa-chart-bar"></i> Revenue Stats & Issue Management</h3>
+                <p class="hint-text">Manage issue priority and resolution workflow.</p>
+                <button type="button" onclick="showAdminStats()" class="btn-primary" style="margin-top:8px;">
+                    <i class="fa-solid fa-arrow-right"></i> Go to Admin Issues
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- 管理员统计 -->
     <section id="adminStatsSection" class="admin-stats-section">
-        <h2><i class="fa-solid fa-chart-bar"></i> Weekly Revenue Stats</h2>
-        <div class="stats-table" id="statsTable">
-            <!-- 统计表格JS -->
-        </div>
+        <h2><i class="fa-solid fa-list-check"></i> Issue Review & Resolution</h2>
         <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review (F14)</h3>
+            <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
             <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
             <div id="adminIssueReviewList" class="issue-list">
                 <p>No issues loaded.</p>
             </div>
         </div>
         <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues (F15)</h3>
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues</h3>
             <form id="adminResolveIssueForm" style="margin-bottom: 12px;">
                 <label for="resolveIssueId">Issue ID to resolve</label>
                 <input type="number" id="resolveIssueId" min="1" placeholder="Enter issue ID" required>
@@ -957,8 +956,12 @@
     </div>
 </footer>
 
-<script src="js/utils.js"></script>
-<script src="js/script.js?v=20260423"></script>
+<script src="js/modules/core.js?v=20260429b"></script>
+<script src="js/modules/ui-and-render.js?v=20260429b"></script>
+<script src="js/modules/auth-booking-flow.js?v=20260429b"></script>
+<script src="js/modules/booking-actions-and-detail.js?v=20260429b"></script>
+<script src="js/modules/admin.js?v=20260429b"></script>
+<script src="js/modules/navigation-and-init.js?v=20260429b"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </body>
 </html>

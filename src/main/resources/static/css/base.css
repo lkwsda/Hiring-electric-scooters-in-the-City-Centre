@@ -118,24 +118,253 @@ main.container section {
     background: #eef5ff;
 }
 
+/* ===== 夜间 / 高对比度模式 ===== */
 body.high-contrast {
-    background: #000;
-    color: #fff;
+    background:
+        radial-gradient(circle at 20% 25%, rgba(30, 60, 100, 0.55) 0%, transparent 45%),
+        radial-gradient(circle at 80% 75%, rgba(80, 30, 120, 0.45) 0%, transparent 45%),
+        linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+    background-attachment: fixed;
+    color: #e6edf3;
 }
 
+/* 区块背景 */
 body.high-contrast section,
 body.high-contrast .form-box,
 body.high-contrast .feature-card,
-body.high-contrast .scooter-card {
-    background: #111 !important;
-    color: #fff !important;
-    border-color: #ffcc00 !important;
+body.high-contrast .scooter-card,
+body.high-contrast .stat-card,
+body.high-contrast .booking-summary-card,
+body.high-contrast .info-card,
+body.high-contrast .action-card,
+body.high-contrast .return-card,
+body.high-contrast .summary-box,
+body.high-contrast .rental-info,
+body.high-contrast .payment-form,
+body.high-contrast .issue-item,
+body.high-contrast .booking-item,
+body.high-contrast .scooter-detail-section,
+body.high-contrast .package-card {
+    background: #161b22 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6) !important;
 }
 
-body.high-contrast a,
-body.high-contrast button {
-    color: #000;
+/* header / footer */
+body.high-contrast header {
+    background: linear-gradient(135deg, #010409 0%, #0d1117 100%) !important;
+    border-bottom: 1px solid #30363d;
 }
+
+body.high-contrast footer {
+    background: #010409 !important;
+    color: #8b949e !important;
+    border-top: 1px solid #30363d;
+}
+
+/* 区块顶部强调色 */
+body.high-contrast .scooter-section,
+body.high-contrast .rent-section,
+body.high-contrast .auth-section,
+body.high-contrast .admin-login-section,
+body.high-contrast .home-section,
+body.high-contrast .payment-section,
+body.high-contrast .success-section,
+body.high-contrast .my-bookings-section,
+body.high-contrast .admin-config-section,
+body.high-contrast .admin-stats-section,
+body.high-contrast .scooter-detail-section,
+body.high-contrast .return-section,
+body.high-contrast .feedback-section,
+body.high-contrast .analytics-section {
+    background: #161b22 !important;
+    border-top-color: #58a6ff !important;
+}
+
+/* 标题 */
+body.high-contrast section h2,
+body.high-contrast section h2 i,
+body.high-contrast h3,
+body.high-contrast h4 {
+    color: #cdd9e5 !important;
+}
+
+/* 链接 */
+body.high-contrast a {
+    color: #58a6ff !important;
+}
+
+body.high-contrast a:hover {
+    color: #79c0ff !important;
+}
+
+/* 导航链接 */
+body.high-contrast header nav a {
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast header nav a:hover {
+    background: rgba(88, 166, 255, 0.15) !important;
+    color: #58a6ff !important;
+}
+
+/* 按钮主色 */
+body.high-contrast button,
+body.high-contrast .btn-primary {
+    background: #1f6feb !important;
+    color: #ffffff !important;
+    border-color: #388bfd !important;
+}
+
+body.high-contrast button:hover,
+body.high-contrast .btn-primary:hover {
+    background: #388bfd !important;
+}
+
+body.high-contrast .btn-secondary {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .btn-secondary:hover {
+    background: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+/* 无障碍工具栏 */
+body.high-contrast .accessibility-toolbar button {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+/* 表单控件 */
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast input::placeholder,
+body.high-contrast textarea::placeholder {
+    color: #6e7681 !important;
+}
+
+body.high-contrast input:focus,
+body.high-contrast select:focus,
+body.high-contrast textarea:focus {
+    border-color: #58a6ff !important;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25) !important;
+    outline: none;
+}
+
+/* label / p 正文 */
+body.high-contrast label,
+body.high-contrast p,
+body.high-contrast li,
+body.high-contrast span,
+body.high-contrast td,
+body.high-contrast th {
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .hint-text,
+body.high-contrast .section-subtitle {
+    color: #8b949e !important;
+}
+
+body.high-contrast .feedback-section .section-header,
+body.high-contrast .analytics-section .section-header {
+    background: linear-gradient(135deg, #161b22 0%, #1c2430 100%) !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .feedback-section .section-header h2,
+body.high-contrast .analytics-section .section-header h2,
+body.high-contrast .feedback-section .section-header h2 i,
+body.high-contrast .analytics-section .section-header h2 i {
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .analytics-access-note {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .analytics-access-note i {
+    color: #58a6ff !important;
+}
+
+/* 状态颜色 —— 保持可读性 */
+body.high-contrast .status-available  { color: #3fb950 !important; }
+body.high-contrast .status-rented     { color: #d29922 !important; }
+body.high-contrast .status-maintenance{ color: #f85149 !important; }
+body.high-contrast .battery-good      { color: #3fb950 !important; }
+body.high-contrast .battery-medium    { color: #d29922 !important; }
+body.high-contrast .battery-low       { color: #f85149 !important; }
+
+/* 统计卡片数字 */
+body.high-contrast .stat-number,
+body.high-contrast .summary-number {
+    color: #58a6ff !important;
+}
+
+/* 横幅 */
+body.high-contrast .welcome-banner {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%) !important;
+    border: 1px solid #30363d !important;
+    color: #e6edf3 !important;
+}
+
+/* 支付明细 */
+body.high-contrast .breakdown-item { border-color: #30363d !important; }
+body.high-contrast .breakdown-item.total { border-top-color: #58a6ff !important; }
+body.high-contrast #discountRow     { color: #3fb950 !important; }
+
+/* 问题列表 */
+body.high-contrast .issue-item {
+    border-left-color: #30363d !important;
+}
+
+body.high-contrast .issue-item.issue-high {
+    border-left-color: #f85149 !important;
+    background: rgba(248, 81, 73, 0.08) !important;
+}
+
+/* 表格 */
+body.high-contrast table { border-color: #30363d !important; }
+body.high-contrast th    { background: #21262d !important; color: #cdd9e5 !important; }
+body.high-contrast tr:nth-child(even) { background: #1c2128 !important; }
+
+/* 同步横幅 */
+body.high-contrast .sync-status {
+    background: #21262d !important;
+    color: #8b949e !important;
+    border-color: #30363d !important;
+}
+
+/* 成功页 */
+body.high-contrast .success-icon i {
+    color: #3fb950 !important;
+}
+
+/* 滚动条 */
+body.high-contrast ::-webkit-scrollbar { background: #0d1117; }
+body.high-contrast ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+
+/* 模态框 */
+body.high-contrast .modal-content {
+    background: #161b22 !important;
+    color: #e6edf3 !important;
+    border: 1px solid #30363d !important;
+}
+
+/* ===== 夜间模式结束 ===== */
 
 #scooterMap {
     width: 100%;
