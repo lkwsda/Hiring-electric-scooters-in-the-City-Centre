@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.dao.UserDAO;
 import org.example.model.User;
+import org.example.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,14 +58,17 @@ public class UserServiceImpl implements UserService {
         return userDAO.getAllUsers();
     }
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
-    public User login(String username, String password) {
+    public String login(String username, String password) {
         User user = userDAO.getUserByName(username);
 
         // 验证：账号，密码
         if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
-            System.out.println("[Service] Secure Login success! Role: " + user.getRole());
-            return user;
+            // 登录成功，返回 jwt
+            return jwtUtil.generateToken(username);
         }
 
         throw new RuntimeException("Login Failed: Incorrect username or password!");

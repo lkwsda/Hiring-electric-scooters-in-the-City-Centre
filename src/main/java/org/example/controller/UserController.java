@@ -13,7 +13,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    private UserService userService; // 服务员呼叫经理
+    private UserService userService;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -27,7 +27,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public User login(@RequestParam String username, @RequestParam String password) {
-        return userService.login(username, password);
+    public java.util.Map<String, String> login(@RequestParam String username, @RequestParam String password) {
+        String token = userService.login(username, password);
+
+        // 用 Map 返回，Spring 会自动把它变成完美的 JSON 格式
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("token", token);
+        return response;
     }
 }

@@ -76,9 +76,6 @@ CREATE TABLE IF NOT EXISTS issues (
    DATA SEEDING (初始化预置数据)
    ============================================================== */
 
--- 预置管理员账号
-INSERT INTO users (username, email, password_hash, role)
-VALUES ('admin', 'admin@scooter.com', '$2a$10$P2dldIKmaeJmRYTZlmeCVeXRZpdDX8TKgUzKsaPuRzH5l8z9EAs0C', 'admin');
 
 -- 预置默认套餐
 INSERT INTO packages (package_type, price, description,discount_percent) VALUES
