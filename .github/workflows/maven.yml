@@ -1,12 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: CI Test Suite
 
 permissions:
   contents: write
@@ -18,8 +10,44 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  # ── Java Unit Tests (H2 in-memory, no MySQL needed) ──────────────
+  java-tests:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Java unit tests
+        run: mvn test
+
+  # ── JS Unit Tests (Jest + jsdom, no browser needed) ──────────────
+  js-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run JS unit tests
+        run: npm test
+
+  # ── API + E2E Integration Tests (MySQL, running app, Chrome) ─────
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [java-tests, js-tests]
     services:
       mysql:
         image: mysql:8.0
@@ -33,63 +61,83 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
-          
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
-        
-    - name: Build with Maven
-      run: mvn clean package -DskipTests
+      - uses: actions/checkout@v4
 
-    - name: Initialize Database Tables
-      run: |
-        sudo apt-get install -y mysql-client
-        mysql -h127.0.0.1 -P3306 -uroot -p123123 scooter_sharing < sql/init_db.sql
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Start Spring Boot Application
-      run: |
-        nohup java -jar target/ScooterRentalSystem-1.0-SNAPSHOT.jar > app.log 2>&1 &
-        until nc -z localhost 8080; do
-          echo "Waiting for Spring Boot to start..."
-          sleep 10
-        done
-        echo "Spring Boot started successfully!"
+      - name: Build JAR (skip unit tests, already ran)
+        run: mvn clean package -DskipTests
 
-    - name: Show SpringBoot Log
-      run: cat app.log
+      - name: Initialize MySQL database
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql -h127.0.0.1 -P3306 -uroot -p123123 scooter_sharing < sql/init_db.sql
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Start Spring Boot application
+        run: |
+          nohup java -jar target/*.jar > app.log 2>&1 &
+          until nc -z localhost 8080; do
+            echo "Waiting for Spring Boot to start..."
+            sleep 10
+          done
+          echo "Spring Boot started successfully!"
 
-    - name: Install pytest requests
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest requests pytest-html pytest-md
+      - name: Show application log
+        run: cat app.log
 
-    - name: Create the folder
-      run: mkdir -p test/reports_md
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Run pytest API Tests
-      run: |
-        TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-        python test/test_run_all_api.py 2>&1 | tee test/reports_md/api_test_report_${TIMESTAMP}.md
+      - name: Install Python test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest requests pytest-html pytest-md selenium
 
-    - name: Upload Test Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: api-test-report
-        path: test/reports_md/
+      # ── API Tests ────────────────────────────────────────────────
+      - name: Create report directory
+        run: mkdir -p test/reports_md
 
-    - name: Upload JAR artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-build
-        path: target/*.jar
+      - name: Run API automation tests
+        run: |
+          python test/test_run_all_api.py 2>&1 | \
+            tee test/reports_md/api_test_report.md
+
+      # ── E2E UI Tests ─────────────────────────────────────────────
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run E2E UI tests
+        run: |
+          python test/test_run_all_e2e.py 2>&1 | \
+            tee test/reports_md/e2e_test_report.md
+
+      # ── Upload artifacts ─────────────────────────────────────────
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: test/reports_md/
+
+      - name: Upload application log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-log
+          path: app.log
+
+      - name: Upload JAR artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: target/*.jar
