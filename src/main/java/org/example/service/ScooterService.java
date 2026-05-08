@@ -11,7 +11,7 @@ public interface ScooterService {
     // Manager: lookup scooter by ID
     Scooter getScooterById(int id);
     // Manager: decommission a scooter
-    void deleteScooter(int id);
+    int deleteScooter(int id);
 
     // Map display: available scooter locations
     List<ScooterLocationDTO> getAvailableScooterLocations();

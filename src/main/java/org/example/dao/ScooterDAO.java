@@ -21,7 +21,7 @@ public interface ScooterDAO {
     void updateScooter(Scooter scooter);
 
     // 5. Delete a scooter
-    void deleteScooter(int id);
+    int deleteScooter(int id);
 
     // 6. Update scooter status (available, rented, maintenance)
     void updateScooterStatus(int id,String status);

@@ -62,7 +62,7 @@ def main() -> int:
             [sys.executable, str(script_path)],
             cwd=str(project_root),
             text=True,
-            encoding="utf-8",
+            encoding="gbk", errors="replace",
             capture_output=True,
             check=False,
         )

@@ -14,7 +14,15 @@ import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
 REGISTER_URL = f"{BASE_URL}/api/users/register"
+LOGIN_URL = f"{BASE_URL}/api/users/login"
 USERS_URL = f"{BASE_URL}/api/users"
+
+
+def _auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
 
 
 def create_user_for_listing() -> str:
@@ -35,7 +43,7 @@ def create_user_for_listing() -> str:
 
 def test_user_list_status_ok() -> None:
     """用例1：用户列表接口应返回 200。"""
-    response = requests.get(USERS_URL, timeout=10)
+    response = requests.get(USERS_URL, timeout=10, headers=_auth_headers())
     assert response.status_code == 200, (
         f"期望状态码 200，实际 {response.status_code}，响应：{response.text}"
     )
@@ -43,7 +51,7 @@ def test_user_list_status_ok() -> None:
 
 def test_user_list_is_json_array() -> None:
     """用例2：响应体应为 JSON 数组。"""
-    response = requests.get(USERS_URL, timeout=10)
+    response = requests.get(USERS_URL, timeout=10, headers=_auth_headers())
     assert response.status_code == 200, (
         f"状态码异常，无法继续校验结构，实际 {response.status_code}，响应：{response.text}"
     )
@@ -56,7 +64,7 @@ def test_user_list_contains_new_user() -> None:
     """用例3：创建用户后，列表中应可查询到该用户。"""
     username = create_user_for_listing()
 
-    response = requests.get(USERS_URL, timeout=10)
+    response = requests.get(USERS_URL, timeout=10, headers=_auth_headers())
     assert response.status_code == 200, (
         f"获取用户列表失败，状态码 {response.status_code}，响应：{response.text}"
     )

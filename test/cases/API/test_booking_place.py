@@ -25,8 +25,15 @@ CANCEL_BOOKING_URL = f"{BASE_URL}/api/bookings/cancel"
 CREATED_SCOOTER_IDS: Set[int] = set()
 
 
-def create_test_user_and_get_id() -> int:
-    """创建测试用户并通过登录拿到 userId。"""
+def _admin_auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
+
+
+def create_test_user_and_get_id() -> tuple[int, dict]:
+    """创建测试用户并通过登录拿到 userId 和 auth headers，返回 (user_id, headers)。"""
     suffix = str(int(time.time() * 1000))
     username = f"booking_user_{suffix}"
     password = "123456"
@@ -54,14 +61,16 @@ def create_test_user_and_get_id() -> int:
     )
 
     user_data = login_response.json()
-    user_id = user_data.get("id")
+    user_id = user_data.get("user", {}).get("id")
+    token = user_data.get("token")
     assert isinstance(user_id, int), f"前置失败：登录响应未返回有效 userId，响应：{user_data}"
-    return user_id
+    headers = {"Authorization": f"Bearer {token}"}
+    return user_id, headers
 
 
 def ensure_available_scooter_id() -> int:
     """确保存在一辆可用车辆，返回 scooterId。"""
-    response = requests.get(SCOOTERS_URL, timeout=10)
+    response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
         f"前置失败：获取车辆列表失败，状态码 {response.status_code}，响应：{response.text}"
     )
@@ -83,12 +92,12 @@ def ensure_available_scooter_id() -> int:
         "status": "available",
     }
 
-    add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10)
+    add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10, headers=_admin_auth_headers())
     assert add_response.status_code == 200, (
         f"前置失败：新增车辆失败，状态码 {add_response.status_code}，响应：{add_response.text}"
     )
 
-    refresh_response = requests.get(SCOOTERS_URL, timeout=10)
+    refresh_response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert refresh_response.status_code == 200, (
         f"前置失败：刷新车辆列表失败，状态码 {refresh_response.status_code}，响应：{refresh_response.text}"
     )
@@ -109,7 +118,7 @@ def ensure_available_scooter_id() -> int:
 
 def ensure_package_id() -> int:
     """确保存在一个可用套餐，返回 packageId。"""
-    response = requests.get(PACKAGES_URL, timeout=10)
+    response = requests.get(PACKAGES_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
         f"前置失败：获取套餐列表失败，状态码 {response.status_code}，响应：{response.text}"
     )
@@ -125,28 +134,29 @@ def ensure_package_id() -> int:
     return package_id
 
 
-def place_booking(user_id: int, scooter_id: int, package_id: int) -> requests.Response:
+def place_booking(user_id: int, scooter_id: int, package_id: int, headers: dict) -> requests.Response:
     """调用下单接口并返回响应。"""
     payload = {
         "userId": user_id,
         "scooterId": scooter_id,
         "packageId": package_id,
     }
-    return requests.post(PLACE_BOOKING_URL, json=payload, timeout=10)
+    return requests.post(PLACE_BOOKING_URL, json=payload, timeout=10, headers=headers)
 
 
-def cleanup_booking_if_possible(booking_id: int | None) -> None:
+def cleanup_booking_if_possible(booking_id: int | None, headers: dict | None = None) -> None:
     """测试收尾：尽量取消订单，避免占用车辆影响其他用例。"""
     if not isinstance(booking_id, int):
         return
-    requests.post(f"{CANCEL_BOOKING_URL}/{booking_id}", timeout=10)
+    h = headers if headers else _admin_auth_headers()
+    requests.post(f"{CANCEL_BOOKING_URL}/{booking_id}", timeout=10, headers=h)
 
 
 def cleanup_created_scooters() -> None:
     """收尾：尽力删除本轮自动新增且未被业务长期引用的车辆。"""
     for scooter_id in list(CREATED_SCOOTER_IDS):
         try:
-            response = requests.delete(f"{SCOOTERS_URL}/{scooter_id}", timeout=10)
+            response = requests.delete(f"{SCOOTERS_URL}/{scooter_id}", timeout=10, headers=_admin_auth_headers())
             if response.status_code in (200, 404):
                 CREATED_SCOOTER_IDS.discard(scooter_id)
             else:
@@ -159,13 +169,13 @@ def cleanup_created_scooters() -> None:
 
 def test_place_booking_success() -> None:
     """用例1:下单成功,返回 pending 订单。"""
-    user_id = create_test_user_and_get_id()
+    user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
     booking_id: int | None = None
     try:
-        response = place_booking(user_id, scooter_id, package_id)
+        response = place_booking(user_id, scooter_id, package_id, headers)
         assert response.status_code == 200, (
             f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
         )
@@ -182,16 +192,16 @@ def test_place_booking_success() -> None:
         assert total_cost is not None, f"下单成功后应返回 totalCost，响应：{data}"
         assert float(total_cost) > 0, f"totalCost 应大于 0，响应：{data}"
     finally:
-        cleanup_booking_if_possible(booking_id)
+        cleanup_booking_if_possible(booking_id, headers)
 
 
 def test_place_booking_invalid_scooter_should_fail() -> None:
     """用例2:车辆不存在,下单应失败。"""
-    user_id = create_test_user_and_get_id()
+    user_id, headers = create_test_user_and_get_id()
     package_id = ensure_package_id()
     invalid_scooter_id = 99999999
 
-    response = place_booking(user_id, invalid_scooter_id, package_id)
+    response = place_booking(user_id, invalid_scooter_id, package_id, headers)
 
     assert response.status_code != 200, (
         f"车辆不存在不应下单成功，实际状态码 {response.status_code}，响应：{response.text}"
@@ -205,14 +215,14 @@ def test_place_booking_invalid_scooter_should_fail() -> None:
 
 def test_place_booking_same_scooter_twice_should_fail() -> None:
     """用例3：同一辆车连续下单，第二次应失败。"""
-    user_id_1 = create_test_user_and_get_id()
-    user_id_2 = create_test_user_and_get_id()
+    user_id_1, headers_1 = create_test_user_and_get_id()
+    user_id_2, headers_2 = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
 
     first_booking_id: int | None = None
     try:
-        first_response = place_booking(user_id_1, scooter_id, package_id)
+        first_response = place_booking(user_id_1, scooter_id, package_id, headers_1)
         assert first_response.status_code == 200, (
             f"第一次下单应成功，实际状态码 {first_response.status_code}，响应：{first_response.text}"
         )
@@ -221,7 +231,7 @@ def test_place_booking_same_scooter_twice_should_fail() -> None:
         first_booking_id = first_data.get("id")
         assert isinstance(first_booking_id, int), f"第一次下单未返回有效 booking id，响应：{first_data}"
 
-        second_response = place_booking(user_id_2, scooter_id, package_id)
+        second_response = place_booking(user_id_2, scooter_id, package_id, headers_2)
         assert second_response.status_code != 200, (
             f"同车二次下单不应成功，实际状态码 {second_response.status_code}，响应：{second_response.text}"
         )
@@ -230,7 +240,7 @@ def test_place_booking_same_scooter_twice_should_fail() -> None:
             f"错误信息不符合预期，响应：{second_response.text}"
         )
     finally:
-        cleanup_booking_if_possible(first_booking_id)
+        cleanup_booking_if_possible(first_booking_id, headers_1)
 
 
 def run_all_tests() -> None:

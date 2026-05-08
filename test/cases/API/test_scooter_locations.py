@@ -12,12 +12,20 @@ import requests
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
+LOGIN_URL = f"{BASE_URL}/api/users/login"
 SCOOTER_LOCATIONS_URL = f"{BASE_URL}/api/scooters/locations"
+
+
+def _auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
 
 
 def fetch_scooter_locations() -> requests.Response:
     """调用获取车辆位置接口，返回原始响应对象。"""
-    return requests.get(SCOOTER_LOCATIONS_URL, timeout=10)
+    return requests.get(SCOOTER_LOCATIONS_URL, timeout=10, headers=_auth_headers())
 
 
 def test_scooter_locations_status_ok() -> None:
@@ -94,6 +102,11 @@ def run_all_tests() -> None:
         except Exception as exc:  # noqa: BLE001
             failed += 1
             print(f"FAIL - {name} -> {exc}")
+
+    print("\n测试结束")
+    print(f"通过: {passed}")
+    print(f"失败: {failed}")
+
 
 if __name__ == '__main__':
     run_all_tests()

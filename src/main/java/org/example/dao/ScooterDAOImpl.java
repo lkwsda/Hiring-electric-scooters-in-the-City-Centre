@@ -3,7 +3,7 @@ package org.example.dao;
 import org.example.model.Scooter;
 import org.example.model.ScooterLocationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -62,10 +62,11 @@ public class ScooterDAOImpl implements ScooterDAO {
         return list.isEmpty() ? null : list.get(0);
     }
     @Override
-    public void deleteScooter(int id) {
+    public int deleteScooter(int id) {
         String sql = "DELETE FROM scooters WHERE id = ?";
-        jdbcTemplate.update(sql, id);
-        System.out.println("[DAO] Scooter deleted, ID: " + id);
+        int rows = jdbcTemplate.update(sql, id);
+        System.out.println("[DAO] Scooter deleted, ID: " + id + ", rows affected: " + rows);
+        return rows;
     }
 
     @Override

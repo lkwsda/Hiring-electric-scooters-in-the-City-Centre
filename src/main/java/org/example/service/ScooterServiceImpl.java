@@ -38,8 +38,8 @@ public class ScooterServiceImpl implements ScooterService {
     }
 
     @Override
-    public void deleteScooter(int id) {
-        scooterDAO.deleteScooter(id);
+    public int deleteScooter(int id) {
+        return scooterDAO.deleteScooter(id);
     }
 
     @Override

@@ -54,7 +54,7 @@ def test_login_success(username: str, password: str) -> None:
 
 	# 断言2：响应中应返回对应用户名
 	data = response.json()
-	assert data.get("username") == username, f"username 校验失败，响应：{data}"
+	assert data.get("user", {}).get("username") == username, f"username 校验失败，响应：{data}"
 
 
 def test_login_wrong_password(username: str) -> None:

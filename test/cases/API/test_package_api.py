@@ -15,18 +15,26 @@ import requests
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
+LOGIN_URL = f"{BASE_URL}/api/users/login"
 PACKAGES_URL = f"{BASE_URL}/api/packages"
 PACKAGE_UPDATE_URL = f"{BASE_URL}/api/packages/update"
 
 
+def _auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
+
+
 def get_all_packages() -> requests.Response:
     """调用查询套餐接口。"""
-    return requests.get(PACKAGES_URL, timeout=10)
+    return requests.get(PACKAGES_URL, timeout=10, headers=_auth_headers())
 
 
 def update_package_price(package_id: int, price: str) -> requests.Response:
     """调用更新套餐价格接口。"""
-    return requests.put(f"{PACKAGE_UPDATE_URL}/{package_id}", params={"price": price}, timeout=10)
+    return requests.put(f"{PACKAGE_UPDATE_URL}/{package_id}", params={"price": price}, timeout=10, headers=_auth_headers())
 
 
 def test_get_packages_success() -> None:

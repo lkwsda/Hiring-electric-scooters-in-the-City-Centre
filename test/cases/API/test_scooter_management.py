@@ -16,8 +16,16 @@ import requests
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
+LOGIN_URL = f"{BASE_URL}/api/users/login"
 ADD_SCOOTER_URL = f"{BASE_URL}/api/scooters/add"
 SCOOTER_ITEM_URL = f"{BASE_URL}/api/scooters"
+
+
+def _auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
 
 
 def add_scooter() -> int:
@@ -33,13 +41,13 @@ def add_scooter() -> int:
         "status": "available",
     }
 
-    add_response = requests.post(ADD_SCOOTER_URL, json=payload, timeout=10)
+    add_response = requests.post(ADD_SCOOTER_URL, json=payload, timeout=10, headers=_auth_headers())
     assert add_response.status_code == 200, (
         f"新增车辆失败，状态码 {add_response.status_code}，响应：{add_response.text}"
     )
 
     # 用列表接口反查刚新增车辆的 id
-    list_response = requests.get(SCOOTER_ITEM_URL, timeout=10)
+    list_response = requests.get(SCOOTER_ITEM_URL, timeout=10, headers=_auth_headers())
     assert list_response.status_code == 200, (
         f"查询车辆列表失败，状态码 {list_response.status_code}，响应：{list_response.text}"
     )
@@ -55,7 +63,7 @@ def delete_scooter_if_exists(scooter_id: int | None) -> None:
     """收尾删除车辆，避免测试数据堆积。"""
     if not isinstance(scooter_id, int):
         return
-    requests.delete(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+    requests.delete(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10, headers=_auth_headers())
 
 
 def test_add_scooter_success() -> None:
@@ -73,7 +81,7 @@ def test_get_scooter_by_id_success() -> None:
     scooter_id: int | None = None
     try:
         scooter_id = add_scooter()
-        response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+        response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10, headers=_auth_headers())
 
         assert response.status_code == 200, (
             f"按 id 查询车辆应成功，实际状态码 {response.status_code}，响应：{response.text}"
@@ -93,12 +101,12 @@ def test_delete_scooter_success() -> None:
     """用例3:删除车辆成功，删除后再查应失败。"""
     scooter_id = add_scooter()
 
-    delete_response = requests.delete(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+    delete_response = requests.delete(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10, headers=_auth_headers())
     assert delete_response.status_code == 200, (
         f"删除车辆应成功，实际状态码 {delete_response.status_code}，响应：{delete_response.text}"
     )
 
-    get_response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10)
+    get_response = requests.get(f"{SCOOTER_ITEM_URL}/{scooter_id}", timeout=10, headers=_auth_headers())
     assert get_response.status_code != 200, (
         f"删除后查询不应成功，实际状态码 {get_response.status_code}，响应：{get_response.text}"
     )

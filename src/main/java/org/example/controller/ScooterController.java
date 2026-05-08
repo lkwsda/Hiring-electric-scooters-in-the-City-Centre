@@ -30,15 +30,23 @@ public class ScooterController {
 
     // Lookup scooter by ID: GET http://localhost:8080/api/scooters/1
     @GetMapping("/{id}")
-    public Scooter getScooter(@PathVariable int id) {
-        return scooterService.getScooterById(id);
+    public org.springframework.http.ResponseEntity<Scooter> getScooter(@PathVariable int id) {
+        Scooter scooter = scooterService.getScooterById(id);
+        if (scooter == null) {
+            return org.springframework.http.ResponseEntity.status(404).body(null);
+        }
+        return org.springframework.http.ResponseEntity.ok(scooter);
     }
 
     // Admin: decommission a scooter
     @DeleteMapping("/{id}")
-    public String deleteScooter(@PathVariable int id) {
-        scooterService.deleteScooter(id);
-        return "Scooter ID " + id + " has been removed.";
+    public org.springframework.http.ResponseEntity<String> deleteScooter(@PathVariable int id) {
+        int rows = scooterService.deleteScooter(id);
+        if (rows == 0) {
+            return org.springframework.http.ResponseEntity.status(404)
+                    .body("Scooter ID " + id + " not found.");
+        }
+        return org.springframework.http.ResponseEntity.ok("Scooter ID " + id + " has been removed.");
     }
 
     // Map: get coordinates of all available scooters

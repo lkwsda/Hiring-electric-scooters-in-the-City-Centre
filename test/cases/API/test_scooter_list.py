@@ -12,12 +12,20 @@ import requests
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
+LOGIN_URL = f"{BASE_URL}/api/users/login"
 SCOOTER_LIST_URL = f"{BASE_URL}/api/scooters"
+
+
+def _auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
 
 
 def fetch_scooter_list() -> requests.Response:
     """调用车辆列表接口，返回原始响应对象。"""
-    return requests.get(SCOOTER_LIST_URL, timeout=10)
+    return requests.get(SCOOTER_LIST_URL, timeout=10, headers=_auth_headers())
 
 
 def test_scooter_list_status_ok() -> None:

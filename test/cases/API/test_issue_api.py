@@ -25,8 +25,15 @@ ISSUE_REPORT_URL = f"{BASE_URL}/api/issues/report"
 ISSUE_RESOLVE_URL = f"{BASE_URL}/api/issues/resolve"
 
 
-def create_test_user_and_get_id() -> int:
-    """创建测试用户并通过登录拿到 userId。"""
+def _admin_auth_headers():
+    r = requests.post(LOGIN_URL, params={"username": "admin", "password": "123456"}, timeout=10)
+    if r.status_code == 200:
+        return {"Authorization": f"Bearer {r.json()['token']}"}
+    return {}
+
+
+def create_test_user_and_get_id() -> tuple[int, dict]:
+    """创建测试用户并通过登录拿到 userId 和 auth headers，返回 (user_id, headers)。"""
     suffix = str(int(time.time() * 1000))
     username = f"issue_user_{suffix}"
     password = "123456"
@@ -57,14 +64,16 @@ def create_test_user_and_get_id() -> int:
     )
 
     data = login_response.json()
-    user_id = data.get("id")
+    user_id = data.get("user", {}).get("id")
+    token = data.get("token")
     assert isinstance(user_id, int), f"前置失败：登录响应未返回有效 userId，响应：{data}"
-    return user_id
+    headers = {"Authorization": f"Bearer {token}"}
+    return user_id, headers
 
 
 def ensure_scooter_id() -> int:
     """确保至少有一辆车，返回可用 scooterId。"""
-    response = requests.get(SCOOTERS_URL, timeout=10)
+    response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
         f"前置失败：获取车辆列表失败，状态码 {response.status_code}，响应：{response.text}"
     )
@@ -83,12 +92,12 @@ def ensure_scooter_id() -> int:
         "longitude": -1.5485,
         "status": "available",
     }
-    add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10)
+    add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10, headers=_admin_auth_headers())
     assert add_response.status_code == 200, (
         f"前置失败：新增车辆失败，状态码 {add_response.status_code}，响应：{add_response.text}"
     )
 
-    refresh_response = requests.get(SCOOTERS_URL, timeout=10)
+    refresh_response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert refresh_response.status_code == 200, (
         f"前置失败：刷新车辆列表失败，状态码 {refresh_response.status_code}，响应：{refresh_response.text}"
     )
@@ -101,7 +110,7 @@ def ensure_scooter_id() -> int:
     raise AssertionError("前置失败：未找到可用 scooterId")
 
 
-def report_issue(user_id: int, scooter_id: int, description: str, priority: str = "high") -> requests.Response:
+def report_issue(user_id: int, scooter_id: int, description: str, priority: str, headers: dict) -> requests.Response:
     """调用上报故障接口。"""
     payload = {
         "userId": user_id,
@@ -109,12 +118,12 @@ def report_issue(user_id: int, scooter_id: int, description: str, priority: str 
         "description": description,
         "priority": priority,
     }
-    return requests.post(ISSUE_REPORT_URL, json=payload, timeout=10)
+    return requests.post(ISSUE_REPORT_URL, json=payload, timeout=10, headers=headers)
 
 
 def find_issue_id_by_description(description: str) -> int:
     """根据唯一描述在列表中查找 issueId。"""
-    response = requests.get(ISSUES_URL, timeout=10)
+    response = requests.get(ISSUES_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
         f"查询故障列表失败，状态码 {response.status_code}，响应：{response.text}"
     )
@@ -131,11 +140,11 @@ def find_issue_id_by_description(description: str) -> int:
 
 def test_report_issue_success() -> None:
     """用例1：上报故障成功。"""
-    user_id = create_test_user_and_get_id()
+    user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_report_{int(time.time() * 1000)}"
 
-    response = report_issue(user_id, scooter_id, description, priority="high")
+    response = report_issue(user_id, scooter_id, description, priority="high", headers=headers)
     assert response.status_code == 200, (
         f"上报故障应成功，实际状态码 {response.status_code}，响应：{response.text}"
     )
@@ -146,16 +155,16 @@ def test_report_issue_success() -> None:
 
 def test_view_all_issues_contains_reported_issue() -> None:
     """用例2：上报后在故障列表里可查询到记录。"""
-    user_id = create_test_user_and_get_id()
+    user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_list_{int(time.time() * 1000)}"
 
-    report_response = report_issue(user_id, scooter_id, description, priority="medium")
+    report_response = report_issue(user_id, scooter_id, description, priority="medium", headers=headers)
     assert report_response.status_code == 200, (
         f"前置失败：上报故障失败，状态码 {report_response.status_code}，响应：{report_response.text}"
     )
 
-    response = requests.get(ISSUES_URL, timeout=10)
+    response = requests.get(ISSUES_URL, timeout=10, headers=headers)
     assert response.status_code == 200, (
         f"查询故障列表应成功，实际状态码 {response.status_code}，响应：{response.text}"
     )
@@ -174,23 +183,23 @@ def test_view_all_issues_contains_reported_issue() -> None:
 
 def test_resolve_issue_success() -> None:
     """用例3：管理员处理故障成功，状态应更新为 resolved。"""
-    user_id = create_test_user_and_get_id()
+    user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_resolve_{int(time.time() * 1000)}"
 
-    report_response = report_issue(user_id, scooter_id, description, priority="low")
+    report_response = report_issue(user_id, scooter_id, description, priority="low", headers=headers)
     assert report_response.status_code == 200, (
         f"前置失败：上报故障失败，状态码 {report_response.status_code}，响应：{report_response.text}"
     )
 
     issue_id = find_issue_id_by_description(description)
 
-    resolve_response = requests.put(f"{ISSUE_RESOLVE_URL}/{issue_id}", timeout=10)
+    resolve_response = requests.put(f"{ISSUE_RESOLVE_URL}/{issue_id}", timeout=10, headers=_admin_auth_headers())
     assert resolve_response.status_code == 200, (
         f"处理故障应成功，实际状态码 {resolve_response.status_code}，响应：{resolve_response.text}"
     )
 
-    list_response = requests.get(ISSUES_URL, timeout=10)
+    list_response = requests.get(ISSUES_URL, timeout=10, headers=_admin_auth_headers())
     assert list_response.status_code == 200, (
         f"处理后查询故障列表失败，状态码 {list_response.status_code}，响应：{list_response.text}"
     )

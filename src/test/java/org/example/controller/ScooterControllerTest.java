@@ -88,7 +88,7 @@ class ScooterControllerTest {
         @Test
         @DisplayName("should delete scooter")
         void shouldDeleteScooter() throws Exception {
-            doNothing().when(scooterService).deleteScooter(5);
+            doReturn(1).when(scooterService).deleteScooter(5);
 
             mockMvc.perform(delete("/api/scooters/5"))
                     .andExpect(status().isOk())
