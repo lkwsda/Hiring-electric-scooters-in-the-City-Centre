@@ -21,6 +21,7 @@ CREATE TABLE scooters (
     id INT AUTO_INCREMENT PRIMARY KEY,
     model VARCHAR(50) NOT NULL,
     battery_level INT DEFAULT 100,
+    image_url VARCHAR(255) DEFAULT 'default-scooter.png',
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     status VARCHAR(20) DEFAULT 'available',

@@ -147,6 +147,22 @@ function resolveScooterImage(model, rawImage) {
     return guessed || DEFAULT_SCOOTER_IMAGE;
 }
 
+function getAuthToken() {
+    return localStorage.getItem('authToken') || '';
+}
+
+async function apiFetch(url, options = {}) {
+    const token = getAuthToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (!headers['Content-Type'] && !headers['content-type'] && !(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+    return fetch(url, { ...options, headers });
+}
+
 function getCurrentUserId() {
     return currentUser && Number.isInteger(currentUser.id) ? currentUser.id : null;
 }
@@ -239,6 +255,7 @@ function getPendingCardForUsername(username) {
 function logoutByTimeout() {
     currentUser = null;
     adminLoggedIn = false;
+    localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('adminLoggedIn');
     updateNav();
@@ -313,7 +330,7 @@ function normalizeScooter(scooter) {
 
 async function loadPackages() {
     try {
-        const response = await fetch('/api/packages');
+        const response = await apiFetch('/api/packages');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load packages'));
@@ -333,7 +350,7 @@ async function loadPackages() {
 
 async function loadScooters() {
     try {
-        const response = await fetch('/api/scooters');
+        const response = await apiFetch('/api/scooters');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load scooters'));
@@ -349,7 +366,7 @@ async function loadScooters() {
 
 async function loadScooterLocations() {
     try {
-        const response = await fetch('/api/scooters/locations');
+        const response = await apiFetch('/api/scooters/locations');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load scooter locations'));
@@ -689,7 +706,7 @@ window.addEventListener('resize', () => {
 
 async function loadAdminUsers() {
     try {
-        const response = await fetch('/api/users');
+        const response = await apiFetch('/api/users');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load users'));

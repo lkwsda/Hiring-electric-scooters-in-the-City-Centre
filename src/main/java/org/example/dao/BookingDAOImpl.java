@@ -24,16 +24,20 @@ public class BookingDAOImpl implements BookingDAO {
         String sql = "INSERT INTO bookings (user_id, scooter_id, package_id, total_cost, status, guest_name, guest_phone) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
-        // 插入数据
+        // Insert data
         jdbcTemplate.update(connection -> {
-            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
             if (booking.getUserId() != null) {
                 ps.setInt(1, booking.getUserId());
             } else {
                 ps.setNull(1, java.sql.Types.INTEGER);
             }
             ps.setInt(2, booking.getScooterId());
-            ps.setInt(3, booking.getPackageId());
+            if (booking.getPackageId() != null) {
+                ps.setInt(3, booking.getPackageId());
+            } else {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            }
             ps.setBigDecimal(4, booking.getTotalCost());
             ps.setString(5, booking.getStatus());
             ps.setString(6, booking.getGuestName());
@@ -42,7 +46,7 @@ public class BookingDAOImpl implements BookingDAO {
         }, keyHolder);
 
 
-        // 把领回来的单号塞进 Booking 盒子里
+        // Set the generated booking ID back on the object
         if (keyHolder.getKey() != null) {
             booking.setId(keyHolder.getKey().intValue());
         }
@@ -128,7 +132,7 @@ public class BookingDAOImpl implements BookingDAO {
         }, sevenDaysAgo);
     }
 
-    // 计算某用户过去7天租车总时长（分钟）
+    // Calculate total rental minutes for a user in the past 7 days
     @Override
     public Integer getTotalRentalMinutesForUserLastWeek(int userId) {
         java.time.LocalDateTime sevenDaysAgo = java.time.LocalDateTime.now().minusDays(7);
@@ -149,7 +153,7 @@ public class BookingDAOImpl implements BookingDAO {
         return (int) totalMinutes;
     }
 
-    // 小票装载
+    // Booking row mapper
     private static class BookingRowMapper implements RowMapper<Booking> {
         @Override
         public Booking mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -158,7 +162,7 @@ public class BookingDAOImpl implements BookingDAO {
             b.setUserId(rs.getInt("user_id"));
             b.setScooterId(rs.getInt("scooter_id"));
             b.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
-            // end_time 可能为空，所以要小心处理
+            // end_time may be null, handle carefully
             if (rs.getTimestamp("end_time") != null) {
                 b.setEndTime(rs.getTimestamp("end_time").toLocalDateTime());
             }

@@ -40,7 +40,7 @@ public class PackageDAOImpl implements PackageDAO {
             p.setPackageType(rs.getString("package_type"));
             p.setPrice(rs.getBigDecimal("price"));
             p.setDescription(rs.getString("description"));
-            // 别忘了咱们 Sprint2 新加的折扣字段哦！
+            // Don't forget the Sprint2 discount field!
             p.setDiscountPercent(rs.getInt("discount_percent"));
             return p;
         }, id);

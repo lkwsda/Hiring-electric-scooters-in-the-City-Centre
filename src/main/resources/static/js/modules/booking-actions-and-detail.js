@@ -1,7 +1,7 @@
 ﻿// End rental
 async function endRental(bookingId) {
     try {
-        const response = await fetch(`/api/bookings/end/${bookingId}`, {
+        const response = await apiFetch(`/api/bookings/end/${bookingId}`, {
             method: 'POST'
         });
         const text = await response.text();
@@ -44,7 +44,7 @@ async function cancelBooking(bookingId) {
     const confirmed = confirm(`Cancel booking #${bookingId}?`);
     if (!confirmed) return;
     try {
-        const response = await fetch(`/api/bookings/cancel/${bookingId}`, {
+        const response = await apiFetch(`/api/bookings/cancel/${bookingId}`, {
             method: 'POST'
         });
         const text = await response.text();
@@ -75,7 +75,7 @@ async function extendRental(bookingId) {
         return;
     }
     try {
-        const response = await fetch(`/api/bookings/extend/${bookingId}?extraCost=${encodeURIComponent(extraCost)}`, {
+        const response = await apiFetch(`/api/bookings/extend/${bookingId}?extraCost=${encodeURIComponent(extraCost)}`, {
             method: 'POST'
         });
         const text = await response.text();

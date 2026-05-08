@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,6 +25,9 @@ class ScooterDAOImplTest {
 
     @Autowired
     private ScooterDAO scooterDAO;
+
+    @MockBean
+    private JavaMailSender javaMailSender;
 
     @Nested
     @DisplayName("getAllScootersList")
@@ -50,9 +55,9 @@ class ScooterDAOImplTest {
         }
 
         @Test
-        @DisplayName("should throw exception when ID does not exist")
-        void shouldThrowExceptionWhenIdDoesNotExist() {
-            assertThrows(Exception.class, () -> scooterDAO.getScooterById(9999));
+        @DisplayName("should return null when ID does not exist")
+        void shouldReturnNullWhenIdDoesNotExist() {
+            assertNull(scooterDAO.getScooterById(9999));
         }
     }
 
@@ -142,7 +147,7 @@ class ScooterDAOImplTest {
         @DisplayName("should remove scooter from database")
         void shouldRemoveScooter() {
             scooterDAO.deleteScooter(6);
-            assertThrows(Exception.class, () -> scooterDAO.getScooterById(6));
+            assertNull(scooterDAO.getScooterById(6));
             List<Scooter> scooters = scooterDAO.getAllScootersList();
             assertEquals(5, scooters.size());
         }

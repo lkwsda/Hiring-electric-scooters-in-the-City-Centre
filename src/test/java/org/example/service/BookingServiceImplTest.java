@@ -261,7 +261,7 @@ class BookingServiceImplTest {
             when(bookingDAO.getBookingStatusById(10)).thenReturn("pending");
             when(bookingDAO.getBookingById(10)).thenReturn(booking);
 
-            bookingService.processPayment(10, "4111111111111111");
+            bookingService.processPayment(10, "4111111111111111", 0.0);
 
             verify(bookingDAO).updateBookingStatus(10, "paid");
             verify(notificationService).sendBookingConfirmation(booking);
@@ -271,7 +271,7 @@ class BookingServiceImplTest {
         @DisplayName("should reject null card number")
         void shouldRejectNullCardNumber() {
             RuntimeException ex = assertThrows(RuntimeException.class,
-                    () -> bookingService.processPayment(10, null));
+                    () -> bookingService.processPayment(10, null, 0.0));
             assertTrue(ex.getMessage().contains("card number"));
             verify(bookingDAO, never()).updateBookingStatus(anyInt(), anyString());
         }
@@ -280,7 +280,7 @@ class BookingServiceImplTest {
         @DisplayName("should reject empty card number")
         void shouldRejectEmptyCardNumber() {
             RuntimeException ex = assertThrows(RuntimeException.class,
-                    () -> bookingService.processPayment(10, "   "));
+                    () -> bookingService.processPayment(10, "   ", 0.0));
             assertTrue(ex.getMessage().contains("card number"));
             verify(bookingDAO, never()).updateBookingStatus(anyInt(), anyString());
         }
@@ -288,10 +288,11 @@ class BookingServiceImplTest {
         @Test
         @DisplayName("should reject payment for non-pending booking")
         void shouldRejectNonPendingPayment() {
+            when(bookingDAO.getBookingById(10)).thenReturn(new Booking());
             when(bookingDAO.getBookingStatusById(10)).thenReturn("paid");
 
             RuntimeException ex = assertThrows(RuntimeException.class,
-                    () -> bookingService.processPayment(10, "4111111111111111"));
+                    () -> bookingService.processPayment(10, "4111111111111111", 0.0));
             assertTrue(ex.getMessage().contains("PENDING"));
             verify(bookingDAO, never()).updateBookingStatus(anyInt(), anyString());
         }
@@ -299,10 +300,11 @@ class BookingServiceImplTest {
         @Test
         @DisplayName("should reject payment for canceled booking")
         void shouldRejectCanceledPayment() {
+            when(bookingDAO.getBookingById(10)).thenReturn(new Booking());
             when(bookingDAO.getBookingStatusById(10)).thenReturn("canceled");
 
             RuntimeException ex = assertThrows(RuntimeException.class,
-                    () -> bookingService.processPayment(10, "4111111111111111"));
+                    () -> bookingService.processPayment(10, "4111111111111111", 0.0));
             assertTrue(ex.getMessage().contains("PENDING"));
             verify(bookingDAO, never()).updateBookingStatus(anyInt(), anyString());
         }

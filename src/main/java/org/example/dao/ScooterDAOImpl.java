@@ -38,7 +38,7 @@ public class ScooterDAOImpl implements ScooterDAO {
         jdbcTemplate.update(sql, scooter.getBatteryLevel(), scooter.getStatus(), scooter.getId());
     }
 
-    // 把数据库里的零件装进 Scooter 盒子
+    // Map database row to Scooter object
     private static class ScooterRowMapper implements RowMapper<Scooter> {
         @Override
         public Scooter mapRow(ResultSet rs, int rowNum) throws SQLException {

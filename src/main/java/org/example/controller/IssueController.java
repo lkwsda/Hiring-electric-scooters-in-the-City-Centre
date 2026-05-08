@@ -14,7 +14,7 @@ public class IssueController {
     @Autowired
     private IssueService issueService;
 
-    // F13: 用户报告问题 User reports a new issue
+    // F13: User reports a new issue
     @PostMapping("/report")
     public String reportIssue(@RequestBody Issue issue) {
         issueService.reportIssue(issue);

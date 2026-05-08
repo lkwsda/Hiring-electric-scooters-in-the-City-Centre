@@ -19,7 +19,7 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public void reportIssue(Issue issue) {
-        // todo：报修后自动给管理员发邮件？
+        // TODO: Auto-email admin after issue reported?
         System.out.println("[Service] New issue reported for scooter #" + issue.getScooterId());
         issueDAO.addIssue(issue);
     }
@@ -29,14 +29,14 @@ public class IssueServiceImpl implements IssueService {
         return issueDAO.findAllIssues();
     }
 
-    //f14
+    // F14: Resolve issue
     @Override
-    @Transactional // 盖戳和贴条必须同时成功
+    @Transactional // Status update + scooter update must be atomic
     public void resolveIssue(int issueId) {
-        // 盖戳：把报修单状态改成 'resolved'
+        // Set issue status to 'resolved'
         issueDAO.updateStatus(issueId, "resolved");
 
-        // todo 贴条：把对应的滑板车状态改成 'maintenance'
+        // TODO: Set the corresponding scooter status to 'maintenance'
 
         System.out.println("[Service] Issue #" + issueId + " has been resolved.");
     }

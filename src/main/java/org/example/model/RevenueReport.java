@@ -2,14 +2,11 @@ package org.example.model;
 
 import java.math.BigDecimal;
 
-/**
- * A special report box for Admin statistics.
- * 管理员统计报告盒子
- */
+// Admin statistics report
 public class RevenueReport {
-    private String packageType;    // 套餐类型
-    private Integer totalOrders;   // 这周卖的单数
-    private BigDecimal totalRevenue; // 这周赚钱
+    private String packageType;    // Package type
+    private Integer totalOrders;   // Order count this week
+    private BigDecimal totalRevenue; // Revenue this week
 
     public String getPackageType() { return packageType; }
     public void setPackageType(String packageType) { this.packageType = packageType; }

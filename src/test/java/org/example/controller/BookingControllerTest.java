@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookingController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("BookingController Unit Tests")
 class BookingControllerTest {
 
@@ -68,7 +70,7 @@ class BookingControllerTest {
         @Test
         @DisplayName("should process payment")
         void shouldProcessPayment() throws Exception {
-            doNothing().when(bookingService).processPayment(eq(10), eq("4111111111111111"));
+            doNothing().when(bookingService).processPayment(eq(10), eq("4111111111111111"), anyDouble());
 
             mockMvc.perform(post("/api/bookings/pay/10")
                             .param("cardNumber", "4111111111111111"))
@@ -186,7 +188,7 @@ class BookingControllerTest {
         @DisplayName("should return 400 when pay service throws")
         void shouldReturn400OnPayError() throws Exception {
             doThrow(new RuntimeException("Error: You can only pay for PENDING orders."))
-                    .when(bookingService).processPayment(eq(10), anyString());
+                    .when(bookingService).processPayment(eq(10), anyString(), anyDouble());
 
             mockMvc.perform(post("/api/bookings/pay/10")
                             .param("cardNumber", "4111111111111111"))

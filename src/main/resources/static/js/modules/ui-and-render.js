@@ -386,7 +386,7 @@ async function renderBookings() {
         return;
     }
     try {
-        const response = await fetch(`/api/bookings/user/${userId}`);
+        const response = await apiFetch(`/api/bookings/user/${userId}`);
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load bookings'));
@@ -494,23 +494,30 @@ function changeBookingsPage(delta) {
     if (list) renderBookingsPage(bookings, list);
 }
 
-function getAutoDiscountRate() {
-    if (!currentUser) return 0;
-    const role = (currentUser.role || '').toLowerCase();
-    if (role === 'student') return 0.10;
-    if (role === 'senior') return 0.15;
-    if (role === 'high-frequency' || role === 'highfrequency') return 0.20;
-    return 0;
+let pendingDiscountRate = 0;
+
+async function getAutoDiscountRate() {
+    if (!currentUser || !currentUser.id) return 0;
+    try {
+        const response = await apiFetch(`/api/users/${currentUser.id}/discount-rate`);
+        if (!response.ok) return 0;
+        const data = await response.json();
+        pendingDiscountRate = data.rate || 0;
+        return pendingDiscountRate;
+    } catch (e) {
+        console.warn('Failed to fetch discount rate:', e);
+        return 0;
+    }
 }
 
-function updatePaymentBreakdown(packagePrice) {
+async function updatePaymentBreakdown(packagePrice) {
     const rentalCostNode = document.getElementById('rentalCost');
     const totalAmountNode = document.getElementById('totalAmount');
     const discountRow = document.getElementById('discountRow');
     const discountLabel = document.getElementById('discountLabel');
     const discountAmountNode = document.getElementById('discountAmount');
     const rentalCost = Number(packagePrice || 0);
-    const discountRate = getAutoDiscountRate();
+    const discountRate = await getAutoDiscountRate();
     const discountAmt = rentalCost * discountRate;
     const totalAmount = rentalCost - discountAmt + serviceFee;
     if (rentalCostNode) rentalCostNode.textContent = formatCurrency(rentalCost);
@@ -594,7 +601,7 @@ async function renderStats() {
     const table = document.getElementById('statsTable');
     table.innerHTML = '';
     try {
-        const response = await fetch('/api/bookings/admin/revenue');
+        const response = await apiFetch('/api/bookings/admin/revenue');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load stats'));
@@ -753,7 +760,7 @@ function goIssueReviewPage(page) {
 async function setIssuePriority(issueId, priority) {
     if (!issueId || !priority) return;
     try {
-        const response = await fetch(`/api/issues/${issueId}/priority?priority=${encodeURIComponent(priority)}`, {
+        const response = await apiFetch(`/api/issues/${issueId}/priority?priority=${encodeURIComponent(priority)}`, {
             method: 'PUT'
         });
         const text = await response.text();
@@ -772,7 +779,7 @@ async function setIssuePriority(issueId, priority) {
 
 async function loadIssues() {
     try {
-        const response = await fetch('/api/issues');
+        const response = await apiFetch('/api/issues');
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(getTextError(errorText, 'Failed to load issues'));
@@ -1056,8 +1063,8 @@ function drawLineChart(canvasId, labels, values) {
 async function renderRevenueCharts() {
     try {
         const [weeklyRes, dailyRes] = await Promise.all([
-            fetch('/api/bookings/admin/revenue'),
-            fetch('/api/bookings/admin/revenue/daily')
+            apiFetch('/api/bookings/admin/revenue'),
+            apiFetch('/api/bookings/admin/revenue/daily')
         ]);
 
         const weekly = weeklyRes.ok ? await weeklyRes.json() : [];

@@ -6,7 +6,7 @@ if (loginForm) {
         const username = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
         try {
-            const response = await fetch(`/api/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+            const response = await apiFetch(`/api/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
                 method: 'POST',
                 headers: { 'Accept': 'application/json' }
             });
@@ -14,9 +14,12 @@ if (loginForm) {
                 const errorText = await response.text();
                 throw new Error(getTextError(errorText, 'Invalid username or password'));
             }
-            const user = await response.json();
+            const data = await response.json();
+            const user = data.user;
+            const token = data.token;
             currentUser = user;
             adminLoggedIn = (user.role || '').toLowerCase() === 'admin';
+            localStorage.setItem('authToken', token);
             localStorage.setItem('currentUser', JSON.stringify(user));
             const backendCard = normalizeCardNumber(user.creditCardNumber || '');
             if (/^\d{16}$/.test(backendCard)) {
@@ -47,6 +50,7 @@ if (registerForm) {
         const username = document.getElementById('registerUsername').value.trim();
         const email = document.getElementById('registerEmail').value.trim();
         const phone = document.getElementById('registerPhone').value.trim();
+        const dob = document.getElementById('registerDob').value;
         const password = document.getElementById('registerPassword').value.trim();
         const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
         const cardNumber = document.getElementById('cardNumber').value.trim();
@@ -85,14 +89,14 @@ if (registerForm) {
         }
         
         try {
-            const response = await fetch(`/api/users/register?confirmPassword=${encodeURIComponent(confirmPassword)}`, {
+            const response = await apiFetch(`/api/users/register?confirmPassword=${encodeURIComponent(confirmPassword)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username,
                     email,
+                    dateOfBirth: dob || null,
                     passwordHash: password
-                    // Backend UserController has no phone/credit-card fields currently.
                 })
             });
             const text = await response.text();
@@ -137,7 +141,7 @@ if (issueForm) {
         const description = document.getElementById('issueDescription').value.trim();
 
         try {
-            const response = await fetch('/api/issues/report', {
+            const response = await apiFetch('/api/issues/report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -186,7 +190,7 @@ if (bookForm) {
             return;
         }
         try {
-            const response = await fetch('/api/bookings/place', {
+            const response = await apiFetch('/api/bookings/place', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -204,7 +208,7 @@ if (bookForm) {
             const booking = await response.json();
             localStorage.setItem('pendingBookingId', String(booking.id));
             document.getElementById('bookingDetails').textContent = `Scooter ${scooterId}, Package ID ${packageId}`;
-            updatePaymentBreakdown(packagePrice);
+            await updatePaymentBreakdown(packagePrice);
             refreshSavedCardOptions();
             showSection('paymentSection');
         } catch (error) {
@@ -256,7 +260,7 @@ if (paymentForm) {
             return;
         }
         try {
-            const response = await fetch(`/api/bookings/pay/${bookingId}?cardNumber=${encodeURIComponent(cardNumber)}`, {
+            const response = await apiFetch(`/api/bookings/pay/${bookingId}?cardNumber=${encodeURIComponent(cardNumber)}&discountRate=${pendingDiscountRate}`, {
                 method: 'POST',
                 headers: { 'Accept': 'text/plain' }
             });

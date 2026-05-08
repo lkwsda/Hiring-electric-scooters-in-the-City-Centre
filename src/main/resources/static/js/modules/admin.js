@@ -30,7 +30,7 @@ if (scooterConfigForm) {
         }
 
         try {
-            const response = await fetch('/api/scooters/add', {
+            const response = await apiFetch('/api/scooters/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -127,7 +127,7 @@ if (adminGetScooterBtn) {
             return;
         }
         try {
-            const response = await fetch(`/api/scooters/${scooterId}`);
+            const response = await apiFetch(`/api/scooters/${scooterId}`);
             const text = await response.text();
             if (!response.ok) {
                 throw new Error(getTextError(text, 'Failed to query scooter.'));
@@ -160,7 +160,7 @@ if (adminDeleteScooterBtn) {
         const confirmed = confirm(`Delete scooter #${scooterId}? This cannot be undone.`);
         if (!confirmed) return;
         try {
-            const response = await fetch(`/api/scooters/${scooterId}`, {
+            const response = await apiFetch(`/api/scooters/${scooterId}`, {
                 method: 'DELETE'
             });
             const text = await response.text();
@@ -255,7 +255,7 @@ if (adminPlaceBookingForm) {
         }
 
         try {
-            const response = await fetch('/api/bookings/admin/place', {
+            const response = await apiFetch('/api/bookings/admin/place', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -371,7 +371,7 @@ if (pricingConfigForm) {
 
         try {
             for (const update of updates) {
-                const response = await fetch(`/api/packages/update/${update.id}?price=${encodeURIComponent(update.price)}`, {
+                const response = await apiFetch(`/api/packages/update/${update.id}?price=${encodeURIComponent(update.price)}`, {
                     method: 'PUT'
                 });
                 if (!response.ok) {

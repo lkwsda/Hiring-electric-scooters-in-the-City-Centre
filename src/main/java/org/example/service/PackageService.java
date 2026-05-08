@@ -4,9 +4,9 @@ import java.util.List;
 import java.math.BigDecimal;
 
 public interface PackageService {
-    // 列出所有套餐
+    // List all packages
     List<RentalPackage> listAllPackages();
 
-    // 更新价格
+    // Update package price
     void updatePackagePrice(int id, BigDecimal price);
 }

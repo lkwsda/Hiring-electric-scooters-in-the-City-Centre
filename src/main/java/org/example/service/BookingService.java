@@ -7,30 +7,30 @@ import org.example.model.DailyRevenueReport;
 import java.util.List;
 
 public interface BookingService {
-    // F05: Place a new booking 下单预订
+    // F05: Place a new booking
     void placeBooking(Booking booking);
-    // F08: Get all bookings for a specific user 查看用户的预订历史
+    // F08: Get all bookings for a specific user
     List<Booking> getUserBookings(int userId);
 
-    // F09: Cancel a booking 取消预订
+    // F09: Cancel a booking
     void cancelBooking(int bookingId);
 
     //f7
-    void processPayment(int bookingId, String cardNumber);
+    void processPayment(int bookingId, String cardNumber, double discountRate);
 
-    // 审核
+    // Admin: weekly revenue audit
     List<RevenueReport> getWeeklyRevenue();
 
-    // F10: End a trip 结束行程
+    // F10: End a trip
     void endTrip(int bookingId);
 
-    // f11 延长订单
+    // F11: Extend booking
     void extendBooking(int bookingId, java.math.BigDecimal extraCost);
 
-    // f09 管理员代理
+    // F09: Admin proxy booking
     void adminProxyBooking(Booking booking);
 
-    // f20
+    // F20: Daily revenue report
     List<DailyRevenueReport> getDailyRevenue();
 
 }

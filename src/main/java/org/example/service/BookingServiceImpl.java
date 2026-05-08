@@ -16,10 +16,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class BookingServiceImpl implements BookingService {
 
     @Autowired
-    private BookingDAO bookingDAO; // 呼叫订单
+    private BookingDAO bookingDAO; // DAO for bookings
 
     @Autowired
-    private ScooterDAO scooterDAO; // 呼叫车辆
+    private ScooterDAO scooterDAO; // DAO for scooters
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -28,25 +28,25 @@ public class BookingServiceImpl implements BookingService {
     private PackageDAO packageDAO;
 
     @Autowired
-    private NotificationService notificationService; // ：呼叫邮差
+    private NotificationService notificationService; // Notification service
 
     @Autowired
     private UserDAO userDAO;
 
     @Override
-    @Transactional // 这个标签下面的动作要么全成功，要么全失败
+    @Transactional // All-or-nothing transaction
     public void placeBooking(Booking booking) {
-        // 下单时必须告诉我买的哪个套餐
+        // Booking must include a packageId
         if (booking.getPackageId() == null) {
             throw new RuntimeException("Validation Failed: packageId is required to place a booking!");
         }
-        // 检查车子存不存在
+        // Check if scooter exists
         Scooter scooter = scooterDAO.getScooterById(booking.getScooterId());
         if (scooter == null) {
             throw new RuntimeException("Validation Failed: Scooter ID " + booking.getScooterId() + " not found!");
         }
 
-        // 检查车子是不是“空闲”状态 (available)
+        // Check if scooter is "available"
         if (!"available".equals(scooter.getStatus())) {
             throw new RuntimeException("Validation Failed: Scooter is already in use or under maintenance!");
         }
@@ -59,29 +59,29 @@ public class BookingServiceImpl implements BookingService {
 
         BigDecimal discountRate = BigDecimal.ONE;
 
-        // 时长折扣检查：每周超过 8 小时（480分钟）
+        // Duration discount: if weekly usage exceeds 8 hours (480 minutes)
         int weeklyMinutes = bookingDAO.getTotalRentalMinutesForUserLastWeek(user.getId());
         if (weeklyMinutes > 480) {
-            discountRate = new BigDecimal("0.8"); // 8折
+            discountRate = new BigDecimal("0.8"); // 20% off
             System.out.println("[Service] Frequent User Discount (20%) applied!");
         }
 
-        // 身份折扣检查：学生（<22岁）或老人（>60岁）
+        // Identity discount: student (<22) or senior (>60)
         if (user.getDateOfBirth() != null) {
             int age = java.time.Period.between(user.getDateOfBirth(), java.time.LocalDate.now()).getYears();
             if ((age < 22 || age > 60) && discountRate.compareTo(new BigDecimal("0.9")) > 0) {
-                // 如果折扣更低，就不覆盖了
-                discountRate = new BigDecimal("0.9"); // 9折
+                // Don't override if a better discount is already applied
+                discountRate = new BigDecimal("0.9"); // 10% off
                 System.out.println("[Service] Student/Senior Discount (10%) applied!");
             }
         }
 
-        // 计算折扣后价格
+        // Calculate final price after discount
         BigDecimal finalPrice = originalPrice.multiply(discountRate);
 
-        // 把算好的价格塞回 booking 里
+        // Set the calculated price back on the booking
         booking.setTotalCost(finalPrice);
-        // 逻辑通过，创建订单
+        // Logic passed, create the booking
         booking.setStatus("pending");
         bookingDAO.createBooking(booking);
 
@@ -92,11 +92,11 @@ public class BookingServiceImpl implements BookingService {
         System.out.println("[Service] F10 Sync: Scooter #" + scooter.getId() + " status is now RENTED.");
     }
 
-    // f10结束订单
+    // F10: End trip
     @Override
     @Transactional
     public void endTrip(int bookingId) {
-        // 找到订单关联的车 ID
+        // Find scooter ID linked to this booking
         String findScooterSql = "SELECT scooter_id FROM bookings WHERE id = ?";
         Integer scooterId = jdbcTemplate.queryForObject(findScooterSql, Integer.class, bookingId);
 
@@ -104,35 +104,32 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Error: Trip not found!");
         }
 
-        // 结束时把车变回 'available'
+        // Set scooter back to 'available'
         scooterDAO.updateScooterStatus(scooterId, "available");
 
-        // 记录结束时间
+        // Record end time
         bookingDAO.updateEndTime(bookingId, java.time.LocalDateTime.now());
 
-        // 改为结束订单
+        // Set booking status to 'finished'
         bookingDAO.updateBookingStatus(bookingId, "finished");
 
         System.out.println("[Service] F10 Sync: Trip #" + bookingId + " has FINISHED.");
     }
 
-    /**
-     * F06: Simulated Payment Process
-     * 模拟支付流程
-     */
+    // F06: Simulated payment process
     @Override
     @Transactional
-    public void processPayment(int bookingId, String cardNumber) {
+    public void processPayment(int bookingId, String cardNumber, double discountRate) {
 
-        // 判空必须放在最前面，最省力
+        // Null check first
         if (cardNumber == null || cardNumber.trim().isEmpty()) {
             throw new RuntimeException("Validation Failed: Please enter card number!");
         }
 
-        // 查订单
+        // Look up the booking
         Booking booking = bookingDAO.getBookingById(bookingId);
 
-        // 如果订单有关联用户，咱们查查是不是 admin；如果没有关联用户（代下单），咱们默认它是管理员操作的
+        // Check if user is admin; proxy bookings default to admin privilege
         boolean isAdmin = false;
         if (booking.getUserId() != null) {
             User user = userDAO.getUserById(booking.getUserId());
@@ -140,7 +137,7 @@ public class BookingServiceImpl implements BookingService {
                 isAdmin = true;
             }
         } else {
-            // F09 逻辑：既然是代下单，那付款时咱们也给它“免检”特权
+            // F09: proxy bookings get payment validation bypass
             isAdmin = true;
         }
 
@@ -150,20 +147,27 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 查查订单现在的状态
-        // Get current status from database
+        // Check current booking status
         String currentStatus = bookingDAO.getBookingStatusById(bookingId);
 
-        // 只有 PENDING 的订单才能付钱
-        // 如果是 canceled 或者已经是 paid 了的，不能继续
+        // Only PENDING bookings can be paid
         if (!"pending".equals(currentStatus)) {
             throw new RuntimeException("Error: You can only pay for PENDING orders. Current status is: " + currentStatus);
         }
 
-        // 状态对，才更新为已支付
+        // Apply discount to total cost
+        if (discountRate > 0) {
+            java.math.BigDecimal originalCost = booking.getTotalCost();
+            java.math.BigDecimal discountFactor = java.math.BigDecimal.valueOf(1 - discountRate);
+            java.math.BigDecimal discountedCost = originalCost.multiply(discountFactor);
+            bookingDAO.updateBookingCost(bookingId, discountedCost);
+            System.out.println("[Service] Discount applied: " + (discountRate * 100) + "%, new total: " + discountedCost);
+        }
+
+        // Status is correct, update to 'paid'
         bookingDAO.updateBookingStatus(bookingId, "paid");
 
-        // F07 ：支付成功后，立刻发邮件
+        // F07: Send confirmation email after payment
         Booking paidBooking = bookingDAO.getBookingById(bookingId);
         notificationService.sendBookingConfirmation(paidBooking);
         System.out.println("[Service] Payment successful and confirmation email sent (simulated).");
@@ -177,7 +181,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional // 事务保证：改订单和放回车子必须同时成功！
+    @Transactional // Ensure status change + scooter release happen atomically
     public void cancelBooking(int bookingId) {
         String checkStatusSql = "SELECT status, scooter_id FROM bookings WHERE id = ?";
 
@@ -191,16 +195,16 @@ public class BookingServiceImpl implements BookingService {
         String currentStatus = (String) bookingData.get("status");
         Integer scooterId = (Integer) bookingData.get("scooter_id");
 
-        // 如果订单已经是 canceled 了，就直接报错
+        // If already canceled, don't allow re-canceling
         // If already canceled, don't allow re-canceling to avoid releasing scooters wrongly.
         if ("canceled".equals(currentStatus)) {
             throw new RuntimeException("Validation Failed: This booking is already canceled!");
         }
 
-        // 2. 只有是 'paid' 状态的订单，才执行取消动作
+        // Update status to 'canceled'
         bookingDAO.updateBookingStatus(bookingId, "canceled");
 
-        // 3. 释放滑板车
+        // Release the scooter
         scooterDAO.updateScooterStatus(scooterId, "available");
 
         System.out.println("[Service] Order #" + bookingId + " canceled. Scooter #" + scooterId + " is released.");
@@ -212,84 +216,84 @@ public class BookingServiceImpl implements BookingService {
         return bookingDAO.getWeeklyRevenueReport();
     }
 
-    // f11 延长订单
+    // F11: Extend booking
     @Override
     @Transactional
     public void extendBooking(int bookingId, java.math.BigDecimal extraCost) {
-        // 翻出旧账单
+        // Fetch old booking
         Booking oldBooking = bookingDAO.getBookingById(bookingId);
 
         if (oldBooking == null) {
             throw new RuntimeException("Error: Booking not found!");
         }
 
-        // 已经付过钱（paid）的订单才能延长
+        // Only PAID bookings can be extended
         if (!"paid".equals(oldBooking.getStatus())) {
             throw new RuntimeException("Error: Only ACTIVE (paid) bookings can be extended!");
         }
 
-        // 计算新总价：旧价格 + 额外价格
+        // Calculate new total: old price + extra cost
         // Calculate new total cost using BigDecimal.add()
         java.math.BigDecimal newTotal = oldBooking.getTotalCost().add(extraCost);
 
-        // 更新数据库
+        // Update database
         bookingDAO.updateBookingCost(bookingId, newTotal);
 
         System.out.println("[Service] F11: Booking #" + bookingId + " extended. New total: " + newTotal);
     }
 
-    // f09
+    // F09: Admin proxy booking
     @Override
     @Transactional
     public void adminProxyBooking(Booking booking) {
-        // 填写guest姓名或电话
+        // Guest name is required
         if (booking.getGuestName() == null || booking.getGuestName().isEmpty()) {
             throw new RuntimeException("Admin Error: Guest name is required for proxy booking!");
         }
 
-        // 检查车子
+        // Check scooter availability
         Scooter scooter = scooterDAO.getScooterById(booking.getScooterId());
         if (scooter == null || !"available".equals(scooter.getStatus())) {
             throw new RuntimeException("Scooter not available!");
         }
 
-        // 设置状态为已支付（管理员代下，已经付过钱）
+        // Set status to 'paid' (admin proxy booking, already paid)
         booking.setStatus("paid");
         bookingDAO.createBooking(booking);
 
-        // 锁车
+        // Lock the scooter
         scooterDAO.updateScooterStatus(scooter.getId(), "rented");
 
         System.out.println("[Service] Admin successfully booked for: " + booking.getGuestName());
     }
 
-    // f20
+    // F20: Daily revenue report
     @Override
     public List<DailyRevenueReport> getDailyRevenue() {
-        // / 从DAO拿到有收入的那些天的数据
+        // Fetch daily revenue data from DAO
         List<DailyRevenueReport> rawReport = bookingDAO.getDailyRevenueReport();
-        // 用Map把数据存起来，方便快速查找
+        // Store in a map for fast lookup
         java.util.Map<String, java.math.BigDecimal> revenueMap = new java.util.HashMap<>();
         for (DailyRevenueReport report : rawReport) {
             revenueMap.put(report.getDate(), report.getDailyTotal());
         }
-        // 创建有 7 天记录的报表
+        // Create a 7-day report
         List<DailyRevenueReport> finalReport = new java.util.ArrayList<>();
         java.time.LocalDate today = java.time.LocalDate.now();
 
         for (int i = 0; i < 7; i++) {
             java.time.LocalDate date = today.minusDays(i);
             String dateString = date.toString();
-            // 检查这一天有没有收入
+            // Check if there's revenue for this day
             java.math.BigDecimal revenue = revenueMap.getOrDefault(dateString, java.math.BigDecimal.ZERO);
 
-            // 创建一个记录放进最终报表
+            // Create a record in the final report
             DailyRevenueReport daily = new DailyRevenueReport();
             daily.setDate(dateString);
             daily.setDailyTotal(revenue);
             finalReport.add(daily);
         }
-        // 按日期排序传输
+        // Sort by date
         finalReport.sort(java.util.Comparator.comparing(DailyRevenueReport::getDate));
 
         return finalReport;

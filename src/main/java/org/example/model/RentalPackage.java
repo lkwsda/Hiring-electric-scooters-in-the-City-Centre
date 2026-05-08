@@ -2,16 +2,13 @@ package org.example.model;
 
 import java.math.BigDecimal;
 
-/**
- * Entity class for 'packages' table.
- * 租赁套餐实体类 - 对应数据库里的 packages 表
- */
+// Entity class for 'packages' table
 public class RentalPackage {
     private Integer id;
     private String packageType;
     private BigDecimal price;
     private String description;
-    // 折扣
+    // Discount
     private Integer discountPercent;
 
 

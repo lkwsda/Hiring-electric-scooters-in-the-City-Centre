@@ -4,10 +4,10 @@ import org.example.model.Issue;
 import java.util.List;
 
 public interface IssueDAO {
-    // 1. 提交一张新的报修单
+    // 1. Submit a new issue report
     void addIssue(Issue issue);
 
-    // 2. 查看所有的报修单
+    // 2. View all issue reports
     List<Issue> findAllIssues();
 
     // F14

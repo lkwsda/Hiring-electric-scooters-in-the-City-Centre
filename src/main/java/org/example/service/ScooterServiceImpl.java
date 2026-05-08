@@ -15,14 +15,14 @@ public class ScooterServiceImpl implements ScooterService {
 
     @Override
     public void addScooter(Scooter scooter) {
-        // 获取新车电量
+        // Get battery level of new scooter
         Integer battery = scooter.getBatteryLevel();
-        // 如果不是满电，拒绝入库
+        // If not fully charged, reject
         if(battery < 100){
-            // 抛出异常‘没充满电’
+            // Throw validation error
             throw new RuntimeException("Validation Failed: New scooters must have 100% battery level");
         }
-        // 通过验证，让DAO存储数据
+        // Validation passed, let DAO persist the data
         System.out.println("[Service] Logic passed. Calling DAO to save scooter: " + scooter.getModel());
         scooterDAO.addScooter(scooter);
     }

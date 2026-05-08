@@ -6,29 +6,26 @@ import org.example.model.User;
 
 import java.util.List;
 
-/**
- * ScooterDAO Interface
- * 滑板车数据访问接口 - 定义了对车辆的增删改查动作。
- */
+// ScooterDAO Interface - defines CRUD operations for scooters
 public interface ScooterDAO {
-    // 1. Add a new scooter (进货新车)
+    // 1. Add a new scooter
     void addScooter(Scooter scooter);
 
-    // 2. Get a scooter by ID (通过ID找车)
+    // 2. Get a scooter by ID
     Scooter getScooterById(int id);
 
-    // 3. Get all scooters (查看车库所有车)
-    List<Scooter> getAllScootersList(); // 修正版
+    // 3. Get all scooters
+    List<Scooter> getAllScootersList();
 
-    // 4. Update scooter info (修改车辆信息，比如电量、状态)
+    // 4. Update scooter info (battery, status, etc.)
     void updateScooter(Scooter scooter);
 
-    // 5. Delete a scooter (车辆报废)
+    // 5. Delete a scooter
     void deleteScooter(int id);
 
-    // 6. Update scooter status (修改车辆状态，比如正在使用、空闲、故障)
+    // 6. Update scooter status (available, rented, maintenance)
     void updateScooterStatus(int id,String status);
 
-    // 在地图上显示所有可用车
+    // Show all available scooters on map
     List<ScooterLocationDTO> findAvailableScootersForMap();
 }

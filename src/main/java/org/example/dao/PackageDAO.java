@@ -5,11 +5,11 @@ import org.example.model.RentalPackage;
 
 
 public interface PackageDAO {
-    // 查找所有套餐
+    // Find all packages
     List<RentalPackage> findAll();
-    // 修改套餐价格
+    // Update package price
     void updatePrice(int id, BigDecimal newPrice);
-    // 根据 ID 查询套餐
+    // Find package by ID
     RentalPackage findById(int id);
 //    void deletePackage(int id);
 //    void addPackage(RentalPackage rentalPackage);

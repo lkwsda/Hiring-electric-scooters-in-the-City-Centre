@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import org.example.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,8 +30,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public User login(@RequestParam String username, @RequestParam String password) {
-        // 直接返回 User 对象
-        return userService.login(username, password);
+    public Map<String, Object> login(@RequestParam String username, @RequestParam String password) {
+        User user = userService.login(username, password);
+        String token = JwtUtil.generateToken(user.getId(), user.getUsername(),
+                user.getRole() != null ? user.getRole() : "user");
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("token", token);
+        result.put("user", user);
+        return result;
+    }
+
+    @GetMapping("/{userId}/discount-rate")
+    public Map<String, Object> getDiscountRate(@PathVariable int userId) {
+        return userService.getDiscountRate(userId);
     }
 }

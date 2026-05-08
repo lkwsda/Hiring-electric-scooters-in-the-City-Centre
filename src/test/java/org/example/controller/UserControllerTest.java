@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("UserController Unit Tests")
 class UserControllerTest {
 
@@ -71,6 +73,7 @@ class UserControllerTest {
         @DisplayName("should return user on successful login")
         void shouldLoginSuccessfully() throws Exception {
             User user = new User();
+            user.setId(1);
             user.setUsername("testuser");
             when(userService.login("testuser", "password123")).thenReturn(user);
 
@@ -78,7 +81,8 @@ class UserControllerTest {
                             .param("username", "testuser")
                             .param("password", "password123"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.username").value("testuser"));
+                    .andExpect(jsonPath("$.user.username").value("testuser"))
+                    .andExpect(jsonPath("$.token").exists());
         }
     }
 

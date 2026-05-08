@@ -8,11 +8,11 @@ import java.util.List;
 public interface ScooterService {
     void addScooter(Scooter scooter);
     List<Scooter> getAllScootersList();
-    // 经理查车
+    // Manager: lookup scooter by ID
     Scooter getScooterById(int id);
-    // 经理报废车
+    // Manager: decommission a scooter
     void deleteScooter(int id);
 
-    // 地图显示
+    // Map display: available scooter locations
     List<ScooterLocationDTO> getAvailableScooterLocations();
 }

@@ -1,33 +1,46 @@
 package org.example;
 
+import org.example.config.JwtFilter;
 import org.example.dao.UserDAO;
 import org.example.model.User;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
-@SpringBootApplication // 这个会自动扫描dao、model等包
+@SpringBootApplication // Auto-scans dao, model, and other packages
 public class ScooterApplication {
     public static void main(String[] args) {
-        // “启动开关”
+        // Launch switch
         SpringApplication.run(ScooterApplication.class, args);
     }
 
-    // 自动创建admin
     @Bean
+    public FilterRegistrationBean<JwtFilter> jwtFilterRegistration() {
+        FilterRegistrationBean<JwtFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new JwtFilter());
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(1);
+        return registration;
+    }
+
+    // Auto-create admin account on startup (only when UserDAO is available)
+    @Bean
+    @ConditionalOnBean(UserDAO.class)
     public CommandLineRunner initAdmin(UserDAO userDAO) {
         return args -> {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-            // 检查：如果数据库里查不到 admin
+            // Check: if admin user doesn't exist in the database
             if (userDAO.getUserByName("admin") == null) {
                 User admin = new User();
                 admin.setUsername("admin");
                 admin.setEmail("admin@scooter.com");
-                // 设置初始密码 123456 并加密
+                // Set initial password '123456' and encrypt it
                 admin.setPasswordHash(encoder.encode("123456"));
                 admin.setRole("admin");
 

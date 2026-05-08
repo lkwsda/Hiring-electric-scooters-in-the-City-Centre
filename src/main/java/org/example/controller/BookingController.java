@@ -15,45 +15,43 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // 下单：POST http://localhost:8080/api/bookings/place
+    // Place booking: POST http://localhost:8080/api/bookings/place
     @PostMapping("/place")
     public Booking placeBooking(@RequestBody Booking booking) {
         bookingService.placeBooking(booking);
         return booking;
     }
 
-    // 查看订单：GET http://localhost:8080/api/bookings/user/1
+    // View bookings: GET http://localhost:8080/api/bookings/user/1
     @GetMapping("/user/{userId}")
     public List<Booking> getUserBookings(@PathVariable int userId) {
 
         return bookingService.getUserBookings(userId);
     }
 
-    /**
-     * F06: Payment Endpoint
-     * 支付接口：接收订单ID和卡号
-     */
+    // F06: Payment endpoint - receives booking ID and card number
     @PostMapping("/pay/{bookingId}")
-    public String pay(@PathVariable int bookingId, @RequestParam String cardNumber) {
-        bookingService.processPayment(bookingId, cardNumber);
+    public String pay(@PathVariable int bookingId, @RequestParam String cardNumber,
+                      @RequestParam(defaultValue = "0") double discountRate) {
+        bookingService.processPayment(bookingId, cardNumber, discountRate);
         return "Payment Success! Your scooter is ready to ride.";
     }
 
-    // 取消订单：POST http://localhost:8080/api/bookings/cancel/1
+    // Cancel booking: POST http://localhost:8080/api/bookings/cancel/1
     @PostMapping("/cancel/{bookingId}")
     public String cancelBooking(@PathVariable int bookingId) {
         bookingService.cancelBooking(bookingId);
         return "Booking canceled successfully. The scooter is now available for others!";
     }
 
-    // F19: 管理员查看周收入统计
+    // F19: Admin weekly revenue statistics
     // GET http://localhost:8080/api/bookings/admin/revenue
     @GetMapping("/admin/revenue")
     public List<RevenueReport> getWeeklyRevenue() {
         return bookingService.getWeeklyRevenue();
     }
 
-    // F10: 结束行程 http://localhost:8080/api/bookings/end/1
+    // F10: End trip http://localhost:8080/api/bookings/end/1
     @PostMapping("/end/{bookingId}")
     public String endTrip(@PathVariable int bookingId) {
         bookingService.endTrip(bookingId);
@@ -67,14 +65,14 @@ public class BookingController {
         return "Booking extended! Additional cost added: " + extraCost;
     }
 
-    // f09接口
+    // F09: Admin proxy booking
     @PostMapping("/admin/place")
     public Booking adminPlaceBooking(@RequestBody Booking booking) {
         bookingService.adminProxyBooking(booking);
         return booking;
     }
 
-    // f20每日收入
+    // F20: Daily revenue
     @GetMapping("/admin/revenue/daily")
     public List<DailyRevenueReport> getDailyRevenue() {
         return bookingService.getDailyRevenue();

@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -26,6 +28,9 @@ class BookingDAOImplTest {
 
     @Autowired
     private BookingDAO bookingDAO;
+
+    @MockBean
+    private JavaMailSender javaMailSender;
 
     private Booking createTestBooking() {
         Booking booking = new Booking();
