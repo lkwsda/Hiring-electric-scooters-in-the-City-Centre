@@ -156,7 +156,7 @@
 }
 
 .feature-card {
-    background: white;
+    background: linear-gradient(155deg, #ffffff 0%, #f6fbff 55%, #fff7f1 100%);
     padding: 30px 25px;
     border-radius: 12px;
     text-align: center;
@@ -187,6 +187,14 @@
     line-height: 1.6;
 }
 
+.features-grid .feature-card:nth-child(2n) {
+    background: linear-gradient(155deg, #ffffff 0%, #f4fff9 56%, #f2fbff 100%);
+}
+
+.features-grid .feature-card:nth-child(3n) {
+    background: linear-gradient(155deg, #ffffff 0%, #fff6fb 56%, #f5f7ff 100%);
+}
+
 /* 套餐区域 */
 .packages-section {
     margin-top: 40px;
@@ -196,6 +204,184 @@
     text-align: center;
     margin-bottom: 30px;
     color: #2c3e50;
+}
+
+.home-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-section::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(38, 132, 255, 0.18) 0%, rgba(38, 132, 255, 0.02) 72%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.home-section > * {
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,0.2) 48%, transparent 78%);
+    transform: translateX(-120%);
+    animation: homeSheen 4.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes homeSheen {
+    0%, 55% { transform: translateX(-120%); }
+    100% { transform: translateX(120%); }
+}
+
+.home-insight-strip,
+.home-scenarios,
+.home-testimonials {
+    margin-top: 34px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.94) 0%, rgba(245,250,255,0.96) 65%, rgba(255,252,248,0.93) 100%);
+    border: 1px solid rgba(180, 205, 240, 0.6);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+}
+
+.home-insight-strip {
+    background: linear-gradient(160deg, #ffffff 0%, #effcf7 58%, #f4fbff 100%);
+    border-color: rgba(154, 216, 193, 0.58);
+}
+
+.home-scenarios {
+    background: linear-gradient(160deg, #ffffff 0%, #fff8ee 62%, #fff2fb 100%);
+    border-color: rgba(242, 195, 144, 0.55);
+}
+
+.home-testimonials {
+    background: linear-gradient(160deg, #ffffff 0%, #f6f3ff 58%, #ffeef4 100%);
+    border-color: rgba(197, 176, 238, 0.56);
+}
+
+.home-insight-head {
+    margin-bottom: 12px;
+}
+
+.home-insight-head p {
+    color: #5c6f88;
+}
+
+.home-zone-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.zone-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #d4e4fa;
+    background: #ffffff;
+    color: #24456e;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.zone-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 14px rgba(41, 98, 175, 0.16);
+}
+
+.home-scenarios h2,
+.home-testimonials h2 {
+    margin-bottom: 16px;
+}
+
+.scenario-grid,
+.testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.scenario-card,
+.testimonial-card {
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #d7e6fb;
+    background: linear-gradient(160deg, #ffffff 0%, #f7fbff 80%, #fffdf9 100%);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+    transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.scenario-card:nth-child(2n),
+.testimonial-card:nth-child(2n) {
+    background: linear-gradient(160deg, #ffffff 0%, #fff8f0 80%, #fff3fb 100%);
+    border-color: #efdcc7;
+}
+
+.scenario-card:nth-child(3n),
+.testimonial-card:nth-child(3n) {
+    background: linear-gradient(160deg, #ffffff 0%, #f2fff8 78%, #f1f8ff 100%);
+    border-color: #cfe7df;
+}
+
+.scenario-card:hover,
+.testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 24px rgba(15, 23, 42, 0.12);
+}
+
+.scenario-card h3 {
+    margin-bottom: 8px;
+}
+
+.scenario-card p,
+.testimonial-card p {
+    color: #4c617f;
+    line-height: 1.55;
+    margin-bottom: 10px;
+}
+
+.scenario-card span {
+    display: inline-block;
+    font-weight: 700;
+    color: #1f4f85;
+    font-size: 0.9rem;
+}
+
+.scenario-card.morning {
+    border-top: 3px solid #f59e0b;
+}
+
+.scenario-card.business {
+    border-top: 3px solid #2563eb;
+}
+
+.scenario-card.leisure {
+    border-top: 3px solid #0f766e;
+}
+
+.testimonial-card footer {
+    color: #233a5b;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 /* 底部样式 */
@@ -217,4 +403,164 @@ footer p {
 footer i {
     margin-right: 5px;
     color: #3498db;
+}
+
+/* Home spotlight switch module */
+.home-spotlight {
+    margin-top: 34px;
+    border: 1.5px solid rgba(153, 187, 232, 0.78);
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.95) 0%, rgba(244,250,255,0.96) 60%, rgba(255,252,248,0.95) 100%);
+    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.09);
+    padding: 18px 20px 20px;
+}
+
+.home-spotlight-header,
+.home-spotlight-tabs,
+.home-spotlight-stage {
+    border: 1px solid rgba(188, 212, 241, 0.72);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.74);
+}
+
+.home-spotlight-header {
+    padding: 12px 14px;
+}
+
+.home-spotlight-tabs {
+    padding: 10px;
+}
+
+.home-spotlight-stage {
+    padding: 12px;
+    overflow: hidden;
+}
+
+.home-spotlight-header {
+    margin-bottom: 12px;
+}
+
+.home-spotlight-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.spotlight-tab {
+    border: 1px solid #b8d2f5;
+    background: #ffffff;
+    color: #335171;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.24s ease;
+}
+
+.spotlight-tab:hover {
+    transform: translateY(-1px);
+    border-color: #7fb3ff;
+}
+
+.spotlight-tab.is-active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    border-color: #1d4ed8;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+}
+
+.home-spotlight-stage {
+    min-height: 420px;
+    position: relative;
+}
+
+.home-spotlight-panel {
+    display: none;
+    opacity: 0;
+    transform: translateX(36px);
+}
+
+.home-spotlight-panel.is-active {
+    display: block;
+    animation: homeSpotlightPanelSlideIn 0.46s ease forwards;
+}
+
+.home-spotlight-panel.slide-forward {
+    animation-name: homeSpotlightPanelSlideIn;
+}
+
+.home-spotlight-panel.slide-backward {
+    animation-name: homeSpotlightPanelSlideInBack;
+}
+
+@keyframes homeSpotlightPanelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(44px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes homeSpotlightPanelSlideInBack {
+    from {
+        opacity: 0;
+        transform: translateX(-44px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.home-cell {
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid #c9def8;
+    background: linear-gradient(162deg, #ffffff 0%, #f4fbff 45%, #f9fff5 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.74);
+}
+
+.home-spotlight-panel:nth-of-type(2) .home-cell {
+    background: linear-gradient(162deg, #ffffff 0%, #fff9ef 45%, #fff1f8 100%);
+    border-color: #eed4c1;
+}
+
+.home-spotlight-panel:nth-of-type(3) .home-cell {
+    background: linear-gradient(162deg, #ffffff 0%, #f3f4ff 45%, #eef9ff 100%);
+    border-color: #d6d7f3;
+}
+
+.home-spotlight-panel:nth-of-type(4) .home-cell {
+    background: linear-gradient(162deg, #ffffff 0%, #f1fff6 45%, #f3fbff 100%);
+    border-color: #c8e7d8;
+}
+
+.home-cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #4f86ff 0%, #57d0c7 50%, #ffb26d 100%);
+    opacity: 0.85;
+}
+
+.home-spotlight .home-insight-strip,
+.home-spotlight .home-scenarios,
+.home-spotlight .home-testimonials {
+    margin-top: 0;
+}
+
+.home-spotlight .home-scenarios h3,
+.home-spotlight .home-testimonials h3,
+.home-spotlight .home-insight-strip h3,
+.home-spotlight .packages-section h3 {
+    margin-bottom: 14px;
+    color: #1f3554;
 }

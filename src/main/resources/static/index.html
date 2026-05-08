@@ -35,9 +35,11 @@
             <a href="#" id="scootersLink"><i class="fa-solid fa-list"></i> Available Scooters</a>
             <a href="#" id="myBookingsLink"><i class="fa-solid fa-calendar-check"></i> My Rentals</a>
             <a href="#" id="feedbackLink"><i class="fa-solid fa-triangle-exclamation"></i> Feedback</a>
-            <a href="#" id="analyticsLink"><i class="fa-solid fa-chart-line"></i> Analytics</a>
             <a href="#" id="returnLink" style="display:none;"><i class="fa-solid fa-undo"></i> Return Scooter</a>
             <a href="#" id="adminLink"><i class="fa-solid fa-cog"></i> Admin</a>
+            <!-- Debug admin link - only visible in development mode -->
+            <!-- <a href="#" id="debugAdminLink"><i class="fa-solid fa-bug"></i> Debug Admin</a> -->
+            <!-- end -->
             <a href="#" id="loginLink"><i class="fa-solid fa-sign-in-alt"></i> Login</a>
             <a href="#" id="logoutLink" style="display:none;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
         </nav>
@@ -125,18 +127,51 @@
             <h2><i class="fa-solid fa-triangle-exclamation"></i> Issue Feedback</h2>
             <p class="section-subtitle">Report scooter issues and help us keep the fleet safe.</p>
         </div>
+        <div class="feedback-highlight-row">
+            <div class="feedback-highlight-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <h4>Safety First</h4>
+                    <p>Critical issues are automatically highlighted for admin review.</p>
+                </div>
+            </div>
+            <div class="feedback-highlight-card">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <div>
+                    <h4>Fast Triage</h4>
+                    <p>Priority workflow helps maintenance teams react quickly.</p>
+                </div>
+            </div>
+            <div class="feedback-highlight-card">
+                <i class="fa-solid fa-wifi"></i>
+                <div>
+                    <h4>Live Sync</h4>
+                    <p>Issue list keeps syncing for multi-client monitoring.</p>
+                </div>
+            </div>
+        </div>
         <div class="form-container">
             <div class="form-box">
                 <h3><i class="fa-solid fa-pen-to-square"></i> Submit an Issue</h3>
                 <form id="issueForm">
                     <label for="issueScooterId">Scooter ID</label>
-                    <input type="number" id="issueScooterId" placeholder="Enter scooter ID" required>
+                    <input type="number" id="issueScooterId" min="1" step="1" placeholder="Enter scooter ID (e.g. 1024)" required>
+
+                    <div class="issue-form-tips">
+                        <span><i class="fa-solid fa-location-dot"></i> Mention where you found the issue</span>
+                        <span><i class="fa-solid fa-clock"></i> Add when it happened</span>
+                        <span><i class="fa-solid fa-wrench"></i> Describe visible symptoms clearly</span>
+                    </div>
 
                     <label for="issueDescription">Description</label>
-                    <textarea id="issueDescription" rows="4" placeholder="Describe the issue in detail" required></textarea>
+                    <textarea id="issueDescription" rows="5" minlength="12" maxlength="300" placeholder="Example: Rear brake feels loose near Library Station at 18:40, scooter vibrates when slowing down." required></textarea>
+                    <div class="issue-desc-meta">
+                        <small>12-300 characters. Clear details help us dispatch repair faster.</small>
+                        <span id="issueDescriptionCount">0/300</span>
+                    </div>
 
                     <p class="hint-text">Priority is reviewed and assigned by admin.</p>
-                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Issue Report</button>
                 </form>
             </div>
             <div class="form-box" id="adminOnlyHighPriorityBox" style="display:none;">
@@ -152,29 +187,14 @@
     <!-- 收入与折扣分析 -->
     <section id="analyticsSection" class="analytics-section">
         <div class="section-header">
-            <h2><i class="fa-solid fa-chart-line"></i> Analytics & Discounts</h2>
-            <p class="section-subtitle">Revenue insights. Payment discount is automatically applied at checkout based on user type.</p>
+            <h2><i class="fa-solid fa-chart-line"></i> Analytics Moved</h2>
+            <p class="section-subtitle">Analytics has been moved to Admin Dashboard. Please enter Admin and open Revenue Analytics.</p>
         </div>
-
-        <div class="sync-status" id="syncStatusBanner">
-            <i class="fa-solid fa-arrows-rotate"></i>
-            <span id="syncStatusText">Multi-client sync active. Last sync: not yet.</span>
-        </div>
-
-        <div class="analytics-access-note" id="analyticsRevenueNotice" style="display:none;">
-            <i class="fa-solid fa-circle-info"></i>
-            <span>Revenue charts are currently available to admin accounts only.</span>
-        </div>
-
-        <div class="analytics-grid" id="adminOnlyRevenueSection" style="display:none;">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-chart-column"></i> Weekly Revenue</h3>
-                <canvas id="weeklyRevenueChart" width="640" height="280" aria-label="Weekly revenue bar chart"></canvas>
-            </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend</h3>
-                <canvas id="dailyRevenueChart" width="640" height="280" aria-label="Daily revenue line chart"></canvas>
-            </div>
+        <div class="form-box">
+            <p class="hint-text">Use Admin Dashboard sidebar and switch to Revenue Analytics module.</p>
+            <button type="button" class="btn-primary" onclick="showSection('adminConfigSection'); showAdminPanel('adminPanelAnalytics');">
+                <i class="fa-solid fa-arrow-right"></i> Open Admin Analytics
+            </button>
         </div>
     </section>
 
@@ -205,11 +225,12 @@
                     <span id="homeTotalScooters">9</span>
                     <small>Total Fleet</small>
                 </div>
-                <div class="stat-item">
+                <!-- 去除in service统计，改为总车数 -->
+                <!-- <div class="stat-item">
                     <i class="fa-solid fa-tools"></i>
                     <span id="homeMaintenanceScooters">1</span>
                     <small>In Service</small>
-                </div>
+                </div> -->
                 <div class="stat-item">
                     <i class="fa-solid fa-dollar-sign"></i>
                     <span id="homeTotalRevenue">$0.00</span>
@@ -234,41 +255,131 @@
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>My Bookings</span>
                 </button>
+                <button onclick="showSection('feedbackSection')" class="action-btn primary">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Report Issue</span>
+                </button>
+                <!-- 去除return scooter入口
+                <button onclick="showSection('returnSection')" class="action-btn secondary">
+                    <i class="fa-solid fa-undo"></i>
+                    <span>Return Scooter</span>
+                </button> -->
+
+                <button onclick="showSection('scootersSection'); setScooterViewMode('map');" class="action-btn primary">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Live Scooter Map</span>
+                </button>
             </div>
         </div>
 
-        <!-- 特色功能 -->
-        <div class="features animate-on-scroll">
-            <h2><i class="fa-solid fa-star"></i> Why Choose Us?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fa-solid fa-bolt"></i>
-                    <h3>Electric & Eco-Friendly</h3>
-                    <p>Zero emissions, silent operation, and sustainable transportation for the city.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fa-solid fa-clock"></i>
-                    <h3>24/7 Availability</h3>
-                    <p>Rent anytime, anywhere in the city center with our extensive network.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fa-solid fa-shield-alt"></i>
-                    <h3>Safe & Secure</h3>
-                    <p>GPS tracking, secure payments, and verified user accounts for peace of mind.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fa-solid fa-wallet"></i>
-                    <h3>Affordable Pricing</h3>
-                    <p>Flexible packages starting from just $5 per hour. No hidden fees.</p>
-                </div>
+        <div class="home-spotlight animate-on-scroll" id="homeSpotlight">
+            <div class="home-spotlight-header">
+                <h2><i class="fa-solid fa-sparkles"></i> Home Spotlight</h2>
+                <p class="section-subtitle">Dynamic showcase that rotates key home modules automatically.</p>
             </div>
-        </div>
+            <div class="home-spotlight-tabs" id="homeSpotlightTabs" role="tablist" aria-label="Home spotlight modules">
+                <button type="button" class="spotlight-tab is-active" data-spotlight-target="spotlightFeatures" role="tab" aria-selected="true">Why Choose Us</button>
+                <button type="button" class="spotlight-tab" data-spotlight-target="spotlightCoverage" role="tab" aria-selected="false">City Coverage</button>
+                <button type="button" class="spotlight-tab" data-spotlight-target="spotlightScenarios" role="tab" aria-selected="false">Ride Scenarios</button>
+                <button type="button" class="spotlight-tab" data-spotlight-target="spotlightVoices" role="tab" aria-selected="false">Rider Voices</button>
+                <button type="button" class="spotlight-tab" data-spotlight-target="spotlightPackages" role="tab" aria-selected="false">Rental Packages</button>
+            </div>
+            <div class="home-spotlight-stage" id="homeSpotlightStage">
+                <section id="spotlightFeatures" class="home-spotlight-panel is-active" role="tabpanel">
+                    <div class="features">
+                        <h3><i class="fa-solid fa-star"></i> Why Choose Us?</h3>
+                        <div class="features-grid">
+                            <div class="feature-card home-cell">
+                                <i class="fa-solid fa-bolt"></i>
+                                <h3>Electric & Eco-Friendly</h3>
+                                <p>Zero emissions, silent operation, and sustainable transportation for the city.</p>
+                            </div>
+                            <div class="feature-card home-cell">
+                                <i class="fa-solid fa-clock"></i>
+                                <h3>24/7 Availability</h3>
+                                <p>Rent anytime, anywhere in the city center with our extensive network.</p>
+                            </div>
+                            <div class="feature-card home-cell">
+                                <i class="fa-solid fa-shield-alt"></i>
+                                <h3>Safe & Secure</h3>
+                                <p>GPS tracking, secure payments, and verified user accounts for peace of mind.</p>
+                            </div>
+                            <div class="feature-card home-cell">
+                                <i class="fa-solid fa-wallet"></i>
+                                <h3>Affordable Pricing</h3>
+                                <p>Flexible packages starting from just $5 per hour. No hidden fees.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-        <!-- 套餐展示 -->
-        <div class="packages-section">
-            <h2><i class="fa-solid fa-tags"></i> Rental Packages</h2>
-            <div class="package-grid" id="packageGrid">
-                <!-- 套餐JS -->
+                <section id="spotlightCoverage" class="home-spotlight-panel" role="tabpanel">
+                    <div class="home-insight-strip">
+                        <div class="home-insight-head">
+                            <h3><i class="fa-solid fa-map-location-dot"></i> City Coverage</h3>
+                            <p>Fast pickup points connected across core urban zones.</p>
+                        </div>
+                        <div class="home-zone-chips">
+                            <span class="zone-chip home-cell"><i class="fa-solid fa-building"></i> Downtown Plaza</span>
+                            <span class="zone-chip home-cell"><i class="fa-solid fa-tree-city"></i> Central Park</span>
+                            <span class="zone-chip home-cell"><i class="fa-solid fa-train-subway"></i> Main Station</span>
+                            <span class="zone-chip home-cell"><i class="fa-solid fa-landmark"></i> City Hall</span>
+                            <span class="zone-chip home-cell"><i class="fa-solid fa-shop"></i> Shopping Mile</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="spotlightScenarios" class="home-spotlight-panel" role="tabpanel">
+                    <div class="home-scenarios">
+                        <h3><i class="fa-solid fa-route"></i> Smart Ride Scenarios</h3>
+                        <div class="scenario-grid">
+                            <article class="scenario-card morning home-cell">
+                                <h3><i class="fa-solid fa-sun"></i> Morning Commute</h3>
+                                <p>Beat traffic with instant unlock and optimized short-distance routes.</p>
+                                <span>Avg. trip: 12 min</span>
+                            </article>
+                            <article class="scenario-card business home-cell">
+                                <h3><i class="fa-solid fa-briefcase"></i> Business Transfer</h3>
+                                <p>Reliable cross-district rides for meetings and office transfers.</p>
+                                <span>Avg. trip: 18 min</span>
+                            </article>
+                            <article class="scenario-card leisure home-cell">
+                                <h3><i class="fa-solid fa-camera"></i> Leisure Explore</h3>
+                                <p>Weekend route suggestions with battery-safe round-trip planning.</p>
+                                <span>Avg. trip: 26 min</span>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="spotlightVoices" class="home-spotlight-panel" role="tabpanel">
+                    <div class="home-testimonials">
+                        <h3><i class="fa-solid fa-comment-dots"></i> Rider Voices</h3>
+                        <div class="testimonial-grid">
+                            <blockquote class="testimonial-card home-cell">
+                                <p>"Smooth unlock, stable scooter quality, and simple checkout. Great for daily office runs."</p>
+                                <footer>Emily, Product Designer</footer>
+                            </blockquote>
+                            <blockquote class="testimonial-card home-cell">
+                                <p>"The map and battery indicators are surprisingly accurate. Planning return is much easier now."</p>
+                                <footer>Jack, Analyst</footer>
+                            </blockquote>
+                            <blockquote class="testimonial-card home-cell">
+                                <p>"Package pricing is clear, and customer support replies quickly when needed."</p>
+                                <footer>Sophia, Student</footer>
+                            </blockquote>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="spotlightPackages" class="home-spotlight-panel" role="tabpanel">
+                    <div class="packages-section">
+                        <h3><i class="fa-solid fa-tags"></i> Rental Packages</h3>
+                        <div class="package-grid" id="packageGrid">
+                            <!-- 套餐JS -->
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </section>
@@ -674,6 +785,30 @@
             <p class="section-subtitle">Complete your rental by returning the scooter safely</p>
         </div>
 
+        <div class="return-highlight-row">
+            <div class="return-highlight-card">
+                <i class="fa-solid fa-location-dot"></i>
+                <div>
+                    <h4>Geo Validation</h4>
+                    <p>System verifies return is in approved zones.</p>
+                </div>
+            </div>
+            <div class="return-highlight-card">
+                <i class="fa-solid fa-battery-three-quarters"></i>
+                <div>
+                    <h4>Battery Tracking</h4>
+                    <p>Usage delta is recorded for operational analytics.</p>
+                </div>
+            </div>
+            <div class="return-highlight-card">
+                <i class="fa-solid fa-file-circle-check"></i>
+                <div>
+                    <h4>Transparent Billing</h4>
+                    <p>Damage report and summary are logged before completion.</p>
+                </div>
+            </div>
+        </div>
+
         <div class="return-progress">
             <div class="progress-step active">
                 <div class="step-number">1</div>
@@ -842,107 +977,242 @@
 
     <!-- 管理员配置 -->
     <section id="adminConfigSection" class="admin-config-section">
-        <h2><i class="fa-solid fa-cog"></i> Admin Configuration</h2>
-        <div class="form-container">
-            <div class="form-box">
-                <h3><i class="fa-solid fa-motorcycle"></i> Scooter Information</h3>
-                <form id="scooterConfigForm">
-                    <label for="newScooterId">Scooter ID:</label>
-                    <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
-                    <label for="scooterStatus">Status:</label>
-                    <select id="scooterStatus" required>
-                        <option value="available">available</option>
-                        <option value="maintenance">maintenance</option>
-                        <option value="rented">rented</option>
-                    </select>
-                    <button type="submit"><i class="fa-solid fa-plus"></i> Add Scooter</button>
-                </form>
-            </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-trash"></i> Scooter Query / Remove</h3>
-                <form id="adminScooterOpsForm">
-                    <label for="adminScooterOpsId">Scooter ID:</label>
-                    <input type="number" id="adminScooterOpsId" placeholder="Enter scooter ID" required>
-                    <div class="form-actions">
-                        <button type="button" id="adminGetScooterBtn"><i class="fa-solid fa-magnifying-glass"></i> Query</button>
-                        <button type="button" id="adminDeleteScooterBtn"><i class="fa-solid fa-trash"></i> Delete</button>
-                    </div>
-                </form>
-                <div id="adminScooterOpsResult" class="issue-list">
-                    <p>No operation yet.</p>
-                </div>
-            </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-tags"></i> Package Pricing</h3>
-                <form id="pricingConfigForm">
-                    <label for="price1h">1 Hour Price:</label>
-                    <input type="number" id="price1h" step="0.01" required>
-                    <label for="price4h">4 Hours Price:</label>
-                    <input type="number" id="price4h" step="0.01" required>
-                    <label for="price1d">1 Day Price:</label>
-                    <input type="number" id="price1d" step="0.01" required>
-                    <label for="price1w">1 Week Price:</label>
-                    <input type="number" id="price1w" step="0.01" required>
-                    <button type="submit"><i class="fa-solid fa-save"></i> Save and Sync</button>
-                </form>
-            </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
-                <form id="adminPlaceBookingForm">
-                    <label for="adminProxyScooterId">Scooter ID</label>
-                    <select id="adminProxyScooterId" required>
-                        <option value="">Select available scooter</option>
-                    </select>
-                    <label for="adminProxyPackageId">Package ID</label>
-                    <select id="adminProxyPackageId" required>
-                        <option value="">Select package</option>
-                    </select>
-                    <label for="adminProxyGuestName">Guest Name</label>
-                    <input type="text" id="adminProxyGuestName" placeholder="Full name of guest" required>
-                    <label for="adminProxyGuestPhone">Guest Phone</label>
-                    <input type="text" id="adminProxyGuestPhone" placeholder="Guest phone number" required>
-                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Place Booking as Admin</button>
-                </form>
-                <div id="adminProxyBookingResult" class="issue-list" style="margin-top: 12px;">
-                    <p>No proxy booking submitted yet.</p>
-                </div>
-            </div>
-            <div class="form-box">
-                <h3><i class="fa-solid fa-users"></i> User List</h3>
-                <button type="button" id="refreshUsersBtn"><i class="fa-solid fa-rotate"></i> Refresh Users</button>
-                <div id="adminUsersList" class="issue-list" style="margin-top: 12px;">
-                    <p>No user data loaded.</p>
-                </div>
-            </div>
-            <div class="form-box" style="text-align:center;">
-                <h3><i class="fa-solid fa-chart-bar"></i> Revenue Stats & Issue Management</h3>
-                <p class="hint-text">Manage issue priority and resolution workflow.</p>
-                <button type="button" onclick="showAdminStats()" class="btn-primary" style="margin-top:8px;">
-                    <i class="fa-solid fa-arrow-right"></i> Go to Admin Issues
-                </button>
-            </div>
+        <div class="section-header">
+            <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
+            <p class="section-subtitle">Centralized control center for operations, analytics and issue workflow.</p>
         </div>
-    </section>
 
-    <!-- 管理员统计 -->
-    <section id="adminStatsSection" class="admin-stats-section">
-        <h2><i class="fa-solid fa-list-check"></i> Issue Review & Resolution</h2>
-        <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
-            <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
-            <div id="adminIssueReviewList" class="issue-list">
-                <p>No issues loaded.</p>
-            </div>
-        </div>
-        <div class="form-box" style="margin-top: 20px;">
-            <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues</h3>
-            <form id="adminResolveIssueForm" style="margin-bottom: 12px;">
-                <label for="resolveIssueId">Issue ID to resolve</label>
-                <input type="number" id="resolveIssueId" min="1" placeholder="Enter issue ID" required>
-                <button type="submit"><i class="fa-solid fa-check"></i> Resolve Issue</button>
-            </form>
-            <div id="adminHighPriorityIssues" class="issue-list">
-                <p>No data loaded.</p>
+        <div class="admin-dashboard-layout">
+            <aside class="admin-sidebar" aria-label="Admin module sidebar">
+                <button type="button" class="admin-sidebar-btn is-active" data-admin-panel="adminPanelOverview">
+                    <i class="fa-solid fa-gauge"></i> Overview
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelScooters">
+                    <i class="fa-solid fa-motorcycle"></i> Scooter Ops
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelPricing">
+                    <i class="fa-solid fa-tags"></i> Package Pricing
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelProxy">
+                    <i class="fa-solid fa-user-shield"></i> Proxy Booking
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelUsers">
+                    <i class="fa-solid fa-users"></i> User List
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelAnalytics">
+                    <i class="fa-solid fa-chart-line"></i> Revenue Analytics
+                </button>
+                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelIssues">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Issue Workflow
+                </button>
+                <div class="admin-sidebar-footer">
+                    <h5><i class="fa-solid fa-compass"></i> Operation Notes</h5>
+                    <p>Use Overview for KPI monitoring, then enter each module for operational actions.</p>
+                    <p class="admin-sidebar-meta">Dashboard Mode: Managed</p>
+                </div>
+            </aside>
+
+            <div class="admin-main-content">
+                <div id="adminPanelOverview" class="admin-panel is-active" aria-live="polite">
+                    <div class="admin-overview-hero">
+                        <div>
+                            <h3><i class="fa-solid fa-shield-halved"></i> Operations Snapshot</h3>
+                            <p>Monitor fleet health, issue volume and booking activity from one place.</p>
+                        </div>
+                        <span class="admin-status-pill"><i class="fa-solid fa-circle"></i> Control Room Online</span>
+                    </div>
+                    <div class="admin-kpi-grid">
+                        <div class="admin-kpi-card">
+                            <small>Available Scooters</small>
+                            <strong id="adminKpiAvailable">0</strong>
+                        </div>
+                        <div class="admin-kpi-card">
+                            <small>In Maintenance</small>
+                            <strong id="adminKpiMaintenance">0</strong>
+                        </div>
+                        <div class="admin-kpi-card">
+                            <small>Open Issues</small>
+                            <strong id="adminKpiIssues">0</strong>
+                        </div>
+                        <div class="admin-kpi-card">
+                            <small>High Priority</small>
+                            <strong id="adminKpiHigh">0</strong>
+                        </div>
+                    </div>
+                    <div class="admin-quick-hints">
+                        <div class="admin-hint-card">
+                            <h4><i class="fa-solid fa-bolt"></i> Quick Action</h4>
+                            <p>Use Scooter Ops to add, query or remove units in real time.</p>
+                        </div>
+                        <div class="admin-hint-card">
+                            <h4><i class="fa-solid fa-chart-simple"></i> Insight</h4>
+                            <p>Revenue Analytics now lives inside Admin only, separated from user pages.</p>
+                        </div>
+                        <div class="admin-hint-card">
+                            <h4><i class="fa-solid fa-list-check"></i> Workflow</h4>
+                            <p>Issue Workflow panel supports priority assignment and resolution in one view.</p>
+                        </div>
+                    </div>
+                    <div class="admin-rich-grid">
+                        <div class="admin-rich-card">
+                            <h4><i class="fa-solid fa-wave-square"></i> Fleet Health</h4>
+                            <div class="admin-meter-row">
+                                <span>Availability</span>
+                                <div class="admin-meter-track"><i id="adminMeterAvailability"></i></div>
+                                <strong id="adminMeterAvailabilityText">0%</strong>
+                            </div>
+                            <div class="admin-meter-row">
+                                <span>Issue Pressure</span>
+                                <div class="admin-meter-track danger"><i id="adminMeterIssue"></i></div>
+                                <strong id="adminMeterIssueText">0%</strong>
+                            </div>
+                        </div>
+                        <div class="admin-rich-card">
+                            <h4><i class="fa-solid fa-timeline"></i> Activity Feed</h4>
+                            <ul class="admin-activity-list">
+                                <li><span>Sync Status</span><strong id="adminFeedSync">Waiting first sync...</strong></li>
+                                <li><span>Open Issues</span><strong id="adminFeedIssue">0 items pending</strong></li>
+                                <li><span>Fleet Snapshot</span><strong id="adminFeedFleet">0 available / 0 maintenance</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminPanelScooters" class="admin-panel">
+                    <div class="admin-panel-grid">
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-motorcycle"></i> Scooter Information</h3>
+                            <form id="scooterConfigForm">
+                                <label for="newScooterId">Scooter ID:</label>
+                                <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
+                                <label for="scooterStatus">Status:</label>
+                                <select id="scooterStatus" required>
+                                    <option value="available">available</option>
+                                    <option value="maintenance">maintenance</option>
+                                    <option value="rented">rented</option>
+                                </select>
+                                <button type="submit"><i class="fa-solid fa-plus"></i> Add Scooter</button>
+                            </form>
+                        </div>
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-trash"></i> Scooter Query / Remove</h3>
+                            <form id="adminScooterOpsForm">
+                                <label for="adminScooterOpsId">Scooter ID:</label>
+                                <input type="number" id="adminScooterOpsId" placeholder="Enter scooter ID" required>
+                                <div class="form-actions">
+                                    <button type="button" id="adminGetScooterBtn"><i class="fa-solid fa-magnifying-glass"></i> Query</button>
+                                    <button type="button" id="adminDeleteScooterBtn"><i class="fa-solid fa-trash"></i> Delete</button>
+                                </div>
+                            </form>
+                            <div id="adminScooterOpsResult" class="issue-list">
+                                <p>No operation yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminPanelPricing" class="admin-panel">
+                    <div class="form-box">
+                        <h3><i class="fa-solid fa-tags"></i> Package Pricing</h3>
+                        <form id="pricingConfigForm">
+                            <label for="price1h">1 Hour Price:</label>
+                            <input type="number" id="price1h" step="0.01" required>
+                            <label for="price4h">4 Hours Price:</label>
+                            <input type="number" id="price4h" step="0.01" required>
+                            <label for="price1d">1 Day Price:</label>
+                            <input type="number" id="price1d" step="0.01" required>
+                            <label for="price1w">1 Week Price:</label>
+                            <input type="number" id="price1w" step="0.01" required>
+                            <button type="submit"><i class="fa-solid fa-save"></i> Save and Sync</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="adminPanelProxy" class="admin-panel">
+                    <div class="form-box">
+                        <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
+                        <form id="adminPlaceBookingForm">
+                            <label for="adminProxyScooterId">Scooter ID</label>
+                            <select id="adminProxyScooterId" required>
+                                <option value="">Select available scooter</option>
+                            </select>
+                            <label for="adminProxyPackageId">Package ID</label>
+                            <select id="adminProxyPackageId" required>
+                                <option value="">Select package</option>
+                            </select>
+                            <label for="adminProxyGuestName">Guest Name</label>
+                            <input type="text" id="adminProxyGuestName" placeholder="Full name of guest" required>
+                            <label for="adminProxyGuestPhone">Guest Phone</label>
+                            <input type="text" id="adminProxyGuestPhone" placeholder="Guest phone number" required>
+                            <button type="submit"><i class="fa-solid fa-paper-plane"></i> Place Booking as Admin</button>
+                        </form>
+                        <div id="adminProxyBookingResult" class="issue-list" style="margin-top: 12px;">
+                            <p>No proxy booking submitted yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminPanelUsers" class="admin-panel">
+                    <div class="form-box">
+                        <h3><i class="fa-solid fa-users"></i> User List</h3>
+                        <button type="button" id="refreshUsersBtn"><i class="fa-solid fa-rotate"></i> Refresh Users</button>
+                        <div id="adminUsersList" class="issue-list" style="margin-top: 12px;">
+                            <p>No user data loaded.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminPanelAnalytics" class="admin-panel">
+                    <div class="admin-analytics-summary">
+                        <div class="admin-insight-card">
+                            <small>Weekly Total Revenue</small>
+                            <strong id="adminRevenueWeeklyTotal">$0.00</strong>
+                        </div>
+                        <div class="admin-insight-card">
+                            <small>Average Daily Revenue</small>
+                            <strong id="adminRevenueDailyAvg">$0.00</strong>
+                        </div>
+                        <div class="admin-insight-card">
+                            <small>Best Package</small>
+                            <strong id="adminRevenueBestPackage">N/A</strong>
+                        </div>
+                    </div>
+                    <div class="sync-status" id="syncStatusBanner">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span id="syncStatusText">Multi-client sync active. Last sync: not yet.</span>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-chart-column"></i> Weekly Revenue</h3>
+                            <canvas id="weeklyRevenueChart" width="640" height="280" aria-label="Weekly revenue bar chart"></canvas>
+                        </div>
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-chart-simple"></i> Daily Revenue Trend</h3>
+                            <canvas id="dailyRevenueChart" width="640" height="280" aria-label="Daily revenue line chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminPanelIssues" class="admin-panel">
+                    <div class="form-box">
+                        <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
+                        <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
+                        <div id="adminIssueReviewList" class="issue-list">
+                            <p>No issues loaded.</p>
+                        </div>
+                    </div>
+                    <div class="form-box" style="margin-top: 20px;">
+                        <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues</h3>
+                        <form id="adminResolveIssueForm" style="margin-bottom: 12px;">
+                            <label for="resolveIssueId">Issue ID to resolve</label>
+                            <input type="number" id="resolveIssueId" min="1" placeholder="Enter issue ID" required>
+                            <button type="submit"><i class="fa-solid fa-check"></i> Resolve Issue</button>
+                        </form>
+                        <div id="adminHighPriorityIssues" class="issue-list">
+                            <p>No data loaded.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

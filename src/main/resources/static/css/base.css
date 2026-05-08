@@ -300,6 +300,86 @@ body.high-contrast .analytics-access-note i {
     color: #58a6ff !important;
 }
 
+body.high-contrast .admin-sidebar {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .admin-sidebar-btn {
+    background: #0d1117 !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .admin-sidebar-btn:hover {
+    background: #1c2430 !important;
+    border-color: #58a6ff !important;
+}
+
+body.high-contrast .admin-sidebar-btn.is-active {
+    background: #1f6feb !important;
+    border-color: #388bfd !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast .admin-overview-hero {
+    background: linear-gradient(135deg, #0d1117 0%, #1c2430 100%) !important;
+    border: 1px solid #30363d !important;
+}
+
+body.high-contrast .admin-kpi-card,
+body.high-contrast .admin-hint-card {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .admin-rich-card,
+body.high-contrast .admin-insight-card,
+body.high-contrast .admin-sidebar-footer {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .admin-sidebar-footer .admin-sidebar-meta {
+    color: #58a6ff !important;
+}
+
+body.high-contrast .admin-kpi-card small,
+body.high-contrast .admin-hint-card p,
+body.high-contrast .admin-activity-list span,
+body.high-contrast .admin-sidebar-footer p,
+body.high-contrast .admin-insight-card small {
+    color: #8b949e !important;
+}
+
+body.high-contrast .admin-kpi-card strong,
+body.high-contrast .admin-hint-card h4,
+body.high-contrast .admin-rich-card h4,
+body.high-contrast .admin-insight-card strong,
+body.high-contrast .admin-activity-list strong {
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .admin-meter-track {
+    background: #21262d !important;
+}
+
+body.high-contrast .home-insight-strip,
+body.high-contrast .home-scenarios,
+body.high-contrast .home-testimonials,
+body.high-contrast .scenario-card,
+body.high-contrast .testimonial-card,
+body.high-contrast .zone-chip {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .scenario-card span,
+body.high-contrast .testimonial-card footer {
+    color: #58a6ff !important;
+}
+
 /* 状态颜色 —— 保持可读性 */
 body.high-contrast .status-available  { color: #3fb950 !important; }
 body.high-contrast .status-rented     { color: #d29922 !important; }
@@ -369,4 +449,61 @@ body.high-contrast .modal-content {
 #scooterMap {
     width: 100%;
     min-height: 320px;
+}
+
+body.high-contrast .home-spotlight {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .home-spotlight-header,
+body.high-contrast .home-spotlight-tabs,
+body.high-contrast .home-spotlight-stage,
+body.high-contrast .home-cell {
+    border-color: #30363d !important;
+    background: #161b22 !important;
+}
+
+body.high-contrast .spotlight-tab {
+    background: #0d1117 !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .spotlight-tab.is-active {
+    background: #1f6feb !important;
+    color: #ffffff !important;
+    border-color: #388bfd !important;
+}
+
+body.high-contrast .feedback-highlight-card,
+body.high-contrast .return-highlight-card,
+body.high-contrast .progress-step,
+body.high-contrast .damage-options label,
+body.high-contrast .summary-box,
+body.high-contrast .return-card .card-header i {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .progress-step.active {
+    background: #1c2430 !important;
+    border-color: #388bfd !important;
+}
+
+body.high-contrast .progress-step .step-number {
+    background: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .issue-form-tips,
+body.high-contrast #issueDescriptionCount {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .issue-form-tips i {
+    color: #58a6ff !important;
 }
