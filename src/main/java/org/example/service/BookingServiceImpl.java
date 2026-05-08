@@ -123,14 +123,31 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void processPayment(int bookingId, String cardNumber) {
-        // 卡号不能为空
+
+        // 判空必须放在最前面，最省力
         if (cardNumber == null || cardNumber.trim().isEmpty()) {
             throw new RuntimeException("Validation Failed: Please enter card number!");
         }
 
-        // 卡号要纯数字
-        if (!cardNumber.matches("\\d+")) {
-            throw new RuntimeException("Validation Failed: Card number must contain only digits!");
+        // 查订单
+        Booking booking = bookingDAO.getBookingById(bookingId);
+
+        // 如果订单有关联用户，咱们查查是不是 admin；如果没有关联用户（代下单），咱们默认它是管理员操作的
+        boolean isAdmin = false;
+        if (booking.getUserId() != null) {
+            User user = userDAO.getUserById(booking.getUserId());
+            if (user != null && "admin".equals(user.getRole())) {
+                isAdmin = true;
+            }
+        } else {
+            // F09 逻辑：既然是代下单，那付款时咱们也给它“免检”特权
+            isAdmin = true;
+        }
+
+        if (!isAdmin) {
+            if (!cardNumber.matches("\\d+")) {
+                throw new RuntimeException("Validation Failed: Card number must contain only digits!");
+            }
         }
 
         // 查查订单现在的状态

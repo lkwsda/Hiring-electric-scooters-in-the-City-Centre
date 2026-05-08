@@ -57,13 +57,14 @@ public class UserServiceImpl implements UserService {
         return userDAO.getAllUsers();
     }
 
+
     @Override
     public User login(String username, String password) {
         User user = userDAO.getUserByName(username);
 
         // 验证：账号，密码
         if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
-            System.out.println("[Service] Secure Login success! Role: " + user.getRole());
+            System.out.println("[Service] Simple Login success! Role: " + user.getRole());
             return user;
         }
 

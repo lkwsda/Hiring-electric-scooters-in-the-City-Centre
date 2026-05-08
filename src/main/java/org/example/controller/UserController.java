@@ -13,7 +13,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    private UserService userService; // 服务员呼叫经理
+    private UserService userService;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -28,6 +28,7 @@ public class UserController {
 
     @PostMapping("/login")
     public User login(@RequestParam String username, @RequestParam String password) {
+        // 直接返回 User 对象
         return userService.login(username, password);
     }
 }
