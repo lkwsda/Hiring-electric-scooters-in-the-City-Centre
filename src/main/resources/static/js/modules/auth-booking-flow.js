@@ -157,7 +157,6 @@ if (issueForm) {
             this.reset();
             await loadIssues();
             renderHighPriorityIssues();
-            renderAdminHighPriorityIssues();
         } catch (error) {
             console.error('Issue submit error:', error);
             alert(error.message || 'Issue submission failed.');
@@ -268,6 +267,7 @@ if (paymentForm) {
             saveUserCard(cardNumber);
             localStorage.removeItem('pendingBookingId');
             await loadScooters();
+            updateScooterPageStats();
             await loadScooterLocations();
             renderScooters();
             renderScooterLocations();

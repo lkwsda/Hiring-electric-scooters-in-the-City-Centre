@@ -9,7 +9,7 @@
 
 body {
     background:
-        radial-gradient(circle at 20% 25%, rgba(52, 152, 219, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 20% 25%, rgba(66, 165, 245, 0.25) 0%, transparent 40%),
         radial-gradient(circle at 80% 75%, rgba(155, 89, 182, 0.25) 0%, transparent 40%),
         linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
     background-attachment: fixed;
@@ -97,25 +97,69 @@ main.container section {
 
 .accessibility-toolbar {
     position: fixed;
-    top: 12px;
-    right: 12px;
+    top: 16px;
+    right: 16px;
     display: flex;
-    gap: 8px;
+    gap: 4px;
     z-index: 1200;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 28px;
+    padding: 4px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
 }
 
 .accessibility-toolbar button {
-    border: 1px solid #d0d8e2;
-    background: #fff;
-    color: #1d2a3b;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    border-radius: 24px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
     cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
 }
 
 .accessibility-toolbar button:hover {
-    background: #eef5ff;
+    background: rgba(66, 165, 245, 0.12);
+    color: #42A5F5;
+}
+
+.accessibility-toolbar button i {
+    font-size: 0.75rem;
+}
+
+.accessibility-toolbar button span {
+    font-weight: 600;
+}
+
+#highContrastBtn {
+    padding: 8px 12px;
+}
+
+#highContrastBtn i {
+    font-size: 0.95rem;
+}
+
+body.high-contrast .accessibility-toolbar {
+    background: rgba(30, 41, 59, 0.85);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+body.high-contrast .accessibility-toolbar button {
+    color: #94A3B8;
+}
+
+body.high-contrast .accessibility-toolbar button:hover {
+    background: rgba(66, 165, 245, 0.25);
+    color: #93C5FD;
 }
 
 /* ===== 夜间 / 高对比度模式 ===== */
@@ -334,14 +378,33 @@ body.high-contrast .admin-hint-card {
 }
 
 body.high-contrast .admin-rich-card,
-body.high-contrast .admin-insight-card,
-body.high-contrast .admin-sidebar-footer {
+body.high-contrast .admin-insight-card {
     background: #161b22 !important;
     border-color: #30363d !important;
 }
 
-body.high-contrast .admin-sidebar-footer .admin-sidebar-meta {
-    color: #58a6ff !important;
+body.high-contrast .admin-sidebar-footer {
+    border-top-color: #30363d !important;
+}
+
+body.high-contrast .admin-sidebar-footer .admin-sidebar-hint {
+    color: #8b949e !important;
+}
+
+body.high-contrast .admin-sidebar-footer .admin-sidebar-mode {
+    color: #6e7681 !important;
+}
+
+body.high-contrast .admin-sidebar-toggle {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .admin-sidebar-toggle:hover {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
+    border-color: #58a6ff !important;
 }
 
 body.high-contrast .admin-kpi-card small,
@@ -378,6 +441,8 @@ body.high-contrast .zone-chip {
 body.high-contrast .scenario-card span,
 body.high-contrast .testimonial-card footer {
     color: #58a6ff !important;
+    background: transparent !important;
+    border-top-color: #30363d !important;
 }
 
 /* 状态颜色 —— 保持可读性 */
@@ -389,8 +454,7 @@ body.high-contrast .battery-medium    { color: #d29922 !important; }
 body.high-contrast .battery-low       { color: #f85149 !important; }
 
 /* 统计卡片数字 */
-body.high-contrast .stat-number,
-body.high-contrast .summary-number {
+body.high-contrast .stat-number {
     color: #58a6ff !important;
 }
 
@@ -442,6 +506,155 @@ body.high-contrast .modal-content {
     background: #161b22 !important;
     color: #e6edf3 !important;
     border: 1px solid #30363d !important;
+}
+
+/* 高对比度 — 预订卡片内部 */
+body.high-contrast .booking-card-header {
+    background: #1c2128 !important;
+    border-bottom-color: #30363d !important;
+}
+
+body.high-contrast .booking-scooter-id {
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .booking-card-body {
+    background: #161b22 !important;
+}
+
+body.high-contrast .booking-time-label {
+    color: #8b949e !important;
+}
+
+body.high-contrast .booking-time-item > div > span:last-child {
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .booking-cost-row {
+    border-top-color: #30363d !important;
+}
+
+body.high-contrast .booking-cost-value {
+    color: #e6edf3 !important;
+}
+
+body.high-contrast .booking-card-actions {
+    background: #1c2128 !important;
+    border-top-color: #30363d !important;
+}
+
+body.high-contrast .extend-rental-btn {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
+}
+
+body.high-contrast .extend-rental-btn:hover {
+    background: #1f3a6a !important;
+}
+
+body.high-contrast .cancel-booking-btn {
+    background: #3a1a1a !important;
+    color: #f87171 !important;
+}
+
+body.high-contrast .cancel-booking-btn:hover {
+    background: #4a2020 !important;
+}
+
+body.high-contrast .badge-active {
+    background: #1a3a1a !important;
+    color: #3fb950 !important;
+}
+
+body.high-contrast .badge-done {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
+}
+
+body.high-contrast .badge-canceled {
+    background: #3a1a1a !important;
+    color: #f87171 !important;
+}
+
+body.high-contrast .badge-pending {
+    background: #3a2a1a !important;
+    color: #d29922 !important;
+}
+
+body.high-contrast .booking-pagination button {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .booking-pagination button:hover:not(:disabled) {
+    background: #30363d !important;
+}
+
+body.high-contrast .booking-pagination button.page-active {
+    background: #1f6feb !important;
+    color: #fff !important;
+    border-color: #388bfd !important;
+}
+
+body.high-contrast .issue-history-desc {
+    color: #8b949e !important;
+}
+
+body.high-contrast .issue-history-pagination {
+    border-top-color: #30363d !important;
+}
+
+body.high-contrast .issue-history-pagination button {
+    background: #21262d !important;
+    color: #cdd9e5 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .issue-history-pagination button:hover:not(:disabled) {
+    background: #30363d !important;
+}
+
+body.high-contrast .issue-history-pagination button.page-active {
+    background: #1f6feb !important;
+    color: #fff !important;
+    border-color: #388bfd !important;
+}
+
+body.high-contrast .custom-select-trigger {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .custom-select-trigger:hover {
+    background: #161b22 !important;
+    border-color: #58a6ff !important;
+}
+
+body.high-contrast .custom-select.is-open .custom-select-trigger {
+    border-color: #58a6ff !important;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25) !important;
+    background: #161b22 !important;
+}
+
+body.high-contrast .custom-select-dropdown {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+}
+
+body.high-contrast .custom-select-option {
+    background: #0d1117 !important;
+    color: #cdd9e5 !important;
+}
+
+body.high-contrast .custom-select-option:hover {
+    background: #21262d !important;
+}
+
+body.high-contrast .custom-select-option.is-selected {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
 }
 
 /* ===== 夜间模式结束 ===== */
@@ -505,5 +718,243 @@ body.high-contrast #issueDescriptionCount {
 }
 
 body.high-contrast .issue-form-tips i {
+    color: #58a6ff !important;
+}
+
+/* High contrast — Rent a Scooter */
+body.high-contrast .rent-section .section-header h2 {
+    color: #e6edf3 !important;
+}
+
+/* Step indicator */
+body.high-contrast .process-step {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+body.high-contrast .process-step + .process-step::before {
+    background: #30363d !important;
+}
+body.high-contrast .process-step.active {
+    background: #1a2a4a !important;
+    border-color: #388bfd !important;
+}
+body.high-contrast .process-step.active + .process-step::before {
+    background: #388bfd !important;
+}
+body.high-contrast .step-icon {
+    background: #21262d !important;
+    color: #8b949e !important;
+}
+body.high-contrast .process-step.active .step-icon {
+    background: #1f6feb !important;
+    color: #fff !important;
+}
+body.high-contrast .step-content h4 {
+    color: #8b949e !important;
+}
+body.high-contrast .step-content p {
+    color: #6e7681 !important;
+}
+body.high-contrast .process-step.active .step-content h4 {
+    color: #79c0ff !important;
+}
+body.high-contrast .process-step.active .step-content p {
+    color: #58a6ff !important;
+}
+
+/* Form card */
+body.high-contrast .rental-left .form-box {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+body.high-contrast .form-header {
+    border-bottom-color: #30363d !important;
+}
+body.high-contrast .form-header h3 {
+    color: #e6edf3 !important;
+}
+body.high-contrast .rental-left .form-group label {
+    color: #cdd9e5 !important;
+}
+body.high-contrast .rental-left .form-group label i {
+    color: #8b949e !important;
+}
+body.high-contrast .rental-left .form-group select,
+body.high-contrast .rental-left .form-group input {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+body.high-contrast .rental-left .form-group select:focus,
+body.high-contrast .rental-left .form-group input:focus {
+    border-color: #58a6ff !important;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25) !important;
+}
+
+/* Package summary */
+body.high-contrast #packageSummaryBox {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+body.high-contrast #packageSummaryBox h3 {
+    color: #e6edf3 !important;
+    border-bottom-color: #30363d !important;
+}
+body.high-contrast #packageSummaryContent .hint-text {
+    color: #8b949e !important;
+}
+body.high-contrast #packageSummaryContent .summary-item {
+    border-bottom-color: #30363d !important;
+    color: #cdd9e5 !important;
+}
+body.high-contrast #packageSummaryContent .summary-item:last-of-type {
+    border-top-color: #30363d !important;
+}
+body.high-contrast #packageSummaryContent .summary-label {
+    color: #8b949e !important;
+}
+body.high-contrast #packageSummaryContent .summary-label i {
+    color: #6e7681 !important;
+}
+body.high-contrast #packageSummaryContent .summary-item:last-of-type .summary-label {
+    color: #cdd9e5 !important;
+}
+body.high-contrast #packageSummaryContent .summary-item:last-of-type .summary-label i {
+    color: #58a6ff !important;
+}
+body.high-contrast #packageSummaryContent .summary-value {
+    color: #cdd9e5 !important;
+}
+body.high-contrast #packageSummaryContent .summary-value.price {
+    color: #58a6ff !important;
+}
+
+/* Need Help */
+body.high-contrast .rental-right .info-card {
+    background: #1c2128 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+body.high-contrast .rental-right .info-content h4 {
+    color: #cdd9e5 !important;
+}
+body.high-contrast .rental-right .info-content p {
+    color: #8b949e !important;
+}
+
+/* High contrast — Secure Payment */
+body.high-contrast .payment-section .section-header h2 {
+    color: #e6edf3 !important;
+}
+
+/* Payment form card */
+body.high-contrast .payment-form-card {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+body.high-contrast .payment-form-card .form-header {
+    border-bottom-color: #30363d !important;
+}
+body.high-contrast .payment-form-card .form-header h3 {
+    color: #e6edf3 !important;
+}
+body.high-contrast .payment-form-card .form-header i {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
+}
+
+/* Security badge */
+body.high-contrast .security-badge {
+    background: #1a2e1a !important;
+    border-color: #2a4a2a !important;
+    color: #4ade80 !important;
+}
+body.high-contrast .security-badge i {
+    color: #4ade80 !important;
+}
+
+/* Form fields */
+body.high-contrast .payment-form-card .form-group label {
+    color: #cdd9e5 !important;
+}
+body.high-contrast .payment-form-card .form-group label i {
+    color: #8b949e !important;
+}
+body.high-contrast .payment-form-card .form-group select {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+body.high-contrast .payment-form-card .form-group select:focus {
+    border-color: #58a6ff !important;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25) !important;
+}
+
+/* Card input wrapper */
+body.high-contrast .card-input-wrapper input {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+body.high-contrast .card-input-wrapper input:focus {
+    border-color: #58a6ff !important;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25) !important;
+}
+body.high-contrast .card-input-wrapper .card-input-icon {
+    color: #6e7681 !important;
+}
+body.high-contrast .card-masked-hint {
+    color: #8b949e !important;
+}
+
+/* Use Saved Card button */
+body.high-contrast .payment-use-saved-btn:disabled {
+    opacity: 0.4 !important;
+}
+
+/* Booking Summary card */
+body.high-contrast .payment-right .booking-summary-card {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+body.high-contrast .payment-right .summary-header {
+    border-bottom-color: #30363d !important;
+}
+body.high-contrast .payment-right .summary-header h3 {
+    color: #e6edf3 !important;
+}
+body.high-contrast .payment-right .summary-header i {
+    background: #1a2a4a !important;
+    color: #79c0ff !important;
+}
+body.high-contrast .payment-right .summary-details > p:first-child {
+    color: #8b949e !important;
+}
+
+/* Breakdown items */
+body.high-contrast .payment-breakdown .breakdown-item {
+    border-bottom-color: #30363d !important;
+    color: #cdd9e5 !important;
+}
+body.high-contrast .payment-breakdown .breakdown-item span:first-child {
+    color: #8b949e !important;
+}
+body.high-contrast .payment-breakdown .breakdown-item span:last-child {
+    color: #cdd9e5 !important;
+}
+body.high-contrast .payment-breakdown #discountRow span:last-child {
+    color: #4ade80 !important;
+}
+body.high-contrast .payment-breakdown .breakdown-item.total {
+    border-top-color: #30363d !important;
+}
+body.high-contrast .payment-breakdown .breakdown-item.total span:first-child {
+    color: #cdd9e5 !important;
+}
+body.high-contrast .payment-breakdown .breakdown-item.total span:last-child {
     color: #58a6ff !important;
 }

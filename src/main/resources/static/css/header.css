@@ -54,7 +54,7 @@ header h1 {
 
 header h1 i {
     margin-right: 10px;
-    color: #3498db;
+    color: #42A5F5;
     animation: pulse 2s infinite;
 }
 
@@ -100,7 +100,7 @@ header nav a:hover::before {
 }
 
 header nav a:hover {
-    color: #3498db;
+    color: #42A5F5;
     background-color: rgba(255,255,255,0.1);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);

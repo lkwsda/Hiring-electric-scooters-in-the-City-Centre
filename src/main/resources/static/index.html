@@ -19,9 +19,9 @@
 <a href="#mainContent" class="skip-link">Skip to main content</a>
 
 <div class="accessibility-toolbar" aria-label="Accessibility tools">
-    <button id="fontDecreaseBtn" type="button" aria-label="Decrease font size">A-</button>
-    <button id="fontIncreaseBtn" type="button" aria-label="Increase font size">A+</button>
-    <button id="highContrastBtn" type="button" aria-pressed="false">High Contrast</button>
+    <button id="fontDecreaseBtn" type="button" aria-label="Decrease font size" title="Smaller text"><i class="fa-solid fa-minus"></i><span>A</span></button>
+    <button id="fontIncreaseBtn" type="button" aria-label="Increase font size" title="Larger text"><i class="fa-solid fa-plus"></i><span>A</span></button>
+    <button id="highContrastBtn" type="button" aria-pressed="false" title="Toggle high contrast"><i class="fa-solid fa-circle-half-stroke"></i></button>
 </div>
 
 <div id="liveStatus" class="sr-only" aria-live="polite"></div>
@@ -174,13 +174,15 @@
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Issue Report</button>
                 </form>
             </div>
-            <div class="form-box" id="adminOnlyHighPriorityBox" style="display:none;">
-                <h3><i class="fa-solid fa-bell"></i> High Priority Queue</h3>
-                <p class="hint-text">Admin view is filtered to high priority issues only.</p>
-                <div id="highPriorityIssueList" class="issue-list">
-                    <p>No high priority issues yet.</p>
+            <div class="form-box" id="issueHistoryBox">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Submission History</h3>
+                <p class="hint-text">Your recent issue submissions.</p>
+                <div id="issueHistoryList" class="issue-list">
+                    <p>No submissions yet.</p>
                 </div>
+                <div id="issueHistoryPagination" class="issue-history-pagination"></div>
             </div>
+
         </div>
     </section>
 
@@ -422,6 +424,7 @@
             <div class="scooter-grid" id="scooterGrid">
                 <!-- 车辆卡片JS -->
             </div>
+            <div class="scooter-pagination" id="scooterPagination"></div>
         </div>
 
         <div id="scooterMapModule" class="scooter-view-panel">
@@ -505,14 +508,14 @@
             </div>
         </div>
 
-        <div class="form-container">
-            <div class="form-box rental-form">
-                <div class="form-header">
-                    <i class="fa-solid fa-arrow-right"></i>
-                    <h3>Book a Scooter</h3>
-                </div>
-                <form id="bookForm">
-                    <div class="form-row">
+        <div class="rental-two-col">
+            <div class="rental-left">
+                <div class="form-box">
+                    <div class="form-header">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <h3>Book a Scooter</h3>
+                    </div>
+                    <form id="bookForm">
                         <div class="form-group">
                             <label for="packageSelect"><i class="fa-solid fa-clock"></i> Select Package:</label>
                             <select id="packageSelect" required>
@@ -523,25 +526,30 @@
                             <label for="scooterId"><i class="fa-solid fa-hashtag"></i> Scooter ID:</label>
                             <input type="number" id="scooterId" placeholder="Enter scooter ID (e.g. 1001)" required>
                         </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" onclick="showSection('scootersSection')" class="btn-secondary">
-                            <i class="fa-solid fa-search"></i> Browse Scooters
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fa-solid fa-check"></i> Submit Booking
-                        </button>
-                    </div>
-                </form>
+                        <div class="form-actions">
+                            <button type="button" onclick="showSection('scootersSection')" class="btn-secondary">
+                                <i class="fa-solid fa-search"></i> Browse Scooters
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-check"></i> Submit Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-
-        <div class="rental-info">
-            <div class="info-card">
-                <i class="fa-solid fa-info-circle"></i>
-                <div class="info-content">
-                    <h4>Need Help?</h4>
-                    <p>Don't know which scooter to choose? Browse our available scooters first to see locations and battery levels.</p>
+            <div class="rental-right">
+                <div class="form-box" id="packageSummaryBox">
+                    <h3><i class="fa-solid fa-receipt"></i> Package Summary</h3>
+                    <div id="packageSummaryContent">
+                        <p class="hint-text">Select a package to see details and pricing.</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <div class="info-content">
+                        <h4>Need Help?</h4>
+                        <p>Don't know which scooter to choose? Browse our available scooters first to see locations and battery levels.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -554,26 +562,26 @@
             <p class="section-subtitle">Manage your current and past scooter rentals</p>
         </div>
 
-        <div class="booking-summary">
-            <div class="summary-card">
+        <div class="section-stats">
+            <div class="stat-card">
                 <i class="fa-solid fa-clock"></i>
-                <div class="summary-info">
-                    <span class="summary-number" id="activeBookings">0</span>
-                    <span class="summary-label">Active Rentals</span>
+                <div class="stat-info">
+                    <span class="stat-number" id="activeBookings">0</span>
+                    <span class="stat-label">Active Rentals</span>
                 </div>
             </div>
-            <div class="summary-card">
+            <div class="stat-card">
                 <i class="fa-solid fa-history"></i>
-                <div class="summary-info">
-                    <span class="summary-number" id="totalBookings">0</span>
-                    <span class="summary-label">Total Rentals</span>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalBookings">0</span>
+                    <span class="stat-label">Total Rentals</span>
                 </div>
             </div>
-            <div class="summary-card">
+            <div class="stat-card">
                 <i class="fa-solid fa-dollar-sign"></i>
-                <div class="summary-info">
-                    <span class="summary-number">$0</span>
-                    <span class="summary-label">Total Spent</span>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalSpent">$0.00</span>
+                    <span class="stat-label">Total Spent</span>
                 </div>
             </div>
         </div>
@@ -600,78 +608,82 @@
     <!-- 支付 -->
     <section id="paymentSection" class="payment-section">
         <div class="section-header">
-            <h2><i class="fa-solid fa-credit-card"></i> Secure Payment</h2>
+            <h2><i class="fa-solid fa-lock"></i> Secure Payment</h2>
             <p class="section-subtitle">Complete your booking with our secure payment system</p>
         </div>
 
-        <div class="payment-summary">
-            <div class="booking-summary-card">
-                <div class="summary-header">
-                    <i class="fa-solid fa-receipt"></i>
-                    <h3>Booking Summary</h3>
-                </div>
-                <div class="summary-details">
-                    <p id="bookingDetails">Loading booking details...</p>
-                    <div class="payment-breakdown">
-                        <div class="breakdown-item">
-                            <span>Rental Cost</span>
-                            <span id="rentalCost">$0.00</span>
-                        </div>
-                        <div class="breakdown-item">
-                            <span>Service Fee</span>
-                            <span>$0.50</span>
-                        </div>
-                        <div class="breakdown-item" id="discountRow" style="display:none;color:#27ae60;">
-                            <span id="discountLabel">Discount</span>
-                            <span id="discountAmount">-$0.00</span>
-                        </div>
-                        <div class="breakdown-item total">
-                            <span>Total Amount</span>
-                            <span id="totalAmount">$0.50</span>
-                        </div>
+        <div class="payment-two-col">
+            <div class="payment-left">
+                <div class="form-box payment-form-card">
+                    <div class="form-header">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <h3>Payment Information</h3>
                     </div>
+                    <div class="security-badge">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Encrypted &amp; Secure</span>
+                    </div>
+                    <form id="paymentForm">
+                        <div class="form-group">
+                            <label for="savedCardSelect">
+                                <i class="fa-solid fa-wallet"></i> Saved Card
+                            </label>
+                            <select id="savedCardSelect">
+                                <option value="">No saved card available</option>
+                            </select>
+                            <button type="button" id="useSavedCardBtn" class="btn-secondary payment-use-saved-btn">
+                                <i class="fa-solid fa-download"></i> Use Saved Card
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentCardNumber">
+                                <i class="fa-solid fa-credit-card"></i> Bank Card Number
+                            </label>
+                            <div class="card-input-wrapper">
+                                <i class="fa-solid fa-credit-card card-input-icon"></i>
+                                <input type="text" id="paymentCardNumber" placeholder="Enter 16-digit card number" autocomplete="cc-number" required>
+                            </div>
+                            <p id="paymentCardMasked" class="card-masked-hint"></p>
+                        </div>
+                        <div class="payment-actions">
+                            <button type="button" onclick="showSection('rentSection')" class="btn-secondary">
+                                <i class="fa-solid fa-arrow-left"></i> Back
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-lock"></i> Confirm Payment
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
-
-        <div class="form-container">
-            <div class="form-box payment-form">
-                <div class="form-header">
-                    <i class="fa-solid fa-shield-alt"></i>
-                    <h3>Payment Information</h3>
+            <div class="payment-right">
+                <div class="booking-summary-card">
+                    <div class="summary-header">
+                        <i class="fa-solid fa-receipt"></i>
+                        <h3>Booking Summary</h3>
+                    </div>
+                    <div class="summary-details">
+                        <p id="bookingDetails">Loading booking details...</p>
+                        <div class="payment-breakdown">
+                            <div class="breakdown-item">
+                                <span>Rental Cost</span>
+                                <span id="rentalCost">$0.00</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Service Fee</span>
+                                <span>$0.50</span>
+                            </div>
+                            <div class="breakdown-item" id="discountRow" style="display:none;">
+                                <span id="discountLabel">Discount</span>
+                                <span id="discountAmount">-$0.00</span>
+                            </div>
+                            <div class="breakdown-item total">
+                                <span>Total Amount</span>
+                                <span id="totalAmount">$0.50</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="security-notice">
-                    <i class="fa-solid fa-lock"></i>
-                    <span>Your payment information is encrypted and secure</span>
-                </div>
-                <form id="paymentForm">
-                    <div class="form-group">
-                        <label for="savedCardSelect">
-                            <i class="fa-solid fa-wallet"></i> Saved Card:
-                        </label>
-                        <select id="savedCardSelect">
-                            <option value="">No saved card available</option>
-                        </select>
-                        <button type="button" id="useSavedCardBtn" class="btn-secondary" style="margin-top:8px;">
-                            <i class="fa-solid fa-download"></i> Use Saved Card
-                        </button>
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentCardNumber">
-                            <i class="fa-solid fa-credit-card"></i> Bank Card Number:
-                        </label>
-                        <input type="text" id="paymentCardNumber" placeholder="Enter card number (digits only)" autocomplete="cc-number" required>
-                        <p id="paymentCardMasked" style="font-size:0.85em;color:#888;margin-top:4px;display:none;"></p>
-                    </div>
-                    <div class="payment-actions">
-                        <button type="button" onclick="showSection('rentSection')" class="btn-secondary">
-                            <i class="fa-solid fa-arrow-left"></i> Back
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fa-solid fa-check"></i> Confirm Payment
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </section>
@@ -984,31 +996,35 @@
 
         <div class="admin-dashboard-layout">
             <aside class="admin-sidebar" aria-label="Admin module sidebar">
-                <button type="button" class="admin-sidebar-btn is-active" data-admin-panel="adminPanelOverview">
-                    <i class="fa-solid fa-gauge"></i> Overview
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelScooters">
-                    <i class="fa-solid fa-motorcycle"></i> Scooter Ops
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelPricing">
-                    <i class="fa-solid fa-tags"></i> Package Pricing
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelProxy">
-                    <i class="fa-solid fa-user-shield"></i> Proxy Booking
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelUsers">
-                    <i class="fa-solid fa-users"></i> User List
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelAnalytics">
-                    <i class="fa-solid fa-chart-line"></i> Revenue Analytics
-                </button>
-                <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelIssues">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Issue Workflow
-                </button>
+                <nav class="admin-sidebar-nav">
+                    <button type="button" class="admin-sidebar-btn is-active" data-admin-panel="adminPanelOverview">
+                        <i class="fa-solid fa-gauge"></i> <span>Overview</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelScooters">
+                        <i class="fa-solid fa-motorcycle"></i> <span>Scooter Ops</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelPricing">
+                        <i class="fa-solid fa-tags"></i> <span>Package Pricing</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelProxy">
+                        <i class="fa-solid fa-user-shield"></i> <span>Proxy Booking</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelUsers">
+                        <i class="fa-solid fa-users"></i> <span>User List</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelAnalytics">
+                        <i class="fa-solid fa-chart-line"></i> <span>Revenue Analytics</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-btn" data-admin-panel="adminPanelIssues">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span>Issue Workflow</span>
+                    </button>
+                    <button type="button" class="admin-sidebar-toggle" id="adminSidebarToggle" title="Collapse sidebar" aria-label="Toggle sidebar" onclick="const sidebar = this.closest('.admin-sidebar'); if(sidebar){sidebar.classList.toggle('is-collapsed');} const icon=this.querySelector('i'); if(icon){icon.classList.toggle('fa-angles-left'); icon.classList.toggle('fa-angles-right');}">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </button>
+                </nav>
                 <div class="admin-sidebar-footer">
-                    <h5><i class="fa-solid fa-compass"></i> Operation Notes</h5>
-                    <p>Use Overview for KPI monitoring, then enter each module for operational actions.</p>
-                    <p class="admin-sidebar-meta">Dashboard Mode: Managed</p>
+                    <p class="admin-sidebar-hint">Use Overview for KPI monitoring, then enter each module for operational actions.</p>
+                    <small class="admin-sidebar-mode">Dashboard Mode: Managed</small>
                 </div>
             </aside>
 
@@ -1086,11 +1102,22 @@
                                 <label for="newScooterId">Scooter ID:</label>
                                 <input type="number" id="newScooterId" placeholder="Enter scooter ID" required>
                                 <label for="scooterStatus">Status:</label>
-                                <select id="scooterStatus" required>
-                                    <option value="available">available</option>
-                                    <option value="maintenance">maintenance</option>
-                                    <option value="rented">rented</option>
-                                </select>
+                                <div class="custom-select" id="scooterStatusWrapper">
+                                    <button type="button" class="custom-select-trigger" id="scooterStatusTrigger">
+                                        <span class="custom-select-placeholder">-- Select Status --</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div class="custom-select-dropdown">
+                                        <button type="button" data-value="available" class="custom-select-option">Available</button>
+                                        <button type="button" data-value="maintenance" class="custom-select-option">Maintenance</button>
+                                        <button type="button" data-value="rented" class="custom-select-option">Rented</button>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="scooterStatus" value="">
+                                <label for="scooterBattery">Battery (%):</label>
+                                <input type="number" id="scooterBattery" min="0" max="100" placeholder="e.g. 85" required>
+                                <label for="scooterImageUrl">Image URL:</label>
+                                <input type="text" id="scooterImageUrl" placeholder="/images/EcoRide_X1.png">
                                 <button type="submit"><i class="fa-solid fa-plus"></i> Add Scooter</button>
                             </form>
                         </div>
@@ -1133,13 +1160,25 @@
                         <h3><i class="fa-solid fa-user-shield"></i> Admin Proxy Booking</h3>
                         <form id="adminPlaceBookingForm">
                             <label for="adminProxyScooterId">Scooter ID</label>
-                            <select id="adminProxyScooterId" required>
-                                <option value="">Select available scooter</option>
-                            </select>
+                            <div class="custom-select" id="adminProxyScooterWrapper">
+                                <button type="button" class="custom-select-trigger" id="adminProxyScooterTrigger">
+                                    <span class="custom-select-placeholder">Select available scooter</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div class="custom-select-dropdown" id="adminProxyScooterDropdown">
+                                </div>
+                            </div>
+                            <input type="hidden" id="adminProxyScooterId" value="">
                             <label for="adminProxyPackageId">Package ID</label>
-                            <select id="adminProxyPackageId" required>
-                                <option value="">Select package</option>
-                            </select>
+                            <div class="custom-select" id="adminProxyPackageWrapper">
+                                <button type="button" class="custom-select-trigger" id="adminProxyPackageTrigger">
+                                    <span class="custom-select-placeholder">Select package</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div class="custom-select-dropdown" id="adminProxyPackageDropdown">
+                                </div>
+                            </div>
+                            <input type="hidden" id="adminProxyPackageId" value="">
                             <label for="adminProxyGuestName">Guest Name</label>
                             <input type="text" id="adminProxyGuestName" placeholder="Full name of guest" required>
                             <label for="adminProxyGuestPhone">Guest Phone</label>
@@ -1154,11 +1193,14 @@
 
                 <div id="adminPanelUsers" class="admin-panel">
                     <div class="form-box">
-                        <h3><i class="fa-solid fa-users"></i> User List</h3>
-                        <button type="button" id="refreshUsersBtn"><i class="fa-solid fa-rotate"></i> Refresh Users</button>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <h3 style="margin-bottom: 0;"><i class="fa-solid fa-users"></i> User List</h3>
+                            <button type="button" id="refreshUsersBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-rotate"></i> Refresh Users</button>
+                        </div>
                         <div id="adminUsersList" class="issue-list" style="margin-top: 12px;">
                             <p>No user data loaded.</p>
                         </div>
+                        <div id="usersPagination" class="booking-pagination"></div>
                     </div>
                 </div>
 
@@ -1194,22 +1236,21 @@
                 </div>
 
                 <div id="adminPanelIssues" class="admin-panel">
-                    <div class="form-box">
-                        <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
-                        <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
-                        <div id="adminIssueReviewList" class="issue-list">
-                            <p>No issues loaded.</p>
+                    <div class="form-container" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-list-check"></i> Issue Priority Review</h3>
+                            <p class="hint-text">Admin reviews newly submitted issues and sets priority.</p>
+                            <div id="adminIssueReviewList" class="issue-list">
+                                <p>No issues loaded.</p>
+                            </div>
+                            <div id="issueReviewPagination" class="booking-pagination"></div>
                         </div>
-                    </div>
-                    <div class="form-box" style="margin-top: 20px;">
-                        <h3><i class="fa-solid fa-triangle-exclamation"></i> High Priority Issues</h3>
-                        <form id="adminResolveIssueForm" style="margin-bottom: 12px;">
-                            <label for="resolveIssueId">Issue ID to resolve</label>
-                            <input type="number" id="resolveIssueId" min="1" placeholder="Enter issue ID" required>
-                            <button type="submit"><i class="fa-solid fa-check"></i> Resolve Issue</button>
-                        </form>
-                        <div id="adminHighPriorityIssues" class="issue-list">
-                            <p>No data loaded.</p>
+                        <div class="form-box">
+                            <h3><i class="fa-solid fa-bell"></i> High Priority Queue</h3>
+                            <p class="hint-text">Admin view is filtered to high priority issues only.</p>
+                            <div id="highPriorityIssueList" class="issue-list">
+                                <p>No high priority issues yet.</p>
+                            </div>
                         </div>
                     </div>
                 </div>

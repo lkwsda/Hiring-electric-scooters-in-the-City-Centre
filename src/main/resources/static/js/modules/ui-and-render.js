@@ -165,8 +165,7 @@ function showAdminPanel(panelId) {
         renderRevenueCharts();
     } else if (targetPanelId === 'adminPanelIssues') {
         renderAdminIssueReviewList();
-        renderAdminHighPriorityIssues();
-    } else if (targetPanelId === 'adminPanelOverview') {
+            } else if (targetPanelId === 'adminPanelOverview') {
         renderAdminOverview();
     }
 }
@@ -207,8 +206,7 @@ function showSection(sectionId) {
         showAdminPanel(pendingAdminPanel || activeAdminPanelId);
     } else if (sectionId === 'adminStatsSection') {
         renderAdminIssueReviewList();
-        renderAdminHighPriorityIssues();
-    }
+            }
 
     updateFloatingScooterSidebarsVisibility();
 }
@@ -241,9 +239,6 @@ function updateNav() {
     const logoutLink = document.getElementById('logoutLink');
     const returnLink = document.getElementById('returnLink');
 
-    // Admin-only UI elements
-    const adminHighPriorityBox = document.getElementById('adminOnlyHighPriorityBox');
-
     if (currentUser || adminLoggedIn) {
         loginLink.style.display = 'none';
         logoutLink.style.display = 'inline';
@@ -256,8 +251,7 @@ function updateNav() {
         returnLink.style.display = 'none';
     }
 
-    // Show admin-only sections only when admin is logged in
-    if (adminHighPriorityBox) adminHighPriorityBox.style.display = adminLoggedIn ? '' : 'none';
+
 }
 
 // Render packages
@@ -299,22 +293,31 @@ function updateBookingSummary(bookingList) {
 
     const activeNode = document.getElementById('activeBookings');
     const totalNode = document.getElementById('totalBookings');
-    const spentNode = document.querySelector('#myBookingsSection .summary-card:nth-child(3) .summary-number');
+    const spentNode = document.getElementById('totalSpent');
     if (activeNode) activeNode.textContent = String(activeCount);
     if (totalNode) totalNode.textContent = String(totalCount);
     if (spentNode) spentNode.textContent = formatCurrency(totalSpent);
 }
 
 // Render scooters
+const SCOOTERS_PER_PAGE = 6;
+let scooterCurrentPage = 1;
+
 function renderScooters() {
     const grid = document.getElementById('scooterGrid');
+    if (!grid) return;
     grid.innerHTML = '';
 
-    scooters.forEach(scooter => {
+    const totalPages = Math.max(1, Math.ceil(scooters.length / SCOOTERS_PER_PAGE));
+    if (scooterCurrentPage > totalPages) scooterCurrentPage = totalPages;
+    const start = (scooterCurrentPage - 1) * SCOOTERS_PER_PAGE;
+    const pageScooters = scooters.slice(start, start + SCOOTERS_PER_PAGE);
+
+    pageScooters.forEach(scooter => {
         const card = document.createElement('div');
         const isAvailable = scooter.status === 'available';
         card.className = `scooter-card ${isAvailable ? '' : 'scooter-card-unavailable'}`;
-        
+
         const batteryClass = scooter.battery < 15 ? 'battery-low' : scooter.battery < 30 ? 'battery-medium' : 'battery-good';
         const batteryText = `<span class="battery-level battery-text ${batteryClass}">Battery: ${scooter.battery}%</span>`;
         const statusClass = isAvailable ? 'status-available' : scooter.status === 'maintenance' ? 'status-maintenance' : 'status-rented';
@@ -322,7 +325,7 @@ function renderScooters() {
         const rentDisabled = isAvailable ? '' : 'disabled';
         const rentButtonClass = isAvailable ? 'rent-btn' : 'rent-btn disabled';
         const scooterImage = scooter.image || DEFAULT_SCOOTER_IMAGE;
-        
+
         card.innerHTML = `
             <div class="scooter-media">
                 <img src="${scooterImage}" alt="${scooter.model}" onerror="this.onerror=null;this.src='${DEFAULT_SCOOTER_IMAGE}';" />
@@ -342,6 +345,31 @@ function renderScooters() {
         `;
         grid.appendChild(card);
     });
+
+    renderScooterPagination();
+}
+
+function goToScooterPage(page) {
+    const totalPages = Math.max(1, Math.ceil(scooters.length / SCOOTERS_PER_PAGE));
+    scooterCurrentPage = Math.max(1, Math.min(page, totalPages));
+    renderScooters();
+}
+
+function renderScooterPagination() {
+    const container = document.getElementById('scooterPagination');
+    if (!container) return;
+    const totalPages = Math.max(1, Math.ceil(scooters.length / SCOOTERS_PER_PAGE));
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    let html = `<span class="page-info">Page ${scooterCurrentPage} of ${totalPages}</span>`;
+    html += `<button onclick="goToScooterPage(${scooterCurrentPage - 1})" ${scooterCurrentPage === 1 ? 'disabled' : ''}>&laquo; Prev</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+        html += `<button onclick="goToScooterPage(${p})" class="${p === scooterCurrentPage ? 'page-active' : ''}">${p}</button>`;
+    }
+    html += `<button onclick="goToScooterPage(${scooterCurrentPage + 1})" ${scooterCurrentPage === totalPages ? 'disabled' : ''}>Next &raquo;</button>`;
+    container.innerHTML = html;
 }
 
 // Render bookings
@@ -386,28 +414,57 @@ function renderBookingsPage(userBookings, list) {
         const item = document.createElement('div');
         item.className = 'booking-item';
         const startTime = new Date(booking.startTime).toLocaleString();
-        const endTime = booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing';
-        const cost = booking.totalCost ? `$${booking.totalCost}` : 'Calculating...';
+        const status = String(booking.status || 'unknown');
+        const statusLower = status.toLowerCase();
+        const endTime = booking.endTime
+            ? new Date(booking.endTime).toLocaleString()
+            : (statusLower === 'canceled' || statusLower === 'cancelled')
+                ? '<span class="booking-status-badge badge-canceled">Canceled</span>'
+                : '<span class="booking-status-badge badge-active">Ongoing</span>';
+        const cost = booking.totalCost != null ? `$${Number(booking.totalCost).toFixed(2)}` : '--';
+        let statusBadgeClass = 'badge-pending';
+        if (statusLower === 'paid') statusBadgeClass = 'badge-active';
+        else if (statusLower === 'finished' || statusLower === 'completed') statusBadgeClass = 'badge-done';
+        else if (statusLower === 'canceled' || statusLower === 'cancelled') statusBadgeClass = 'badge-canceled';
+
         let buttonHtml = '';
-        if (booking.status === 'paid') {
+        if (statusLower === 'paid') {
             buttonHtml = `
                 <button onclick="extendRental(${booking.id})" class="extend-rental-btn"><i class="fa-solid fa-clock"></i> Extend</button>
-                <button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop"></i> End Rental</button>
+                <button onclick="endRental(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-stop-circle"></i> End Rental</button>
             `;
         } else {
-            const statusText = String(booking.status || '').toLowerCase();
-            const canCancel = ['pending', 'unpaid', 'placed', 'booked', 'created'].includes(statusText);
+            const canCancel = ['pending', 'unpaid', 'placed', 'booked', 'created'].includes(statusLower);
             if (canCancel) {
-                buttonHtml = `<button onclick="cancelBooking(${booking.id})" class="end-rental-btn"><i class="fa-solid fa-xmark"></i> Cancel</button>`;
+                buttonHtml = `<button onclick="cancelBooking(${booking.id})" class="cancel-booking-btn"><i class="fa-solid fa-xmark"></i> Cancel</button>`;
             }
         }
+
         item.innerHTML = `
-            <p>Scooter ID: ${booking.scooterId}</p>
-            <p>Start Time: ${startTime}</p>
-            <p>End Time: ${endTime}</p>
-            <p>Cost: ${cost}</p>
-            <p>Status: ${booking.status}</p>
-            ${buttonHtml}
+            <div class="booking-card-header">
+                <div class="booking-scooter-info">
+                    <i class="fa-solid fa-scooter"></i>
+                    <span class="booking-scooter-id">Scooter #${booking.scooterId}</span>
+                </div>
+                <span class="booking-status-badge ${statusBadgeClass}">${status}</span>
+            </div>
+            <div class="booking-card-body">
+                <div class="booking-time-row">
+                    <div class="booking-time-item">
+                        <i class="fa-solid fa-play"></i>
+                        <div><span class="booking-time-label">Start</span><span>${startTime}</span></div>
+                    </div>
+                    <div class="booking-time-item">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <div><span class="booking-time-label">End</span>${endTime}</div>
+                    </div>
+                </div>
+                <div class="booking-cost-row">
+                    <i class="fa-solid fa-coins"></i>
+                    <span class="booking-cost-value">${cost}</span>
+                </div>
+            </div>
+            ${buttonHtml ? `<div class="booking-card-actions">${buttonHtml}</div>` : ''}
         `;
         list.appendChild(item);
     });
@@ -416,17 +473,15 @@ function renderBookingsPage(userBookings, list) {
     if (totalPages > 1) {
         const pager = document.createElement('div');
         pager.className = 'booking-pagination';
-        pager.style.cssText = 'display:flex;gap:10px;align-items:center;margin-top:12px;';
+        let pageButtons = '';
+        for (let p = 1; p <= totalPages; p++) {
+            pageButtons += `<button onclick="changeBookingsPage(${p - bookingsCurrentPage})" class="${p === bookingsCurrentPage ? 'page-active' : ''}">${p}</button>`;
+        }
         pager.innerHTML = `
-            <button onclick="changeBookingsPage(-1)" ${bookingsCurrentPage <= 1 ? 'disabled' : ''}
-                style="padding:6px 14px;border-radius:6px;border:1px solid #ccc;cursor:pointer;">
-                <i class="fa-solid fa-chevron-left"></i> Prev
-            </button>
-            <span>Page ${bookingsCurrentPage} / ${totalPages}</span>
-            <button onclick="changeBookingsPage(1)" ${bookingsCurrentPage >= totalPages ? 'disabled' : ''}
-                style="padding:6px 14px;border-radius:6px;border:1px solid #ccc;cursor:pointer;">
-                Next <i class="fa-solid fa-chevron-right"></i>
-            </button>
+            <span class="page-info">Page ${bookingsCurrentPage} of ${totalPages}</span>
+            <button onclick="changeBookingsPage(-1)" ${bookingsCurrentPage <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
+            ${pageButtons}
+            <button onclick="changeBookingsPage(1)" ${bookingsCurrentPage >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
         `;
         list.appendChild(pager);
     }
@@ -473,10 +528,13 @@ function updatePaymentBreakdown(packagePrice) {
 
 function refreshSavedCardOptions() {
     const select = document.getElementById('savedCardSelect');
+    const useSavedBtn = document.getElementById('useSavedCardBtn');
     if (!select) return;
     select.innerHTML = '';
 
     const userCard = getSavedUserCard();
+    const hasSavedCard = !!userCard;
+
     if (userCard) {
         const option = document.createElement('option');
         option.value = userCard;
@@ -489,6 +547,10 @@ function refreshSavedCardOptions() {
         option.value = '';
         option.textContent = 'No saved card available';
         select.appendChild(option);
+    }
+
+    if (useSavedBtn) {
+        useSavedBtn.disabled = !hasSavedCard;
     }
 
     const cardInput = document.getElementById('paymentCardNumber');
@@ -555,50 +617,101 @@ function renderHighPriorityIssues() {
     if (!container) return;
 
     const high = issues.filter(issue => (issue.priority || '').toLowerCase() === 'high');
-    if (!high.length) {
-        container.innerHTML = '<p>No high priority issues yet.</p>';
+    const html = high.length
+        ? high.slice(0, 8).map(issue => {
+            return `<div class="issue-item issue-high">
+                <p><strong>ID:</strong> #${issue.id || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
+                <p><strong>Priority:</strong> ${issue.priority}</p>
+                <p>${issue.description}</p>
+            </div>`;
+        }).join('')
+        : '<p>No high priority issues yet.</p>';
+
+    container.innerHTML = html;
+}
+
+const ISSUE_HISTORY_PER_PAGE = 5;
+let issueHistoryPage = 1;
+
+function renderIssueHistory() {
+    const list = document.getElementById('issueHistoryList');
+    const pager = document.getElementById('issueHistoryPagination');
+    if (!list) return;
+
+    if (!issues.length) {
+        list.innerHTML = '<p>No submissions yet.</p>';
+        if (pager) pager.innerHTML = '';
         return;
     }
 
-    container.innerHTML = high.slice(0, 8).map(issue => {
-        return `<div class="issue-item issue-high">
-            <p><strong>ID:</strong> #${issue.id || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
-            <p><strong>Priority:</strong> ${issue.priority}</p>
-            <p>${issue.description}</p>
+    const sorted = [...issues].sort((a, b) => {
+        const idA = Number(a.id || 0);
+        const idB = Number(b.id || 0);
+        return idB - idA;
+    });
+
+    const totalPages = Math.max(1, Math.ceil(sorted.length / ISSUE_HISTORY_PER_PAGE));
+    if (issueHistoryPage > totalPages) issueHistoryPage = totalPages;
+    const start = (issueHistoryPage - 1) * ISSUE_HISTORY_PER_PAGE;
+    const pageItems = sorted.slice(start, start + ISSUE_HISTORY_PER_PAGE);
+
+    list.innerHTML = pageItems.map(issue => {
+        const priorityBadge = issue.priority
+            ? `<span class="booking-status-badge ${issue.priority.toLowerCase() === 'high' ? 'badge-canceled' : issue.priority.toLowerCase() === 'medium' ? 'badge-pending' : 'badge-done'}">${issue.priority}</span>`
+            : '';
+        return `<div class="issue-item">
+            <div class="issue-history-header">
+                <span><strong>#${issue.id || 'N/A'}</strong> — Scooter ${issue.scooterId}</span>
+                ${priorityBadge}
+            </div>
+            <p class="issue-history-desc">${issue.description || 'No description.'}</p>
         </div>`;
     }).join('');
-}
 
-function renderAdminHighPriorityIssues() {
-    const container = document.getElementById('adminHighPriorityIssues');
-    if (!container) return;
-
-    const high = issues.filter(issue => (issue.priority || '').toLowerCase() === 'high');
-    if (!high.length) {
-        container.innerHTML = '<p>No high priority issues found.</p>';
-        return;
+    if (pager) {
+        if (totalPages > 1) {
+            let btns = '';
+            for (let p = 1; p <= totalPages; p++) {
+                btns += `<button onclick="goIssueHistoryPage(${p})" class="${p === issueHistoryPage ? 'page-active' : ''}">${p}</button>`;
+            }
+            pager.innerHTML = `
+                <button onclick="goIssueHistoryPage(${issueHistoryPage - 1})" ${issueHistoryPage <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
+                ${btns}
+                <button onclick="goIssueHistoryPage(${issueHistoryPage + 1})" ${issueHistoryPage >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
+            `;
+        } else {
+            pager.innerHTML = '';
+        }
     }
-    container.innerHTML = high.map(issue => `
-        <div class="issue-item issue-high">
-            <p><strong>ID:</strong> ${issue.id || 'N/A'}</p>
-            <p><strong>User:</strong> ${issue.userId || 'N/A'} | <strong>Scooter:</strong> ${issue.scooterId}</p>
-            <p><strong>Status:</strong> ${issue.status || 'pending'} | <strong>Priority:</strong> ${issue.priority}</p>
-            <p>${issue.description}</p>
-            ${(issue.id && String(issue.status || '').toLowerCase() !== 'resolved') ? `<button onclick="resolveIssue(${issue.id})" class="btn-primary" type="button">Resolve</button>` : ''}
-        </div>
-    `).join('');
 }
+
+function goIssueHistoryPage(page) {
+    const totalPages = Math.max(1, Math.ceil(issues.length / ISSUE_HISTORY_PER_PAGE));
+    issueHistoryPage = Math.max(1, Math.min(totalPages, page));
+    renderIssueHistory();
+}
+
+const ISSUE_REVIEW_PER_PAGE = 5;
+let issueReviewPage = 1;
 
 function renderAdminIssueReviewList() {
     const container = document.getElementById('adminIssueReviewList');
+    const pager = document.getElementById('issueReviewPagination');
     if (!container) return;
 
     if (!issues.length) {
         container.innerHTML = '<p>No issues to review.</p>';
+        if (pager) pager.innerHTML = '';
         return;
     }
 
-    container.innerHTML = issues.map(issue => {
+    const sorted = [...issues].sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+    const totalPages = Math.max(1, Math.ceil(sorted.length / ISSUE_REVIEW_PER_PAGE));
+    if (issueReviewPage > totalPages) issueReviewPage = totalPages;
+    const start = (issueReviewPage - 1) * ISSUE_REVIEW_PER_PAGE;
+    const pageItems = sorted.slice(start, start + ISSUE_REVIEW_PER_PAGE);
+
+    container.innerHTML = pageItems.map(issue => {
         const currentPriority = (issue.priority || 'medium').toLowerCase();
         return `
             <div class="issue-item">
@@ -613,6 +726,28 @@ function renderAdminIssueReviewList() {
             </div>
         `;
     }).join('');
+
+    if (pager) {
+        if (totalPages > 1) {
+            let btns = '';
+            for (let p = 1; p <= totalPages; p++) {
+                btns += `<button onclick="goIssueReviewPage(${p})" class="${p === issueReviewPage ? 'page-active' : ''}">${p}</button>`;
+            }
+            pager.innerHTML = `
+                <button onclick="goIssueReviewPage(${issueReviewPage - 1})" ${issueReviewPage <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
+                ${btns}
+                <button onclick="goIssueReviewPage(${issueReviewPage + 1})" ${issueReviewPage >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
+            `;
+        } else {
+            pager.innerHTML = '';
+        }
+    }
+}
+
+function goIssueReviewPage(page) {
+    const totalPages = Math.max(1, Math.ceil(issues.length / ISSUE_REVIEW_PER_PAGE));
+    issueReviewPage = Math.max(1, Math.min(totalPages, page));
+    renderAdminIssueReviewList();
 }
 
 async function setIssuePriority(issueId, priority) {
@@ -628,11 +763,10 @@ async function setIssuePriority(issueId, priority) {
         announce(`Issue ${issueId} priority set to ${priority}.`);
         await loadIssues();
         renderAdminIssueReviewList();
-        renderAdminHighPriorityIssues();
-        renderHighPriorityIssues();
+                renderHighPriorityIssues();
     } catch (error) {
         console.error('Set priority error:', error);
-        alert('Priority update endpoint is not available yet. Please ask backend to provide PUT /api/issues/{id}/priority.');
+        alert(error.message || 'Failed to update priority.');
     }
 }
 
@@ -645,6 +779,7 @@ async function loadIssues() {
         }
         const data = await response.json();
         issues = Array.isArray(data) ? data : [];
+        renderIssueHistory();
     } catch (error) {
         console.error('Failed to load issues:', error);
         // Backend required for persistent issue list.
@@ -661,30 +796,120 @@ function drawBarChart(canvasId, labels, values) {
     ctx.clearRect(0, 0, w, h);
 
     if (!labels.length) {
-        ctx.fillStyle = '#666';
-        ctx.font = '14px Segoe UI';
-        ctx.fillText('No data available.', 16, 30);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '600 14px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data available.', w / 2, h / 2);
         return;
     }
 
     const max = Math.max(...values, 1);
-    const chartTop = 20;
-    const chartBottom = h - 40;
-    const chartHeight = chartBottom - chartTop;
-    const barWidth = Math.max(24, Math.floor((w - 40) / labels.length) - 16);
+    const top = 38;
+    const bottom = h - 40;
+    const left = 60;
+    const right = w - 24;
+    const chartH = bottom - top;
+    const chartW = right - left;
+
+    // Grid lines — subtle
+    const gridLines = 5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.lineWidth = 1;
+    for (let g = 0; g <= gridLines; g++) {
+        const gy = top + (chartH / gridLines) * g;
+        ctx.beginPath();
+        ctx.setLineDash(g === 0 ? [] : [3, 5]);
+        ctx.moveTo(left, gy);
+        ctx.lineTo(right, gy);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Y-axis label
+    ctx.save();
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 11px "Segoe UI", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.translate(12, top + chartH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Revenue ($)', 0, 0);
+    ctx.restore();
+
+    // Bar layout
+    const barCount = labels.length;
+    const maxBarWidth = 72;
+    const minBarWidth = 44;
+    const barWidth = Math.max(minBarWidth, Math.min(maxBarWidth, Math.floor((chartW - (barCount - 1) * 20) / barCount)));
+    const totalBarW = barWidth * barCount;
+    const spacing = barCount > 1 ? (chartW - totalBarW) / (barCount - 1) : 0;
+    const startX = left + (chartW - (totalBarW + spacing * (barCount - 1))) / 2;
+
+    // Find peak and trough
+    let peakIdx = 0, troughIdx = 0;
+    for (let i = 1; i < values.length; i++) {
+        if (values[i] > values[peakIdx]) peakIdx = i;
+        if (values[i] < values[troughIdx]) troughIdx = i;
+    }
+
+    // Blue gradient palette — one per bar
+    const barGradients = [
+        ['#93c5fd', '#60a5fa'],
+        ['#60a5fa', '#42A5F5'],
+        ['#42A5F5', '#1E88E5'],
+        ['#1E88E5', '#1976D2']
+    ];
 
     labels.forEach((label, i) => {
-        const x = 20 + i * (barWidth + 16);
-        const barH = (values[i] / max) * chartHeight;
-        const y = chartBottom - barH;
-        ctx.fillStyle = '#2f80ed';
-        ctx.fillRect(x, y, barWidth, barH);
+        const x = barCount === 1 ? left + (chartW - barWidth) / 2 : startX + i * (barWidth + spacing);
+        const barH = Math.max(2, (values[i] / max) * chartH);
+        const y = bottom - barH;
+        const radius = Math.min(4, barWidth / 6);
+        const isPeak = i === peakIdx && values[i] > 0;
+        const isTrough = i === troughIdx && values[i] < values[peakIdx];
 
-        ctx.fillStyle = '#1f2937';
-        ctx.font = '12px Segoe UI';
-        ctx.fillText(String(values[i]), x, y - 6);
-        ctx.fillText(label, x, chartBottom + 16);
+        // Bar gradient — brand blue family
+        const [topColor, bottomColor] = barGradients[i % barGradients.length];
+        const grad = ctx.createLinearGradient(x, y, x, bottom);
+        grad.addColorStop(0, topColor);
+        grad.addColorStop(1, bottomColor);
+        ctx.fillStyle = grad;
+        roundRect(ctx, x, y, barWidth, barH, radius, true, false);
+
+        // Subtle peak highlight
+        if (isPeak) {
+            ctx.fillStyle = 'rgba(66, 165, 245, 0.14)';
+            roundRect(ctx, x, y, barWidth, barH, radius, true, false);
+        }
+
+        // Value label
+        ctx.fillStyle = isPeak ? '#1976D2' : '#475569';
+        ctx.font = isPeak
+            ? 'bold 12px "Segoe UI", system-ui, sans-serif'
+            : '600 11px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        const displayVal = values[i] === 0 ? '$0' : '$' + values[i];
+        ctx.fillText(displayVal, x + barWidth / 2, y - 10);
+
+        // X-axis label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '500 10px "Segoe UI", system-ui, sans-serif';
+        ctx.fillText(label, x + barWidth / 2, bottom + 16);
     });
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+    const radius = Math.min(r, h / 2, w / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
 }
 
 function drawLineChart(canvasId, labels, values) {
@@ -696,43 +921,135 @@ function drawLineChart(canvasId, labels, values) {
     ctx.clearRect(0, 0, w, h);
 
     if (!labels.length) {
-        ctx.fillStyle = '#666';
-        ctx.font = '14px Segoe UI';
-        ctx.fillText('No data available.', 16, 30);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '600 14px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data available.', w / 2, h / 2);
         return;
     }
 
     const max = Math.max(...values, 1);
-    const left = 30;
-    const right = w - 20;
-    const top = 20;
+    const top = 38;
     const bottom = h - 40;
-    const stepX = labels.length > 1 ? (right - left) / (labels.length - 1) : 0;
+    const left = 60;
+    const right = w - 24;
+    const chartH = bottom - top;
+    const chartW = right - left;
+    const stepX = labels.length > 1 ? chartW / (labels.length - 1) : 0;
 
-    ctx.strokeStyle = '#2f80ed';
-    ctx.lineWidth = 2;
+    // Grid lines — subtle
+    const gridLines = 5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.lineWidth = 1;
+    for (let g = 0; g <= gridLines; g++) {
+        const gy = top + (chartH / gridLines) * g;
+        ctx.beginPath();
+        ctx.setLineDash(g === 0 ? [] : [3, 5]);
+        ctx.moveTo(left, gy);
+        ctx.lineTo(right, gy);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Y-axis label
+    ctx.save();
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 11px "Segoe UI", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.translate(12, top + chartH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Daily Revenue ($)', 0, 0);
+    ctx.restore();
+
+    // Data points
+    const points = values.map((value, i) => ({
+        x: left + i * stepX,
+        y: bottom - ((value / max) * chartH),
+        value
+    }));
+
+    // Subtle gradient fill under the line
+    const areaGrad = ctx.createLinearGradient(0, top, 0, bottom);
+    areaGrad.addColorStop(0, 'rgba(66, 165, 245, 0.10)');
+    areaGrad.addColorStop(0.6, 'rgba(66, 165, 245, 0.03)');
+    areaGrad.addColorStop(1, 'rgba(66, 165, 245, 0.00)');
+    ctx.fillStyle = areaGrad;
     ctx.beginPath();
+    points.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+    ctx.lineTo(points[points.length - 1].x, bottom);
+    ctx.lineTo(points[0].x, bottom);
+    ctx.closePath();
+    ctx.fill();
 
-    values.forEach((value, i) => {
-        const x = left + i * stepX;
-        const y = bottom - ((value / max) * (bottom - top));
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    // Smooth line — soft blue
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    points.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else {
+            const prev = points[i - 1];
+            const cpx = (prev.x + p.x) / 2;
+            ctx.bezierCurveTo(cpx, prev.y, cpx, p.y, p.x, p.y);
+        }
     });
     ctx.stroke();
 
-    values.forEach((value, i) => {
-        const x = left + i * stepX;
-        const y = bottom - ((value / max) * (bottom - top));
-        ctx.fillStyle = '#2f80ed';
+    // Find peak
+    let peakIndex = 0;
+    for (let i = 1; i < points.length; i++) {
+        if (points[i].value > points[peakIndex].value) peakIndex = i;
+    }
+    const hasPeak = points[peakIndex].value > 0;
+
+    // Data dots — minimal, only visible points
+    points.forEach((p, i) => {
+        const isPeak = i === peakIndex && hasPeak;
+
+        // Dot fill
+        ctx.fillStyle = isPeak ? '#42A5F5' : '#fff';
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, isPeak ? 5 : 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#1f2937';
-        ctx.font = '12px Segoe UI';
-        ctx.fillText(String(value), x - 8, y - 8);
-        ctx.fillText(labels[i], x - 16, bottom + 16);
+        // Dot border
+        ctx.strokeStyle = isPeak ? '#42A5F5' : '#93c5fd';
+        ctx.lineWidth = isPeak ? 2 : 1.5;
+        ctx.stroke();
+
+        // Peak annotation line
+        if (isPeak && points.length > 1) {
+            ctx.strokeStyle = 'rgba(66, 165, 245, 0.18)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 3]);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x, top);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Value label — only peak + first + last
+        const isFirstOrLast = i === 0 || i === points.length - 1;
+        if (isPeak || (isFirstOrLast && points.length <= 7) || (isFirstOrLast && points.length > 7 && p.value > 0)) {
+            ctx.fillStyle = isPeak ? '#1976D2' : '#334155';
+            ctx.font = isPeak ? 'bold 12px "Segoe UI", system-ui, sans-serif' : '600 11px "Segoe UI", system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            const displayVal = p.value === 0 ? '$0' : '$' + p.value;
+            const labelY = isPeak ? p.y - 18 : p.y - 14;
+            ctx.fillText(displayVal, p.x, labelY);
+        }
+
+        // Date label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '500 10px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i], p.x, bottom + 16);
     });
 }
 
@@ -749,13 +1066,26 @@ async function renderRevenueCharts() {
         const weeklyLabels = (Array.isArray(weekly) ? weekly : []).map(item => item.packageType || 'N/A');
         const weeklyValues = (Array.isArray(weekly) ? weekly : []).map(item => Number(item.totalRevenue || 0));
 
+        // Ensure all four package types appear, even with 0 revenue
+        const typeOrder = ['1h', '4h', '1d', '1w'];
+        const weeklyMap = {};
+        weeklyLabels.forEach((label, i) => {
+            const norm = normalizePackageTypeText(label);
+            const key = typeOrder.find(t => norm === t || (t === '1h' && norm === '1hour') || (t === '4h' && norm === '4hours') || (t === '1d' && norm === '1day') || (t === '1w' && norm === '1week'));
+            if (key) {
+                weeklyMap[key] = (weeklyMap[key] || 0) + weeklyValues[i];
+            }
+        });
+        const filledLabels = typeOrder;
+        const filledValues = typeOrder.map(t => weeklyMap[t] || 0);
+
         const dailyLabels = (Array.isArray(daily) ? daily : []).map(item => item.date || 'N/A');
         const dailyValues = (Array.isArray(daily) ? daily : []).map(item => Number(item.dailyTotal || 0));
 
-        const weeklyTotal = weeklyValues.reduce((sum, value) => sum + value, 0);
+        const weeklyTotal = filledValues.reduce((sum, value) => sum + value, 0);
         const dailyAvg = dailyValues.length ? (dailyValues.reduce((sum, value) => sum + value, 0) / dailyValues.length) : 0;
-        const maxWeeklyIndex = weeklyValues.length ? weeklyValues.indexOf(Math.max(...weeklyValues)) : -1;
-        const bestPackage = maxWeeklyIndex >= 0 ? weeklyLabels[maxWeeklyIndex] : 'N/A';
+        const maxWeeklyValue = Math.max(...filledValues);
+        const bestPackage = maxWeeklyValue > 0 ? filledLabels[filledValues.indexOf(maxWeeklyValue)] : 'N/A';
 
         const weeklyTotalNode = document.getElementById('adminRevenueWeeklyTotal');
         const dailyAvgNode = document.getElementById('adminRevenueDailyAvg');
@@ -764,7 +1094,7 @@ async function renderRevenueCharts() {
         if (dailyAvgNode) dailyAvgNode.textContent = `$${dailyAvg.toFixed(2)}`;
         if (bestPackageNode) bestPackageNode.textContent = bestPackage;
 
-        drawBarChart('weeklyRevenueChart', weeklyLabels, weeklyValues);
+        drawBarChart('weeklyRevenueChart', filledLabels, filledValues);
         drawLineChart('dailyRevenueChart', dailyLabels.reverse(), dailyValues.reverse());
     } catch (error) {
         console.error('Chart render error:', error);
@@ -915,5 +1245,17 @@ function handleCrossTabSync(event) {
             showAuthMode('login');
         }
     }
+}
+
+function updateScooterPageStats() {
+    const available = scooters.filter(s => normalizeScooterStatus(s.status) === 'available').length;
+    const maintenance = scooters.filter(s => normalizeScooterStatus(s.status) === 'maintenance').length;
+    const rented = scooters.filter(s => normalizeScooterStatus(s.status) === 'rented').length;
+    const totalNode = document.getElementById('totalScooters');
+    const availNode = document.getElementById('availableCount');
+    const maintNode = document.getElementById('maintenanceCount');
+    if (totalNode) totalNode.textContent = scooters.length;
+    if (availNode) availNode.textContent = available;
+    if (maintNode) maintNode.textContent = maintenance;
 }
 

@@ -129,7 +129,7 @@ function getModelImage(model) {
 }
 
 function resolveScooterImage(model, rawImage) {
-    if (rawImage && /^images\//i.test(rawImage)) {
+    if (rawImage && /^\/?images\//i.test(rawImage)) {
         return rawImage;
     }
     const fallbackByModel = {
@@ -273,10 +273,29 @@ function normalizeScooterStatus(status) {
     return status;
 }
 
+const MODEL_SPECS = {
+    x1: { maxSpeed: '15 mph', range: '25 miles', weight: '12.5 kg', motor: '250W Hub' },
+    x2: { maxSpeed: '18 mph', range: '30 miles', weight: '13.8 kg', motor: '350W Hub' },
+    x3: { maxSpeed: '22 mph', range: '35 miles', weight: '14.2 kg', motor: '500W Hub' },
+    x4: { maxSpeed: '25 mph', range: '40 miles', weight: '15.0 kg', motor: '750W Hub' }
+};
+
+function getScooterSpecs(scooter) {
+    if (scooter.specs && scooter.specs.maxSpeed !== 'N/A') return scooter.specs;
+    const model = String(scooter.model || '').toLowerCase();
+    const image = String(scooter.imageUrl || scooter.image || '').toLowerCase();
+    for (const [key, spec] of Object.entries(MODEL_SPECS)) {
+        if (model.includes(key) || image.includes(key)) return spec;
+    }
+    return MODEL_SPECS.x1;
+}
+
 function normalizeScooter(scooter) {
     const battery = Number.isFinite(scooter.batteryLevel) ? scooter.batteryLevel : (Number.isFinite(scooter.battery) ? scooter.battery : 0);
     const latitude = Number(scooter.latitude);
     const longitude = Number(scooter.longitude);
+    const specs = getScooterSpecs(scooter);
+    const mileage = scooter.gps && scooter.gps.mileage ? scooter.gps.mileage : (Math.round((scooter.id * 37 + 120) * 10) / 10);
     return {
         ...scooter,
         status: normalizeScooterStatus(scooter.status),
@@ -285,10 +304,10 @@ function normalizeScooter(scooter) {
         gps: {
             lat: Number.isFinite(latitude) ? latitude : 0,
             lng: Number.isFinite(longitude) ? longitude : 0,
-            // No mileage API in ScooterController currently.
-            mileage: scooter.gps && scooter.gps.mileage ? scooter.gps.mileage : 'N/A'
+            mileage
         },
-        image: resolveScooterImage(scooter.model, scooter.image)
+        specs,
+        image: resolveScooterImage(scooter.model, scooter.imageUrl || scooter.image)
     };
 }
 
@@ -357,7 +376,7 @@ async function loadScooterLocations() {
 }
 
 function buildMapPointsFromScooters(sourceScooters) {
-    const fallbackCenter = { lat: 51.5074, lng: -0.1278 };
+    const fallbackCenter = { lat: 53.8008, lng: -1.5491 };
     const spacing = 0.0042;
     return (Array.isArray(sourceScooters) ? sourceScooters : []).slice(0, 20).map((item, index) => {
         const rawLat = Number(item.gps && item.gps.lat ? item.gps.lat : item.latitude);
@@ -592,8 +611,8 @@ function renderScooterMap() {
         .filter(point => Number.isFinite(point.lat) && Number.isFinite(point.lng));
 
     if (!scooterMap) {
-        scooterMap = L.map('scooterMap').setView([51.5074, -0.1278], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        scooterMap = L.map('scooterMap').setView([53.8008, -1.5491], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(scooterMap);
@@ -683,18 +702,50 @@ async function loadAdminUsers() {
     }
 }
 
+const USERS_PER_PAGE = 5;
+let usersPage = 1;
+
 function renderAdminUsers() {
     const container = document.getElementById('adminUsersList');
+    const pager = document.getElementById('usersPagination');
     if (!container) return;
     if (!adminUsers.length) {
         container.innerHTML = '<p>No user data loaded.</p>';
+        if (pager) pager.innerHTML = '';
         return;
     }
-    container.innerHTML = adminUsers.map(user => `
+    const totalPages = Math.max(1, Math.ceil(adminUsers.length / USERS_PER_PAGE));
+    if (usersPage > totalPages) usersPage = totalPages;
+    const start = (usersPage - 1) * USERS_PER_PAGE;
+    const pageItems = adminUsers.slice(start, start + USERS_PER_PAGE);
+
+    container.innerHTML = pageItems.map(user => `
         <div class="issue-item">
             <p><strong>ID:</strong> ${user.id} | <strong>Name:</strong> ${user.username || 'N/A'} | <strong>Role:</strong> ${user.role || 'user'}</p>
             <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
         </div>
     `).join('');
+
+    if (pager) {
+        if (totalPages > 1) {
+            let btns = '';
+            for (let p = 1; p <= totalPages; p++) {
+                btns += `<button onclick="goUsersPage(${p})" class="${p === usersPage ? 'page-active' : ''}">${p}</button>`;
+            }
+            pager.innerHTML = `
+                <button onclick="goUsersPage(${usersPage - 1})" ${usersPage <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
+                ${btns}
+                <button onclick="goUsersPage(${usersPage + 1})" ${usersPage >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
+            `;
+        } else {
+            pager.innerHTML = '';
+        }
+    }
+}
+
+function goUsersPage(page) {
+    const totalPages = Math.max(1, Math.ceil(adminUsers.length / USERS_PER_PAGE));
+    usersPage = Math.max(1, Math.min(totalPages, page));
+    renderAdminUsers();
 }
 

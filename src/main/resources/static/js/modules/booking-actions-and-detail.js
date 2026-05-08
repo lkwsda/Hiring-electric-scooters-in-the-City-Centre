@@ -13,6 +13,7 @@ async function endRental(bookingId) {
         if (idx !== -1) bookings[idx].status = 'finished';
 
         await loadScooters();
+        updateScooterPageStats();
         await loadScooterLocations();
         renderScooters();
         renderScooterLocations();

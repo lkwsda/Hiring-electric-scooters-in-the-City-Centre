@@ -31,6 +31,8 @@ if (adminSidebarBtns.length) {
     });
 }
 
+// Sidebar toggle handled via inline onclick for reliability
+
 if (scooterListViewBtn) {
     scooterListViewBtn.addEventListener('click', () => {
         setScooterViewMode('list');
@@ -206,6 +208,46 @@ function populatePackageSelect() {
         option.textContent = `${name} - $${pkg.price}`;
         select.appendChild(option);
     });
+    select.addEventListener('change', updatePackageSummary);
+    updatePackageSummary();
+}
+
+function updatePackageSummary() {
+    const container = document.getElementById('packageSummaryContent');
+    if (!container) return;
+    const select = document.getElementById('packageSelect');
+    if (!select || !select.value) {
+        container.innerHTML = '<p class="hint-text">Select a package to see details and pricing.</p>';
+        return;
+    }
+    const pkg = packages.find(p => String(p.id) === select.value);
+    if (!pkg) {
+        container.innerHTML = '<p class="hint-text">Select a package to see details and pricing.</p>';
+        return;
+    }
+    const type = (pkg.packageType || '').toLowerCase();
+    const name = type === '1h' ? '1 Hour' : type === '4h' ? '4 Hours' : type === '1d' ? '1 Day' : type === '1w' ? '1 Week' : pkg.packageType;
+    const price = Number(pkg.price).toFixed(2);
+    const fee = serviceFee.toFixed(2);
+    const total = (Number(pkg.price) + serviceFee).toFixed(2);
+    container.innerHTML = `
+        <div class="summary-item">
+            <span class="summary-label"><i class="fa-solid fa-box"></i> Package</span>
+            <span class="summary-value">${name}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label"><i class="fa-solid fa-tag"></i> Price</span>
+            <span class="summary-value price">$${price}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label"><i class="fa-solid fa-coins"></i> Service Fee</span>
+            <span class="summary-value">$${fee}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label"><i class="fa-solid fa-credit-card"></i> Total</span>
+            <span class="summary-value price">$${total}</span>
+        </div>
+    `;
 }
 
 // Initialize
@@ -218,6 +260,7 @@ window.addEventListener('load', async function() {
         populatePackageSelect();
         fillPricingFormFromPackages();
         await loadScooters();
+        updateScooterPageStats();
         await loadScooterLocations();
         await loadIssues();
         await loadAdminUsers();

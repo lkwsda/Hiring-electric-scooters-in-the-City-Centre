@@ -195,7 +195,7 @@
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     margin-bottom: 30px;
-    border-top: 4px solid #3498db;
+    border-top: 4px solid #42A5F5;
 }
 
 .scooter-detail-container {
@@ -264,7 +264,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
     color: white;
 }
 
@@ -570,7 +570,7 @@
 }
 
 .terms-checkbox a {
-    color: #3498db;
+    color: #42A5F5;
     text-decoration: none;
 }
 
