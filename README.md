@@ -94,14 +94,6 @@ API docs (Swagger UI):
 http://localhost:8080/swagger-ui.html
 ```
 
-### Test Accounts
-
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | 123456 |
-| User | student | 12345678 |
-| User | grandpa | 87654321 |
-
 ## Running Tests
 
 ### Java Unit Tests
