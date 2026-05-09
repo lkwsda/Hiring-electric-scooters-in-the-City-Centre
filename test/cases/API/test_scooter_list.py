@@ -1,6 +1,6 @@
 """
-车辆列表接口
-测试接口:GET /api/scooters
+Scooter list endpoint
+Tested endpoint: GET /api/scooters
 """
 
 from __future__ import annotations
@@ -24,79 +24,79 @@ def _auth_headers():
 
 
 def fetch_scooter_list() -> requests.Response:
-    """调用车辆列表接口，返回原始响应对象。"""
+    """Call the scooter list endpoint and return the raw response object."""
     return requests.get(SCOOTER_LIST_URL, timeout=10, headers=_auth_headers())
 
 
 def test_scooter_list_status_ok() -> None:
-    """用例1:接口可访问,状态码应为 200。"""
+    """Test case 1: Endpoint should be accessible with status code 200."""
     response = fetch_scooter_list()
 
     assert response.status_code == 200, (
-        f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
+        f"Expected status code 200, got {response.status_code}, response: {response.text}"
     )
 
 
 def test_scooter_list_is_json_array() -> None:
-    """用例2:响应体应可解析为 JSON 数组。"""
+    """Test case 2: Response body should be parseable as a JSON array."""
     response = fetch_scooter_list()
 
     assert response.status_code == 200, (
-        f"状态码异常，无法继续校验 JSON 结构，实际 {response.status_code}，响应：{response.text}"
+        f"Unexpected status code, cannot continue validating JSON structure, got {response.status_code}, response: {response.text}"
     )
 
     try:
         data = response.json()
     except ValueError as exc:
-        raise AssertionError(f"响应不是合法 JSON,响应:{response.text}") from exc
+        raise AssertionError(f"Response is not valid JSON, response: {response.text}") from exc
 
-    assert isinstance(data, list), f"期望响应为数组(list)，实际类型 {type(data)}，响应：{data}"
+    assert isinstance(data, list), f"Expected the response to be a list, actual type {type(data)}, response: {data}"
 
 
 def test_scooter_list_item_schema_when_not_empty() -> None:
-    """用例3:当列表非空时,首元素应包含关键字段。"""
+    """Test case 3: When the list is non-empty, the first item should contain key fields."""
     response = fetch_scooter_list()
     assert response.status_code == 200, (
-        f"状态码异常，无法继续校验字段，实际 {response.status_code}，响应：{response.text}"
+        f"Unexpected status code, cannot continue validating fields, got {response.status_code}, response: {response.text}"
     )
 
     data = response.json()
-    assert isinstance(data, list), f"期望响应为数组(list)，实际类型 {type(data)}，响应：{data}"
+    assert isinstance(data, list), f"Expected the response to be a list, actual type {type(data)}, response: {data}"
 
-    # 空列表属于合法场景，此用例仅在非空时检查结构
+    # An empty list is a valid scenario; this test only checks structure when non-empty
     if not data:
         return
 
     first = data[0]
-    assert isinstance(first, dict), f"数组元素应为对象(dict)，实际类型 {type(first)}，元素：{first}"
+    assert isinstance(first, dict), f"Array items should be dictionaries, actual type {type(first)}, item: {first}"
 
     required_fields = ["id", "model", "batteryLevel", "status"]
     missing_fields = [field for field in required_fields if field not in first]
-    assert not missing_fields, f"缺少关键字段：{missing_fields}，实际元素：{first}"
+    assert not missing_fields, f"Missing required fields: {missing_fields}, actual item: {first}"
 
-    assert isinstance(first["id"], int), f"id 应为整数，实际值：{first['id']}"
-    assert isinstance(first["model"], str), f"model 应为字符串，实际值：{first['model']}"
+    assert isinstance(first["id"], int), f"id should be an integer, actual value: {first['id']}"
+    assert isinstance(first["model"], str), f"model should be a string, actual value: {first['model']}"
 
-    # batteryLevel 允许 int/float，避免不同序列化策略导致误报
+    # batteryLevel may be int/float to avoid false positives from different serialization strategies
     assert isinstance(first["batteryLevel"], (int, float)), (
-        f"batteryLevel 应为数值，实际值：{first['batteryLevel']}"
+        f"batteryLevel should be numeric, actual value: {first['batteryLevel']}"
     )
-    assert isinstance(first["status"], str), f"status 应为字符串，实际值：{first['status']}"
+    assert isinstance(first["status"], str), f"status should be a string, actual value: {first['status']}"
 
 
 def run_all_tests() -> None:
-    """按顺序执行所有用例并输出汇总。"""
+    """Execute all test cases in order and print a summary."""
     tests: List[Tuple[str, Callable[[], None]]] = [
-        ("车辆列表接口返回 200", test_scooter_list_status_ok),
-        ("车辆列表响应为 JSON 数组", test_scooter_list_is_json_array),
-        ("车辆元素字段结构校验（非空时）", test_scooter_list_item_schema_when_not_empty),
+        ("Scooter list returns 200", test_scooter_list_status_ok),
+        ("Scooter list response is a JSON array", test_scooter_list_is_json_array),
+        ("Scooter item schema validation when non-empty", test_scooter_list_item_schema_when_not_empty),
     ]
 
     passed = 0
     failed = 0
 
-    print("开始执行车辆列表接口自动化测试...")
-    print(f"目标接口：{SCOOTER_LIST_URL}")
+    print("Starting scooter list API automated tests...")
+    print(f"Target endpoint: {SCOOTER_LIST_URL}")
 
     for name, func in tests:
         try:
@@ -107,9 +107,9 @@ def run_all_tests() -> None:
             failed += 1
             print(f"FAIL - {name} -> {exc}")
 
-    print("\n测试结束")
-    print(f"通过: {passed}")
-    print(f"失败: {failed}")
+    print("\nTest finished")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """
-套餐接口
-测试接口：
+Package endpoints
+Tested endpoints:
 1) GET /api/packages
 2) PUT /api/packages/update/{id}
 """
@@ -28,44 +28,44 @@ def _auth_headers():
 
 
 def get_all_packages() -> requests.Response:
-    """调用查询套餐接口。"""
+    """Call the packages query endpoint."""
     return requests.get(PACKAGES_URL, timeout=10, headers=_auth_headers())
 
 
 def update_package_price(package_id: int, price: str) -> requests.Response:
-    """调用更新套餐价格接口。"""
+    """Call the package price update endpoint."""
     return requests.put(f"{PACKAGE_UPDATE_URL}/{package_id}", params={"price": price}, timeout=10, headers=_auth_headers())
 
 
 def test_get_packages_success() -> None:
-    """用例1:查询套餐列表成功。"""
+    """Test case 1: Retrieve packages list successfully."""
     response = get_all_packages()
 
     assert response.status_code == 200, (
-        f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
+        f"Expected status code 200, got {response.status_code}, response: {response.text}"
     )
 
     data = response.json()
-    assert isinstance(data, list), f"期望响应为数组(list)，实际类型 {type(data)}，响应：{data}"
+    assert isinstance(data, list), f"Expected the response to be a list, actual type {type(data)}, response: {data}"
 
 
 def test_update_package_price_success_and_rollback() -> None:
-    """用例2:更新价格成功，并在结束后回滚。"""
+    """Test case 2: Update package price successfully and rollback afterwards."""
     list_response = get_all_packages()
     assert list_response.status_code == 200, (
-        f"前置失败：获取套餐失败,状态码 {list_response.status_code}，响应：{list_response.text}"
+        f"Setup failed: failed to get packages, status code {list_response.status_code}, response: {list_response.text}"
     )
 
     packages = list_response.json()
-    assert isinstance(packages, list), f"前置失败：套餐响应结构异常，响应：{packages}"
-    assert packages, "前置失败：套餐列表为空，无法执行更新测试"
+    assert isinstance(packages, list), f"Setup failed: package response structure is invalid, response: {packages}"
+    assert packages, "Setup failed: package list is empty, cannot run the update test"
 
     first = packages[0]
     package_id = first.get("id")
     original_price = first.get("price")
 
-    assert isinstance(package_id, int), f"前置失败：套餐 id 无效，响应元素：{first}"
-    assert original_price is not None, f"前置失败：套餐原始价格为空，响应元素：{first}"
+    assert isinstance(package_id, int), f"Setup failed: invalid package id, response item: {first}"
+    assert original_price is not None, f"Setup failed: original package price is empty, response item: {first}"
 
     original_price_decimal = Decimal(str(original_price))
     new_price_decimal = original_price_decimal + Decimal("1.00")
@@ -74,69 +74,69 @@ def test_update_package_price_success_and_rollback() -> None:
     try:
         update_response = update_package_price(package_id, str(new_price_decimal))
         assert update_response.status_code == 200, (
-            f"更新价格应成功，实际状态码 {update_response.status_code}，响应：{update_response.text}"
+            f"Price update should succeed, status code {update_response.status_code}, response: {update_response.text}"
         )
         rollback_needed = True
 
         verify_response = get_all_packages()
         assert verify_response.status_code == 200, (
-            f"更新后查询失败，状态码 {verify_response.status_code}，响应：{verify_response.text}"
+            f"Failed to query packages after update, status code {verify_response.status_code}, response: {verify_response.text}"
         )
 
         updated_packages = verify_response.json()
         target = next((p for p in updated_packages if p.get("id") == package_id), None)
-        assert target is not None, f"更新后未找到目标套餐，package_id={package_id}"
+        assert target is not None, f"Target package not found after update, package_id={package_id}"
 
         updated_price = Decimal(str(target.get("price")))
         assert updated_price == new_price_decimal, (
-            f"更新后价格不正确，期望 {new_price_decimal}，实际 {updated_price}"
+            f"Updated price is incorrect, expected {new_price_decimal}, got {updated_price}"
         )
     finally:
         if rollback_needed:
             rollback_response = update_package_price(package_id, str(original_price_decimal))
             assert rollback_response.status_code == 200, (
-                f"回滚价格失败，状态码 {rollback_response.status_code}，响应：{rollback_response.text}"
+                f"Failed to rollback price, status code {rollback_response.status_code}, response: {rollback_response.text}"
             )
 
 
 def test_update_package_negative_price_should_fail() -> None:
-    """用例3:负数价格应失败。"""
+    """Test case 3: Updating to a negative price should fail."""
     list_response = get_all_packages()
     assert list_response.status_code == 200, (
-        f"前置失败：获取套餐失败，状态码 {list_response.status_code}，响应：{list_response.text}"
+        f"Setup failed: failed to get packages, status code {list_response.status_code}, response: {list_response.text}"
     )
 
     packages = list_response.json()
-    assert isinstance(packages, list), f"前置失败：套餐响应结构异常，响应：{packages}"
-    assert packages, "前置失败：套餐列表为空，无法执行负数价格测试"
+    assert isinstance(packages, list), f"Setup failed: package response structure is invalid, response: {packages}"
+    assert packages, "Setup failed: package list is empty, cannot run the negative price test"
 
     package_id = packages[0].get("id")
-    assert isinstance(package_id, int), f"前置失败：套餐 id 无效，响应元素：{packages[0]}"
+    assert isinstance(package_id, int), f"Setup failed: invalid package id, response item: {packages[0]}"
 
     response = update_package_price(package_id, "-1.00")
 
     assert response.status_code != 200, (
-        f"负数价格更新不应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Updating to a negative price should not succeed, status code {response.status_code}, response: {response.text}"
     )
     assert "cannot be negative" in response.text.lower() or "error" in response.text.lower(), (
-        f"错误信息不符合预期，响应：{response.text}"
+        f"Error message does not match expectations, response: {response.text}"
     )
 
 
 def run_all_tests() -> None:
-    """按顺序执行所有用例并输出汇总。"""
+    """Execute all test cases in order and print a summary."""
     tests: List[Tuple[str, Callable[[], None]]] = [
-        ("查询套餐列表成功", test_get_packages_success),
-        ("更新套餐价格成功并回滚", test_update_package_price_success_and_rollback),
-        ("负数价格更新失败", test_update_package_negative_price_should_fail),
+        ("Retrieve packages list successfully", test_get_packages_success),
+        ("Update package price and rollback", test_update_package_price_success_and_rollback),
+        ("Negative price update fails", test_update_package_negative_price_should_fail),
     ]
 
     passed = 0
     failed = 0
 
-    print("开始执行套餐接口自动化测试...")
-    print(f"查询接口：{PACKAGES_URL}")
-    print(f"更新接口：{PACKAGE_UPDATE_URL}/{{id}}")
+    print("Starting package API automated tests...")
+    print(f"Query endpoint: {PACKAGES_URL}")
+    print(f"Update endpoint: {PACKAGE_UPDATE_URL}/{{id}}")
 
     for name, func in tests:
         try:
@@ -147,9 +147,9 @@ def run_all_tests() -> None:
             failed += 1
             print(f"FAIL - {name} -> {exc}")
 
-    print("\n测试结束")
-    print(f"通过: {passed}")
-    print(f"失败: {failed}")
+    print("\nTest finished")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
 
 if __name__ == "__main__":

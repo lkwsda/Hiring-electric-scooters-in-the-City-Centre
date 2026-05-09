@@ -1,14 +1,14 @@
 """
-E2E UI 全流程自动化测试运行器
+E2E UI full-flow automated test runner
 
-按顺序执行 4 个 Selenium E2E 测试:
-1. test_selenium_auth_flow   - 用户注册与登录流程
-2. test_selenium_main_flow   - 核心租赁流程 (浏览→预订→支付→成功)
-3. test_selenium_admin_flow  - 管理员后台流程
-4. test_selenium_issue_flow  - 故障上报与处理流程
+Run 4 Selenium E2E tests in order:
+1. test_selenium_auth_flow   - User registration and login flow
+2. test_selenium_main_flow   - Core rental flow (browse -> book -> pay -> success)
+3. test_selenium_admin_flow  - Admin back-office flow
+4. test_selenium_issue_flow  - Issue reporting and handling flow
 
-使用方式:
-  python test/test_run_all_e2e.py
+Usage:
+    python test/test_run_all_e2e.py
 """
 
 import subprocess
@@ -40,7 +40,7 @@ def run_one(script_name):
     )
     elapsed = time.time() - start
     output = result.stdout
-    # Try GBK decode for Chinese output
+    # Try UTF-8 normalization for subprocess output
     try:
         output = result.stdout.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
     except Exception:
@@ -71,7 +71,7 @@ def main():
             passed += 1
         else:
             failed += 1
-        # Brief pause between tests to let server cool down
+        # Brief pause between tests to let the server cool down
         time.sleep(1)
 
     print()

@@ -1,6 +1,6 @@
 """
-故障接口
-测试接口：
+Issue (fault) endpoints
+Tested endpoints:
 1) POST /api/issues/report
 2) GET /api/issues
 3) PUT /api/issues/resolve/{issueId}
@@ -33,7 +33,7 @@ def _admin_auth_headers():
 
 
 def create_test_user_and_get_id() -> tuple[int, dict]:
-    """创建测试用户并通过登录拿到 userId 和 auth headers，返回 (user_id, headers)。"""
+    """Create a test user and login to obtain userId and auth headers. Returns (user_id, headers)."""
     suffix = str(int(time.time() * 1000))
     username = f"issue_user_{suffix}"
     password = "123456"
@@ -51,7 +51,7 @@ def create_test_user_and_get_id() -> tuple[int, dict]:
         timeout=10,
     )
     assert register_response.status_code == 200, (
-        f"前置失败：注册用户失败，状态码 {register_response.status_code}，响应：{register_response.text}"
+        f"Setup failed: user registration failed, status code {register_response.status_code}, response: {register_response.text}"
     )
 
     login_response = requests.post(
@@ -60,22 +60,22 @@ def create_test_user_and_get_id() -> tuple[int, dict]:
         timeout=10,
     )
     assert login_response.status_code == 200, (
-        f"前置失败：登录用户失败，状态码 {login_response.status_code}，响应：{login_response.text}"
+        f"Setup failed: user login failed, status code {login_response.status_code}, response: {login_response.text}"
     )
 
     data = login_response.json()
     user_id = data.get("user", {}).get("id")
     token = data.get("token")
-    assert isinstance(user_id, int), f"前置失败：登录响应未返回有效 userId，响应：{data}"
+    assert isinstance(user_id, int), f"Setup failed: login response did not return a valid userId, response: {data}"
     headers = {"Authorization": f"Bearer {token}"}
     return user_id, headers
 
 
 def ensure_scooter_id() -> int:
-    """确保至少有一辆车，返回可用 scooterId。"""
+    """Ensure at least one scooter exists and return a usable scooterId."""
     response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
-        f"前置失败：获取车辆列表失败，状态码 {response.status_code}，响应：{response.text}"
+        f"Setup failed: failed to get scooter list, status code {response.status_code}, response: {response.text}"
     )
 
     scooters = response.json()
@@ -94,12 +94,12 @@ def ensure_scooter_id() -> int:
     }
     add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10, headers=_admin_auth_headers())
     assert add_response.status_code == 200, (
-        f"前置失败：新增车辆失败，状态码 {add_response.status_code}，响应：{add_response.text}"
+        f"Setup failed: failed to add scooter, status code {add_response.status_code}, response: {add_response.text}"
     )
 
     refresh_response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert refresh_response.status_code == 200, (
-        f"前置失败：刷新车辆列表失败，状态码 {refresh_response.status_code}，响应：{refresh_response.text}"
+        f"Setup failed: failed to refresh scooter list, status code {refresh_response.status_code}, response: {refresh_response.text}"
     )
 
     refreshed = refresh_response.json()
@@ -107,11 +107,11 @@ def ensure_scooter_id() -> int:
         if isinstance(scooter.get("id"), int):
             return scooter["id"]
 
-    raise AssertionError("前置失败：未找到可用 scooterId")
+    raise AssertionError("Setup failed: no available scooterId found")
 
 
 def report_issue(user_id: int, scooter_id: int, description: str, priority: str, headers: dict) -> requests.Response:
-    """调用上报故障接口。"""
+    """Call the issue report endpoint."""
     payload = {
         "userId": user_id,
         "scooterId": scooter_id,
@@ -122,109 +122,109 @@ def report_issue(user_id: int, scooter_id: int, description: str, priority: str,
 
 
 def find_issue_id_by_description(description: str) -> int:
-    """根据唯一描述在列表中查找 issueId。"""
+    """Find the issueId in the list by matching the unique description."""
     response = requests.get(ISSUES_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
-        f"查询故障列表失败，状态码 {response.status_code}，响应：{response.text}"
+        f"Failed to query the issues list, status code {response.status_code}, response: {response.text}"
     )
 
     data = response.json()
-    assert isinstance(data, list), f"故障列表结构异常，响应：{data}"
+    assert isinstance(data, list), f"Issues list structure is invalid, response: {data}"
 
     for issue in data:
         if isinstance(issue, dict) and issue.get("description") == description and isinstance(issue.get("id"), int):
             return issue["id"]
 
-    raise AssertionError(f"未在故障列表找到目标记录，description={description}")
+    raise AssertionError(f"Target record was not found in the issues list, description={description}")
 
 
 def test_report_issue_success() -> None:
-    """用例1：上报故障成功。"""
+    """Test case 1: Reporting an issue should succeed."""
     user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_report_{int(time.time() * 1000)}"
 
     response = report_issue(user_id, scooter_id, description, priority="high", headers=headers)
     assert response.status_code == 200, (
-        f"上报故障应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Reporting an issue should succeed, status code {response.status_code}, response: {response.text}"
     )
     assert "submitted" in response.text.lower() or "thank you" in response.text.lower(), (
-        f"成功文案不符合预期，响应：{response.text}"
+        f"Success message does not match expectations, response: {response.text}"
     )
 
 
 def test_view_all_issues_contains_reported_issue() -> None:
-    """用例2：上报后在故障列表里可查询到记录。"""
+    """Test case 2: After reporting, the issue should appear in the issues list."""
     user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_list_{int(time.time() * 1000)}"
 
     report_response = report_issue(user_id, scooter_id, description, priority="medium", headers=headers)
     assert report_response.status_code == 200, (
-        f"前置失败：上报故障失败，状态码 {report_response.status_code}，响应：{report_response.text}"
+        f"Setup failed: issue report failed, status code {report_response.status_code}, response: {report_response.text}"
     )
 
     response = requests.get(ISSUES_URL, timeout=10, headers=headers)
     assert response.status_code == 200, (
-        f"查询故障列表应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Querying the issues list should succeed, status code {response.status_code}, response: {response.text}"
     )
 
     data = response.json()
-    assert isinstance(data, list), f"期望响应为数组(list)，实际类型 {type(data)}，响应：{data}"
+    assert isinstance(data, list), f"Expected the response to be a list, actual type {type(data)}, response: {data}"
 
     matches = [i for i in data if isinstance(i, dict) and i.get("description") == description]
-    assert matches, f"故障列表未找到刚上报记录，description={description}"
+    assert matches, f"The issues list did not contain the newly reported record, description={description}"
 
     issue = matches[0]
-    assert issue.get("userId") == user_id, f"userId 不匹配，响应元素：{issue}"
-    assert issue.get("scooterId") == scooter_id, f"scooterId 不匹配，响应元素：{issue}"
-    assert issue.get("priority") in {"low", "medium", "high"}, f"priority 值异常，响应元素：{issue}"
+    assert issue.get("userId") == user_id, f"userId does not match, response item: {issue}"
+    assert issue.get("scooterId") == scooter_id, f"scooterId does not match, response item: {issue}"
+    assert issue.get("priority") in {"low", "medium", "high"}, f"priority value is invalid, response item: {issue}"
 
 
 def test_resolve_issue_success() -> None:
-    """用例3：管理员处理故障成功，状态应更新为 resolved。"""
+    """Test case 3: Admin resolving an issue should update status to resolved."""
     user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_scooter_id()
     description = f"issue_resolve_{int(time.time() * 1000)}"
 
     report_response = report_issue(user_id, scooter_id, description, priority="low", headers=headers)
     assert report_response.status_code == 200, (
-        f"前置失败：上报故障失败，状态码 {report_response.status_code}，响应：{report_response.text}"
+        f"Setup failed: issue report failed, status code {report_response.status_code}, response: {report_response.text}"
     )
 
     issue_id = find_issue_id_by_description(description)
 
     resolve_response = requests.put(f"{ISSUE_RESOLVE_URL}/{issue_id}", timeout=10, headers=_admin_auth_headers())
     assert resolve_response.status_code == 200, (
-        f"处理故障应成功，实际状态码 {resolve_response.status_code}，响应：{resolve_response.text}"
+        f"Resolving the issue should succeed, status code {resolve_response.status_code}, response: {resolve_response.text}"
     )
 
     list_response = requests.get(ISSUES_URL, timeout=10, headers=_admin_auth_headers())
     assert list_response.status_code == 200, (
-        f"处理后查询故障列表失败，状态码 {list_response.status_code}，响应：{list_response.text}"
+        f"Failed to query the issues list after resolving, status code {list_response.status_code}, response: {list_response.text}"
     )
 
     issues = list_response.json()
     target = next((i for i in issues if isinstance(i, dict) and i.get("id") == issue_id), None)
-    assert target is not None, f"处理后未找到目标故障，issueId={issue_id}"
-    assert target.get("status") == "resolved", f"处理后状态应为 resolved，响应元素：{target}"
+    assert target is not None, f"Target issue was not found after resolving, issueId={issue_id}"
+    assert target.get("status") == "resolved", f"Status after resolving should be resolved, response item: {target}"
 
 
 def run_all_tests() -> None:
-    """按顺序执行所有用例并输出汇总。"""
+    """Execute all test cases in order and print a summary."""
     tests: List[Tuple[str, Callable[[], None]]] = [
-        ("上报故障成功", test_report_issue_success),
-        ("故障列表包含上报记录", test_view_all_issues_contains_reported_issue),
-        ("处理故障成功", test_resolve_issue_success),
+        ("Report issue successfully", test_report_issue_success),
+        ("Issues list contains the reported record", test_view_all_issues_contains_reported_issue),
+        ("Resolve issue successfully", test_resolve_issue_success),
     ]
 
     passed = 0
     failed = 0
 
-    print("开始执行故障接口自动化测试...")
-    print(f"上报接口：{ISSUE_REPORT_URL}")
-    print(f"列表接口：{ISSUES_URL}")
-    print(f"处理接口：{ISSUE_RESOLVE_URL}/{{issueId}}")
+    print("Starting issue API automated tests...")
+    print(f"Report endpoint: {ISSUE_REPORT_URL}")
+    print(f"List endpoint: {ISSUES_URL}")
+    print(f"Resolve endpoint: {ISSUE_RESOLVE_URL}/{{issueId}}")
 
     for name, func in tests:
         try:
@@ -235,9 +235,9 @@ def run_all_tests() -> None:
             failed += 1
             print(f"FAIL - {name} -> {exc}")
 
-    print("\n测试结束")
-    print(f"通过: {passed}")
-    print(f"失败: {failed}")
+    print("\nTest finished")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
 
 if __name__ == "__main__":

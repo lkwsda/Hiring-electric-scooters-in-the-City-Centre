@@ -1,13 +1,13 @@
 """
-E2E UI 测试: 管理员管理界面流程 (Selenium)
+E2E UI test: admin management flow (Selenium)
 
-测试内容:
-1. 以管理员身份登录 (admin/123456)
-2. 进入 Admin Dashboard 并验证 Overview KPI
-3. 测试 Scooter Ops 面板 (查询滑板车)
-4. 测试 Package Pricing 面板 (查看定价表单)
-5. 测试 User List 面板 (刷新用户列表)
-6. 测试 Revenue Analytics 面板 (图表渲染)
+Test coverage:
+1. Log in as admin (admin/123456)
+2. Enter the Admin Dashboard and verify the Overview KPI
+3. Test the Scooter Ops panel (query scooters)
+4. Test the Package Pricing panel (view the pricing form)
+5. Test the User List panel (refresh the user list)
+6. Test the Revenue Analytics panel (chart rendering)
 """
 
 import os
@@ -32,12 +32,12 @@ def run_admin_flow():
 
     try:
         print(f"=== E2E Admin Dashboard Flow ===")
-        print(f"访问系统: {BASE_URL}")
+        print(f"Visiting system: {BASE_URL}")
         driver.get(BASE_URL)
         wait.until(EC.presence_of_element_located((By.ID, "authSection")))
 
         # ─── Step 1: Login as admin ───
-        print("\n1. 以管理员身份登录...")
+        print("\n1. Logging in as admin...")
         time.sleep(0.5)  # Let page init (has 200ms opacity delay)
         wait.until(EC.element_to_be_clickable((By.ID, "loginEmail"))).send_keys("admin")
         wait.until(EC.element_to_be_clickable((By.ID, "loginPassword"))).send_keys("123456")
@@ -46,13 +46,13 @@ def run_admin_flow():
         time.sleep(1.5)
         try:
             alert = driver.switch_to.alert
-            print(f"   登录结果: {alert.text}")
+            print(f"   Login result: {alert.text}")
             alert.accept()
         except Exception:
             pass
 
         # ─── Step 2: Enter Admin Dashboard Overview ───
-        print("\n2. 进入管理员仪表盘...")
+        print("\n2. Entering the admin dashboard...")
         wait.until(EC.visibility_of_element_located((By.ID, "homeSection")))
 
         admin_link = wait.until(EC.element_to_be_clickable((By.ID, "adminLink")))
@@ -60,7 +60,7 @@ def run_admin_flow():
 
         # Admin section should appear
         wait.until(EC.visibility_of_element_located((By.ID, "adminConfigSection")))
-        print("   管理员仪表盘已显示")
+        print("   Admin dashboard displayed")
 
         # Wait for KPI data to load
         time.sleep(2)
@@ -68,7 +68,7 @@ def run_admin_flow():
         # Verify Overview panel is active
         overview_panel = driver.find_element(By.ID, "adminPanelOverview")
         assert "is-active" in overview_panel.get_attribute("class"), "Overview panel should be active"
-        print("   Overview 面板已激活: PASS")
+        print("   Overview panel activated: PASS")
 
         # Check KPI cards have data
         kpi_available = driver.find_element(By.ID, "adminKpiAvailable")
@@ -78,7 +78,7 @@ def run_admin_flow():
         print(f"   Open Issues KPI: {kpi_issues.text}")
 
         # ─── Step 3: Test Scooter Ops panel ───
-        print("\n3. 测试 Scooter Ops 面板...")
+        print("\n3. Testing the Scooter Ops panel...")
         scooter_ops_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "[data-admin-panel='adminPanelScooters']")
         ))
@@ -87,7 +87,7 @@ def run_admin_flow():
 
         scooter_panel = driver.find_element(By.ID, "adminPanelScooters")
         assert scooter_panel.is_displayed(), "Scooter Ops panel should be visible"
-        print("   Scooter Ops 面板已显示: PASS")
+        print("   Scooter Ops panel displayed: PASS")
 
         # Test Query scooter functionality
         query_input = driver.find_element(By.ID, "adminScooterOpsId")
@@ -100,12 +100,12 @@ def run_admin_flow():
         time.sleep(1)
         result_div = driver.find_element(By.ID, "adminScooterOpsResult")
         result_text = result_div.text
-        print(f"   查询结果: {result_text[:100]}...")
+        print(f"   Query result: {result_text[:100]}...")
         assert "No" not in result_text or "operation" in result_text.lower(), \
             "Query result should show data or error message"
 
         # ─── Step 4: Test Package Pricing panel ───
-        print("\n4. 测试 Package Pricing 面板...")
+        print("\n4. Testing the Package Pricing panel...")
         pricing_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "[data-admin-panel='adminPanelPricing']")
         ))
@@ -114,7 +114,7 @@ def run_admin_flow():
 
         pricing_panel = driver.find_element(By.ID, "adminPanelPricing")
         assert pricing_panel.is_displayed(), "Pricing panel should be visible"
-        print("   Package Pricing 面板已显示: PASS")
+        print("   Package Pricing panel displayed: PASS")
 
         # Verify pricing form fields are populated
         price_1h = driver.find_element(By.ID, "price1h")
@@ -126,7 +126,7 @@ def run_admin_flow():
         print(f"   4 Hours Price: ${price_4h_val}")
 
         # ─── Step 5: Test User List panel ───
-        print("\n5. 测试 User List 面板...")
+        print("\n5. Testing the User List panel...")
         users_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "[data-admin-panel='adminPanelUsers']")
         ))
@@ -135,7 +135,7 @@ def run_admin_flow():
 
         users_panel = driver.find_element(By.ID, "adminPanelUsers")
         assert users_panel.is_displayed(), "Users panel should be visible"
-        print("   User List 面板已显示: PASS")
+        print("   User List panel displayed: PASS")
 
         # Click refresh users button
         refresh_btn = wait.until(EC.element_to_be_clickable((By.ID, "refreshUsersBtn")))
@@ -144,10 +144,10 @@ def run_admin_flow():
 
         users_list = driver.find_element(By.ID, "adminUsersList")
         users_text = users_list.text
-        print(f"   用户列表内容: {users_text[:150]}...")
+        print(f"   User list content: {users_text[:150]}...")
 
         # ─── Step 6: Test Revenue Analytics panel ───
-        print("\n6. 测试 Revenue Analytics 面板...")
+        print("\n6. Testing the Revenue Analytics panel...")
         analytics_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "[data-admin-panel='adminPanelAnalytics']")
         ))
@@ -156,7 +156,7 @@ def run_admin_flow():
 
         analytics_panel = driver.find_element(By.ID, "adminPanelAnalytics")
         assert analytics_panel.is_displayed(), "Analytics panel should be visible"
-        print("   Revenue Analytics 面板已显示: PASS")
+        print("   Revenue Analytics panel displayed: PASS")
 
         # Check revenue summary cards
         weekly_total = driver.find_element(By.ID, "adminRevenueWeeklyTotal")
@@ -178,7 +178,7 @@ def run_admin_flow():
         print("   Daily chart rendered: PASS")
 
         # ─── Step 7: Test Issue Workflow panel ───
-        print("\n7. 测试 Issue Workflow 面板...")
+        print("\n7. Testing the Issue Workflow panel...")
         issues_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "[data-admin-panel='adminPanelIssues']")
         ))
@@ -187,22 +187,22 @@ def run_admin_flow():
 
         issues_panel = driver.find_element(By.ID, "adminPanelIssues")
         assert issues_panel.is_displayed(), "Issue Workflow panel should be visible"
-        print("   Issue Workflow 面板已显示: PASS")
+        print("   Issue Workflow panel displayed: PASS")
 
         # Check issue review list exists
         review_list = driver.find_element(By.ID, "adminIssueReviewList")
-        print(f"   Issue Review 列表: {review_list.text[:100]}...")
+        print(f"   Issue Review list: {review_list.text[:100]}...")
 
         high_priority_list = driver.find_element(By.ID, "highPriorityIssueList")
-        print(f"   High Priority 列表: {high_priority_list.text[:100]}...")
+        print(f"   High Priority list: {high_priority_list.text[:100]}...")
 
-        print("\n=== 管理员后台控制台 UI 流程测试全部通过! ===")
+        print("\n=== Admin dashboard UI flow tests passed ===")
 
     except Exception as e:
-        print(f"\n管理员后台流程测试失败: {e}")
+        print(f"\nAdmin dashboard flow test failed: {e}")
         try:
             driver.save_screenshot("test_admin_flow_error.png")
-            print("   错误截图已保存: test_admin_flow_error.png")
+            print("   Error screenshot saved: test_admin_flow_error.png")
         except Exception:
             pass
         raise

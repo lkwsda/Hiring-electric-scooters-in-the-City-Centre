@@ -1,6 +1,6 @@
 """
-用户注册接口
-测试接口:POST /api/users/register
+User registration endpoint
+Tested endpoint: POST /api/users/register
 """
 
 from __future__ import annotations
@@ -12,13 +12,13 @@ from typing import Callable, List, Tuple
 import requests
 
 
-# 可按需修改服务地址，或通过环境变量 BASE_URL 覆盖
+# Service URL can be adjusted as needed or overridden via the BASE_URL environment variable
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
 REGISTER_URL = f"{BASE_URL}/api/users/register"
 
 
 def build_unique_user(prefix: str = "autotest") -> dict:
-    """生成唯一用户名和邮箱，避免重复注册导致失败。"""
+    """Generate a unique username and email to avoid duplicate registration failures."""
     suffix = str(int(time.time() * 1000))
     username = f"{prefix}_{suffix}"
     email = f"{username}@mail.com"
@@ -29,12 +29,12 @@ def build_unique_user(prefix: str = "autotest") -> dict:
 
 
 def test_register_success() -> None:
-    """用例1:注册成功。"""
+    """Test case 1: Successful registration."""
     user = build_unique_user("ok")
 
-    # 接口请求参数：
-    # 1) JSON body 里放 username/email/passwordHash
-    # 2) query 参数里放 confirmPassword
+    # Request parameters:
+    # 1) Put username/email/passwordHash in the JSON body
+    # 2) Put confirmPassword in the query parameters
     payload = {
         "username": user["username"],
         "email": user["email"],
@@ -44,19 +44,19 @@ def test_register_success() -> None:
 
     response = requests.post(REGISTER_URL, json=payload, params=params, timeout=10)
 
-    # 断言1：状态码应为 200
+    # Assertion 1: status code should be 200
     assert response.status_code == 200, (
-        f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
+        f"Expected status code 200, got {response.status_code}, response: {response.text}"
     )
 
-    # 断言2：响应应包含成功关键字
+    # Assertion 2: response should contain success keywords
     assert "Registration Successful" in response.text, (
-        f"成功文案不符合预期，响应：{response.text}"
+        f"Success message does not match expectations, response: {response.text}"
     )
 
 
 def test_register_password_too_short() -> None:
-    """用例2:密码太短,应失败。"""
+    """Test case 2: Registration should fail if the password is too short."""
     user = build_unique_user("shortpwd")
     payload = {
         "username": user["username"],
@@ -67,17 +67,17 @@ def test_register_password_too_short() -> None:
 
     response = requests.post(REGISTER_URL, json=payload, params=params, timeout=10)
 
-    # 当前项目失败通常返回 400；这里用“非200 + 关键字”更稳妥
+    # The project usually returns 400 for failures; using "non-200 + keyword" is more reliable here
     assert response.status_code != 200, (
-        f"密码过短不应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Registration should not succeed with a short password, status code {response.status_code}, response: {response.text}"
     )
     assert "Validation Failed" in response.text or "at least 6" in response.text, (
-        f"错误信息不符合预期，响应：{response.text}"
+        f"Error message does not match expectations, response: {response.text}"
     )
 
 
 def test_register_confirm_mismatch() -> None:
-    """用例3:确认密码不一致,应失败。"""
+    """Test case 3: Registration should fail if confirm password does not match."""
     user = build_unique_user("mismatch")
     payload = {
         "username": user["username"],
@@ -89,26 +89,26 @@ def test_register_confirm_mismatch() -> None:
     response = requests.post(REGISTER_URL, json=payload, params=params, timeout=10)
 
     assert response.status_code != 200, (
-        f"确认密码不一致不应成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Mismatched confirmation password should not succeed, status {response.status_code}, response: {response.text}"
     )
     assert "do not match" in response.text or "Validation Failed" in response.text, (
-        f"错误信息不符合预期，响应：{response.text}"
+        f"Error message did not match expectations, response: {response.text}"
     )
 
 
 def run_all_tests() -> None:
-    """顺序执行所有用例并打印汇总。"""
+    """Run all test cases in sequence and print a summary."""
     tests: List[Tuple[str, Callable[[], None]]] = [
-        ("注册成功", test_register_success),
-        ("密码太短注册失败", test_register_password_too_short),
-        ("确认密码不一致注册失败", test_register_confirm_mismatch),
+        ("Registration succeeds", test_register_success),
+        ("Registration fails with short password", test_register_password_too_short),
+        ("Registration fails with mismatched confirmation password", test_register_confirm_mismatch),
     ]
 
     passed = 0
     failed = 0
 
-    print("开始执行用户注册接口自动化测试...")
-    print(f"目标接口：{REGISTER_URL}")
+    print("Starting user registration API automated tests...")
+    print(f"Target endpoint: {REGISTER_URL}")
 
     for name, func in tests:
         try:
@@ -119,9 +119,9 @@ def run_all_tests() -> None:
             failed += 1
             print(f"FAIL - {name} -> {exc}")
 
-    print("\n测试结束")
-    print(f"通过: {passed}")
-    print(f"失败: {failed}")
+    print("\nTest finished")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
 
 if __name__ == "__main__":

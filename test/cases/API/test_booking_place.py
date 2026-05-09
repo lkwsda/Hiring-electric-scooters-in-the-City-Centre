@@ -1,6 +1,6 @@
 """
-下单接口
-测试接口:POST /api/bookings/place
+Booking place endpoint
+Tested endpoint: POST /api/bookings/place
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ def _admin_auth_headers():
 
 
 def create_test_user_and_get_id() -> tuple[int, dict]:
-    """创建测试用户并通过登录拿到 userId 和 auth headers，返回 (user_id, headers)。"""
+    """Create a test user and login to obtain userId and auth headers. Returns (user_id, headers)."""
     suffix = str(int(time.time() * 1000))
     username = f"booking_user_{suffix}"
     password = "123456"
@@ -48,7 +48,7 @@ def create_test_user_and_get_id() -> tuple[int, dict]:
 
     register_response = requests.post(REGISTER_URL, json=payload, params=params, timeout=10)
     assert register_response.status_code == 200, (
-        f"前置失败：注册用户失败，状态码 {register_response.status_code}，响应：{register_response.text}"
+        f"Setup failed: user registration failed, status code {register_response.status_code}, response: {register_response.text}"
     )
 
     login_response = requests.post(
@@ -57,22 +57,22 @@ def create_test_user_and_get_id() -> tuple[int, dict]:
         timeout=10,
     )
     assert login_response.status_code == 200, (
-        f"前置失败：登录用户失败，状态码 {login_response.status_code}，响应：{login_response.text}"
+        f"Setup failed: user login failed, status code {login_response.status_code}, response: {login_response.text}"
     )
 
     user_data = login_response.json()
     user_id = user_data.get("user", {}).get("id")
     token = user_data.get("token")
-    assert isinstance(user_id, int), f"前置失败：登录响应未返回有效 userId，响应：{user_data}"
+    assert isinstance(user_id, int), f"Setup failed: login response did not return a valid userId, response: {user_data}"
     headers = {"Authorization": f"Bearer {token}"}
     return user_id, headers
 
 
 def ensure_available_scooter_id() -> int:
-    """确保存在一辆可用车辆，返回 scooterId。"""
+    """Ensure an available scooter exists and return its scooterId."""
     response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
-        f"前置失败：获取车辆列表失败，状态码 {response.status_code}，响应：{response.text}"
+        f"Setup failed: failed to get scooter list, status code {response.status_code}, response: {response.text}"
     )
 
     scooters = response.json()
@@ -81,7 +81,7 @@ def ensure_available_scooter_id() -> int:
             if scooter.get("status") == "available" and isinstance(scooter.get("id"), int):
                 return scooter["id"]
 
-    # 如果当前没有可用车，则自动新增一辆
+    # If there is no available scooter, add one automatically
     suffix = str(int(time.time() * 1000))
     model_name = f"autotest_model_{suffix}"
     add_payload = {
@@ -94,12 +94,12 @@ def ensure_available_scooter_id() -> int:
 
     add_response = requests.post(ADD_SCOOTER_URL, json=add_payload, timeout=10, headers=_admin_auth_headers())
     assert add_response.status_code == 200, (
-        f"前置失败：新增车辆失败，状态码 {add_response.status_code}，响应：{add_response.text}"
+        f"Setup failed: failed to add scooter, status code {add_response.status_code}, response: {add_response.text}"
     )
 
     refresh_response = requests.get(SCOOTERS_URL, timeout=10, headers=_admin_auth_headers())
     assert refresh_response.status_code == 200, (
-        f"前置失败：刷新车辆列表失败，状态码 {refresh_response.status_code}，响应：{refresh_response.text}"
+        f"Setup failed: failed to refresh scooter list, status code {refresh_response.status_code}, response: {refresh_response.text}"
     )
 
     refreshed_scooters = refresh_response.json()
@@ -113,29 +113,29 @@ def ensure_available_scooter_id() -> int:
         if scooter.get("status") == "available" and isinstance(scooter.get("id"), int):
             return scooter["id"]
 
-    raise AssertionError("前置失败：未找到可用车辆")
+    raise AssertionError("Setup failed: no available scooter found")
 
 
 def ensure_package_id() -> int:
-    """确保存在一个可用套餐，返回 packageId。"""
+    """Ensure a usable package exists and return its packageId."""
     response = requests.get(PACKAGES_URL, timeout=10, headers=_admin_auth_headers())
     assert response.status_code == 200, (
-        f"前置失败：获取套餐列表失败，状态码 {response.status_code}，响应：{response.text}"
+        f"Setup failed: failed to get package list, status code {response.status_code}, response: {response.text}"
     )
 
     packages = response.json()
     assert isinstance(packages, list) and packages, (
-        f"前置失败：套餐列表为空或结构异常，响应：{packages}"
+        f"Setup failed: package list is empty or has an invalid structure, response: {packages}"
     )
 
     first = packages[0]
     package_id = first.get("id") if isinstance(first, dict) else None
-    assert isinstance(package_id, int), f"前置失败：未找到有效 packageId，响应元素：{first}"
+    assert isinstance(package_id, int), f"Setup failed: no valid packageId found, response item: {first}"
     return package_id
 
 
 def place_booking(user_id: int, scooter_id: int, package_id: int, headers: dict) -> requests.Response:
-    """调用下单接口并返回响应。"""
+    """Call the place booking endpoint and return the response."""
     payload = {
         "userId": user_id,
         "scooterId": scooter_id,
@@ -145,7 +145,7 @@ def place_booking(user_id: int, scooter_id: int, package_id: int, headers: dict)
 
 
 def cleanup_booking_if_possible(booking_id: int | None, headers: dict | None = None) -> None:
-    """测试收尾：尽量取消订单，避免占用车辆影响其他用例。"""
+    """Test cleanup: try to cancel the booking to avoid occupying scooters and affecting other tests."""
     if not isinstance(booking_id, int):
         return
     h = headers if headers else _admin_auth_headers()
@@ -153,7 +153,7 @@ def cleanup_booking_if_possible(booking_id: int | None, headers: dict | None = N
 
 
 def cleanup_created_scooters() -> None:
-    """收尾：尽力删除本轮自动新增且未被业务长期引用的车辆。"""
+    """Cleanup: attempt to delete scooters auto-created during this run that are not referenced by business logic."""
     for scooter_id in list(CREATED_SCOOTER_IDS):
         try:
             response = requests.delete(f"{SCOOTERS_URL}/{scooter_id}", timeout=10, headers=_admin_auth_headers())
@@ -161,14 +161,14 @@ def cleanup_created_scooters() -> None:
                 CREATED_SCOOTER_IDS.discard(scooter_id)
             else:
                 print(
-                    f"WARN - 删除新增车辆失败，scooterId={scooter_id}，状态码 {response.status_code}，响应：{response.text}"
+                    f"WARN - Failed to delete added scooter, scooterId={scooter_id}, status code {response.status_code}, response: {response.text}"
                 )
         except Exception as exc:  # noqa: BLE001
-            print(f"WARN - 删除新增车辆异常，scooterId={scooter_id}，异常：{exc}")
+            print(f"WARN - Exception deleting added scooter, scooterId={scooter_id}, exception: {exc}")
 
 
 def test_place_booking_success() -> None:
-    """用例1:下单成功,返回 pending 订单。"""
+    """Test case 1: Successful booking returns a pending booking."""
     user_id, headers = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
     package_id = ensure_package_id()
@@ -177,26 +177,26 @@ def test_place_booking_success() -> None:
     try:
         response = place_booking(user_id, scooter_id, package_id, headers)
         assert response.status_code == 200, (
-            f"期望状态码 200,实际 {response.status_code}，响应：{response.text}"
+            f"Expected status code 200, got {response.status_code}, response: {response.text}"
         )
 
         data = response.json()
         booking_id = data.get("id")
 
-        assert isinstance(booking_id, int), f"下单成功后应返回 booking id，响应：{data}"
-        assert data.get("userId") == user_id, f"userId 不匹配，响应：{data}"
-        assert data.get("scooterId") == scooter_id, f"scooterId 不匹配，响应：{data}"
-        assert data.get("packageId") == package_id, f"packageId 不匹配，响应：{data}"
-        assert data.get("status") == "pending", f"状态应为 pending，响应：{data}"
+        assert isinstance(booking_id, int), f"A booking id should be returned on success, response: {data}"
+        assert data.get("userId") == user_id, f"userId does not match, response: {data}"
+        assert data.get("scooterId") == scooter_id, f"scooterId does not match, response: {data}"
+        assert data.get("packageId") == package_id, f"packageId does not match, response: {data}"
+        assert data.get("status") == "pending", f"Status should be pending, response: {data}"
         total_cost = data.get("totalCost")
-        assert total_cost is not None, f"下单成功后应返回 totalCost，响应：{data}"
-        assert float(total_cost) > 0, f"totalCost 应大于 0，响应：{data}"
+        assert total_cost is not None, f"A totalCost should be returned on success, response: {data}"
+        assert float(total_cost) > 0, f"totalCost should be greater than 0, response: {data}"
     finally:
         cleanup_booking_if_possible(booking_id, headers)
 
 
 def test_place_booking_invalid_scooter_should_fail() -> None:
-    """用例2:车辆不存在,下单应失败。"""
+    """Test case 2: Booking should fail when the scooter does not exist."""
     user_id, headers = create_test_user_and_get_id()
     package_id = ensure_package_id()
     invalid_scooter_id = 99999999
@@ -204,17 +204,17 @@ def test_place_booking_invalid_scooter_should_fail() -> None:
     response = place_booking(user_id, invalid_scooter_id, package_id, headers)
 
     assert response.status_code != 200, (
-        f"车辆不存在不应下单成功，实际状态码 {response.status_code}，响应：{response.text}"
+        f"Booking should not succeed when the scooter does not exist, status code {response.status_code}, response: {response.text}"
     )
     error_text = response.text.lower()
     expected_keywords = ["not found", "validation failed", "incorrect result size", "scooter"]
     assert any(keyword in error_text for keyword in expected_keywords), (
-        f"错误信息不符合预期，响应：{response.text}"
+        f"Error message does not match expectations, response: {response.text}"
     )
 
 
 def test_place_booking_same_scooter_twice_should_fail() -> None:
-    """用例3：同一辆车连续下单，第二次应失败。"""
+    """Test case 3: Booking the same scooter twice should fail on the second attempt."""
     user_id_1, headers_1 = create_test_user_and_get_id()
     user_id_2, headers_2 = create_test_user_and_get_id()
     scooter_id = ensure_available_scooter_id()
@@ -224,41 +224,41 @@ def test_place_booking_same_scooter_twice_should_fail() -> None:
     try:
         first_response = place_booking(user_id_1, scooter_id, package_id, headers_1)
         assert first_response.status_code == 200, (
-            f"第一次下单应成功，实际状态码 {first_response.status_code}，响应：{first_response.text}"
+            f"The first booking should succeed, status code {first_response.status_code}, response: {first_response.text}"
         )
 
         first_data = first_response.json()
         first_booking_id = first_data.get("id")
-        assert isinstance(first_booking_id, int), f"第一次下单未返回有效 booking id，响应：{first_data}"
+        assert isinstance(first_booking_id, int), f"The first booking did not return a valid booking id, response: {first_data}"
 
         second_response = place_booking(user_id_2, scooter_id, package_id, headers_2)
         assert second_response.status_code != 200, (
-            f"同车二次下单不应成功，实际状态码 {second_response.status_code}，响应：{second_response.text}"
+            f"The second booking on the same scooter should not succeed, status code {second_response.status_code}, response: {second_response.text}"
         )
         error_text = second_response.text.lower()
         assert "already in use" in error_text or "validation failed" in error_text or "scooter" in error_text, (
-            f"错误信息不符合预期，响应：{second_response.text}"
+            f"Error message does not match expectations, response: {second_response.text}"
         )
     finally:
         cleanup_booking_if_possible(first_booking_id, headers_1)
 
 
 def run_all_tests() -> None:
-    """按顺序执行所有用例并输出汇总。"""
+    """Execute all test cases in order and print a summary."""
     tests: List[Tuple[str, Callable[[], None]]] = [
-        ("下单成功返回 pending", test_place_booking_success),
-        ("不存在车辆下单失败", test_place_booking_invalid_scooter_should_fail),
-        ("同车重复下单第二次失败", test_place_booking_same_scooter_twice_should_fail),
+        ("Booking success returns pending", test_place_booking_success),
+        ("Booking fails for missing scooter", test_place_booking_invalid_scooter_should_fail),
+        ("Second booking on same scooter fails", test_place_booking_same_scooter_twice_should_fail),
     ]
 
     passed = 0
     failed = 0
 
-    print("开始执行下单接口自动化测试...")
-    print(f"注册接口：{REGISTER_URL}")
-    print(f"登录接口：{LOGIN_URL}")
-    print(f"车辆接口：{SCOOTERS_URL}")
-    print(f"下单接口：{PLACE_BOOKING_URL}")
+    print("Starting booking API automated tests...")
+    print(f"Register endpoint: {REGISTER_URL}")
+    print(f"Login endpoint: {LOGIN_URL}")
+    print(f"Scooter endpoint: {SCOOTERS_URL}")
+    print(f"Booking endpoint: {PLACE_BOOKING_URL}")
 
     for name, func in tests:
         try:
@@ -271,9 +271,9 @@ def run_all_tests() -> None:
 
     cleanup_created_scooters()
 
-    print("\n测试结束")
-    print(f"通过: {passed}")
-    print(f"失败: {failed}")
+    print("\nTest finished")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
 
 
 if __name__ == "__main__":
