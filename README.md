@@ -2,6 +2,8 @@
 
 Software Engineering Project for hiring electric scooters in the City Centre — XJCO2913, University of Leeds.
 
+## 🚩Project Board
+(https://github.com/users/Hal1wn/projects/1)
 ## Team
 
 | Role | Member |
