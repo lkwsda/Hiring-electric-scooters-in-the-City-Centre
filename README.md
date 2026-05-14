@@ -20,7 +20,7 @@ Software Engineering Project for hiring electric scooters in the City Centre —
 |-------|------------|
 | Backend | Java 21, Spring Boot 3.2.2 |
 | Database | MySQL 8.0 |
-| Build | Maven |
+| Build | Maven 3.9 |
 | Frontend | HTML5, CSS3, JavaScript (ES6+), Leaflet, Chart.js |
 | Testing | JUnit 5, Jest, Pytest, Selenium |
 | CI/CD | GitHub Actions |
