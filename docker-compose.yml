@@ -1,4 +1,4 @@
-name: scooter-rental
+version: "3.8"
 
 services:
   mysql:
