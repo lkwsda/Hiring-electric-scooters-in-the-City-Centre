@@ -33,4 +33,10 @@ public class IssueController {
         issueService.resolveIssue(issueId);
         return "Issue #" + issueId + " has been marked as resolved.";
     }
+
+    @PutMapping("/{issueId}/priority")
+    public String updatePriority(@PathVariable int issueId, @RequestParam String priority) {
+        issueService.updatePriority(issueId, priority);
+        return "Priority of issue #" + issueId + " updated to " + priority;
+    }
 }

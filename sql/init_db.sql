@@ -95,5 +95,12 @@ INSERT INTO scooters (model, image_url, battery_level, latitude, longitude, stat
      ('7', '/images/EcoRide_X3.png',96, 53.8024, -1.5491, 'available'),
      ('3', '/images/EcoRide_X1.png',100, 53.8005, -1.5470, 'maintenance'); -- 这辆是坏的，用来测拦截逻辑
 
+INSERT INTO users (username, email, password_hash, role)
+VALUES (
+    'admin1',
+    'admin1@admin.com',
+    '$2a$12$8uIDfHHdIVinOUo4KNh14OU/xaDkRW0Kvj5ZtxfhKwQARSfsy8BxC',
+    'admin'
+);
 
 

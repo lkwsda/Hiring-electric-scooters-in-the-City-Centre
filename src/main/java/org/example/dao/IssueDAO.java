@@ -12,4 +12,7 @@ public interface IssueDAO {
 
     // F14
     void updateStatus(int issueId, String status);
+
+    // Update issue priority
+    void updatePriority(int issueId, String priority);
 }

@@ -36,10 +36,39 @@ Software Engineering Project for hiring electric scooters in the City Centre —
 
 ## Quick Start
 
-### Option 1: Docker Compose (recommended)
+### Option 1: Docker Compose 
+
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<'EOF'
+{
+    "registry-mirrors": [
+        "https://docker.1ms.run",
+        "https://docker.xuanyuan.me",
+        "https://dockerproxy.com"
+    ]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+
+
+```
+sudo apt update && sudo apt install docker.io docker-compose -y
+sudo usermod -aG docker $USER && newgrp docker
+docker --version
+docker-compose --version
+```
+
+```
+git clone https://github.com/lkwsda/Hiring-electric-scooters-in-the-City-Centre.git
+cd Hiring-electric-scooters-in-the-City-Centre
+```
 
 ```bash
-docker compose up -d --wait
+docker-compose up -d
 ```
 
 This starts MySQL 8.0 (auto-initializes the database from `sql/init_db.sql`) and the Spring Boot app on `http://localhost:8080`.
@@ -47,7 +76,7 @@ This starts MySQL 8.0 (auto-initializes the database from `sql/init_db.sql`) and
 To stop and clean up:
 
 ```bash
-docker compose down -v
+docker compose down -v && pkill -f java
 ```
 
 ### Option 2: Manual Setup
@@ -200,8 +229,8 @@ js-tests ────┘
 Pre-built images are published to GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/xnjd666/Hiring-electric-scooters-in-the-City-Centre:latest
-docker run -p 8080:8080 ghcr.io/xnjd666/Hiring-electric-scooters-in-the-City-Centre:latest
+docker pull ghcr.io/lkwsda/hiring-electric-scooters-in-the-city-centre:latest
+docker run -p 8080:8080 ghcr.io/lkwsda/hiring-electric-scooters-in-the-city-centre:latest
 ```
 
 ## API Endpoints

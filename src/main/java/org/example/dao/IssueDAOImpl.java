@@ -50,4 +50,10 @@ public class IssueDAOImpl implements IssueDAO {
         String sql = "UPDATE issues SET status = ? WHERE id = ?";
         jdbcTemplate.update(sql, status, issueId);
     }
+
+    @Override
+    public void updatePriority(int issueId, String priority) {
+        String sql = "UPDATE issues SET priority = ? WHERE id = ?";
+        jdbcTemplate.update(sql, priority, issueId);
+    }
 }

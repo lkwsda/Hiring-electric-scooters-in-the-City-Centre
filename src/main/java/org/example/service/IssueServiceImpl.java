@@ -40,4 +40,10 @@ public class IssueServiceImpl implements IssueService {
 
         System.out.println("[Service] Issue #" + issueId + " has been resolved.");
     }
+
+    @Override
+    public void updatePriority(int issueId, String priority) {
+        issueDAO.updatePriority(issueId, priority);
+        System.out.println("[Service] Issue #" + issueId + " priority updated to: " + priority);
+    }
 }
