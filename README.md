@@ -53,8 +53,6 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
-
-
 ```
 sudo apt update && sudo apt install docker.io docker-compose -y
 sudo usermod -aG docker $USER && newgrp docker
@@ -76,7 +74,7 @@ This starts MySQL 8.0 (auto-initializes the database from `sql/init_db.sql`) and
 To stop and clean up:
 
 ```bash
-docker compose down -v && pkill -f java
+sudo docker compose down -v && sudo pkill -f java
 ```
 
 ### Option 2: Manual Setup
@@ -204,7 +202,6 @@ test/
 │   └── E2E/                 # Selenium E2E test scripts
 ├── test_run_all_api.py      # API test runner
 └── test_run_all_e2e.py      # E2E test runner
-docs/                         # Supplementary documentation
 ```
 
 ## CI/CD
