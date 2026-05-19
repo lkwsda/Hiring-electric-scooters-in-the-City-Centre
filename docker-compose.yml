@@ -20,7 +20,7 @@ services:
 
   app:
     build: .
-    image: scooter-rental:latest
+    image: ghcr.io/lkwsda/hiring-electric-scooters-in-the-city-centre:latest
     ports:
       - "8080:8080"
     depends_on:
