@@ -32,24 +32,31 @@ def run_one(script_name):
     print(f"Running: {script_name}")
     print(f"{'='*60}")
     start = time.time()
-    result = subprocess.run(
+    # Run subprocess with live output to avoid buffering/hang issues
+    env = os.environ.copy()
+    env['PYTHONUNBUFFERED'] = '1'
+    env['PYTHONIOENCODING'] = 'utf-8'
+    proc = subprocess.Popen(
         [sys.executable, path],
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
-        timeout=120,
+        encoding='utf-8',
+        errors='replace',
+        env=env,
     )
-    elapsed = time.time() - start
-    output = result.stdout
-    # Try UTF-8 normalization for subprocess output
     try:
-        output = result.stdout.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
-    except Exception:
-        pass
-    print(output)
-    if result.returncode != 0:
-        print(f"[FAIL] {script_name} exited with code {result.returncode}")
-        if result.stderr:
-            print(f"STDERR: {result.stderr[:500]}")
+        # Stream output lines as they arrive
+        for line in proc.stdout:
+            print(line, end='')
+        proc.wait(timeout=300)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        print(f"[FAIL] {script_name} timed out")
+        return False
+    elapsed = time.time() - start
+    if proc.returncode != 0:
+        print(f"[FAIL] {script_name} exited with code {proc.returncode}")
         return False
     else:
         print(f"[PASS] {script_name} ({elapsed:.1f}s)")

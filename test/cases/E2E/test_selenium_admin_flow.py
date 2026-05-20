@@ -2,7 +2,7 @@
 E2E UI test: admin management flow (Selenium)
 
 Test coverage:
-1. Log in as admin (admin/123456)
+1. Log in as admin (admin1/123456)
 2. Enter the Admin Dashboard and verify the Overview KPI
 3. Test the Scooter Ops panel (query scooters)
 4. Test the Package Pricing panel (view the pricing form)
@@ -17,17 +17,18 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium_helper import create_driver
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
 
 def run_admin_flow():
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
 
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = create_driver(chrome_options)
     wait = WebDriverWait(driver, 10)
 
     try:
@@ -39,7 +40,7 @@ def run_admin_flow():
         # ─── Step 1: Login as admin ───
         print("\n1. Logging in as admin...")
         time.sleep(0.5)  # Let page init (has 200ms opacity delay)
-        wait.until(EC.element_to_be_clickable((By.ID, "loginEmail"))).send_keys("admin")
+        wait.until(EC.element_to_be_clickable((By.ID, "loginEmail"))).send_keys("admin1")
         wait.until(EC.element_to_be_clickable((By.ID, "loginPassword"))).send_keys("123456")
         driver.find_element(By.CSS_SELECTOR, "#loginForm button[type='submit']").click()
 

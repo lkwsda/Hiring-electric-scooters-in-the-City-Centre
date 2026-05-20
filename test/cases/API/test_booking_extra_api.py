@@ -406,15 +406,15 @@ def run_all_tests() -> None:
     passed = 0
     failed = 0
 
-    print("开始执行订单扩展接口自动化测试...")
-    print(f"用户订单接口：{BOOKING_USER_URL}/{{userId}}")
-    print(f"支付接口：{BOOKING_PAY_URL}/{{bookingId}}")
-    print(f"取消接口：{BOOKING_CANCEL_URL}/{{bookingId}}")
-    print(f"结束接口：{BOOKING_END_URL}/{{bookingId}}")
-    print(f"延长接口：{BOOKING_EXTEND_URL}/{{bookingId}}")
-    print(f"管理员代下单接口：{BOOKING_ADMIN_PLACE_URL}")
-    print(f"周收入接口：{BOOKING_REVENUE_URL}")
-    print(f"日收入接口：{BOOKING_DAILY_REVENUE_URL}")
+    print("Starting automated testing of the order extension interface...")
+    print(f"User bookings endpoint: {BOOKING_USER_URL}/{{userId}}")
+    print(f"Payment endpoint: {BOOKING_PAY_URL}/{{bookingId}}")
+    print(f"Cancellation endpoint: {BOOKING_CANCEL_URL}/{{bookingId}}")
+    print(f"End trip endpoint: {BOOKING_END_URL}/{{bookingId}}")
+    print(f"Extend booking endpoint: {BOOKING_EXTEND_URL}/{{bookingId}}")
+    print(f"Admin booking endpoint: {BOOKING_ADMIN_PLACE_URL}")
+    print(f"Weekly revenue endpoint: {BOOKING_REVENUE_URL}")
+    print(f"Daily revenue endpoint: {BOOKING_DAILY_REVENUE_URL}")
 
     for name, func in tests:
         try:

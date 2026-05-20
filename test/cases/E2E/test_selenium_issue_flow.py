@@ -19,17 +19,18 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium_helper import create_driver
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
 
 def run_issue_flow():
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
 
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = create_driver(chrome_options)
     wait = WebDriverWait(driver, 10)
 
     try:
@@ -115,7 +116,33 @@ def run_issue_flow():
         # (may need refresh if issues API didn't return new issue)
 
         # ─── Step 5: Switch to admin view - Issue Workflow ───
-        print("\n5. Opening the admin Issue Workflow...")
+        print("\n5. Switching to admin account to review issues...")
+        # Logout current user first
+        try:
+            logout_link = driver.find_element(By.ID, "logoutLink")
+            if logout_link.is_displayed():
+                logout_link.click()
+                time.sleep(0.5)
+        except Exception:
+            pass
+
+        # Login as admin user who has admin privileges
+        wait.until(EC.visibility_of_element_located((By.ID, "authSection")))
+        wait.until(EC.element_to_be_clickable((By.ID, "loginEmail"))).clear()
+        wait.until(EC.element_to_be_clickable((By.ID, "loginEmail"))).send_keys("admin1")
+        wait.until(EC.element_to_be_clickable((By.ID, "loginPassword"))).clear()
+        wait.until(EC.element_to_be_clickable((By.ID, "loginPassword"))).send_keys("123456")
+        driver.find_element(By.CSS_SELECTOR, "#loginForm button[type='submit']").click()
+        time.sleep(1.0)
+        try:
+            alert = driver.switch_to.alert
+            print(f"   Admin login result: {alert.text}")
+            alert.accept()
+        except Exception:
+            pass
+
+        wait.until(EC.visibility_of_element_located((By.ID, "homeSection")))
+        # Now navigate to admin area
         admin_link = wait.until(EC.element_to_be_clickable((By.ID, "adminLink")))
         admin_link.click()
 
